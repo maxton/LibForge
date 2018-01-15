@@ -1,0 +1,33 @@
+// Forge .songdta file
+
+uint version;
+uint songid;
+short neg;
+char source[18];
+uint64 unknown;
+char name[256];
+char artist[256];
+char album[256];
+short tracknum;
+FSeek(FTell()+2);
+int year1;
+int year2;
+char genre[64];
+float length;
+BigEndian();
+int unk_1;
+int unk_2;
+int unk_3;
+int unk_4;
+int unk_5;
+char unk_6[8];
+short unk_7;
+short unk_8;
+char medium[16];
+char unk_9;
+FSeek(FTell()+3);
+LittleEndian();
+int unk_10;
+int unk_11;
+char unk_12;
+char shortname[256];
