@@ -1,0 +1,58 @@
+#include "common.bt"
+
+// This file seems to contain a tree of Forge game objects
+// The objects are saved with their structure (property names/types) and state (prop values)
+// Many of the forge file formats have these serialized objects in them.
+// Some object definitions are present in the .script_dta_ps4 files,
+// while others are hardcoded into the game (such as EntityHeader, RBSongMetadata, etc)
+
+typedef enum {
+    floating  = 0x0,
+    integer   = 0x3,
+    unknown   = 0x7,
+    enumerate = 0x8,
+    boolean   = 0x9,
+    symbol    = 0xB,
+    structure = 0xF
+} prop_type;
+
+// Arrays might be 0x100 | type ?
+
+struct prop {
+        PSTR name;
+        prop_type type;
+        if(type == structure){
+            int64 refcount;
+            int num_children;
+            struct prop children[num_children]<optimize=false>;
+        }
+};
+
+// Todo: Figure out this tree/graph structure
+// (assuming it is a tree, since the first string is "root")
+int32 version_or_type;
+int64 unknown_1;
+int32 unk_19_or_20;
+int32 unk_one_1;
+int32 same_19_or_20;
+int32 unk_zero_1;
+int16 unk_flag1;
+int64 unk_flag2;
+int32 unk_two_0;
+PSTR  root_name;
+int32 unk_four;
+PSTR  editor_name_1;
+PSTR  editor_name_2;
+int32 unk_three;
+int64 unk_two_1;
+int num_props;
+struct prop editor_props[num_props]<optimize=false>;
+struct {
+    int unk0;
+    PSTR ent_name;
+    PSTR ent_name_2;
+    prop_type unk_type;
+    int64 unk_count;
+    int num_props;
+    struct prop props[num_props]<optimize=false>;
+} EntityHeader;

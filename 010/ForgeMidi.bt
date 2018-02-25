@@ -1,0 +1,137 @@
+#include "common.bt"
+
+LittleEndian();
+
+// Forge MIDI
+typedef enum <uchar> {
+    NOTE_OFF = 0x80,
+    NOTE_ON  = 0x90,
+    POLY_PRS = 0xA0,
+    CTRL_CHG = 0xB0,
+    PRGM_CHG = 0xC0,
+    CHAN_PRS = 0xD0,
+    PITCH_BD = 0xE0
+} msg_type;
+
+typedef struct {
+    char note;
+    char velocity;
+} M_NOTE_ON;
+
+typedef struct {
+    char note;
+    char velocity;
+} M_NOTE_OFF;
+
+typedef struct {
+    char unk[2];
+} M_POLY_PRS;
+
+typedef struct {
+    char controller;
+    char amt;
+} M_CTRL_CHG;
+
+typedef struct {
+    char unk[2];
+} M_PRGM_CHG;
+
+typedef struct {
+    char unk[2];
+} M_CHAN_PRS;
+typedef struct {
+    char lsb;
+    char msb;
+} M_PITCH_BD;
+
+typedef struct {
+    uint tick;
+    char channel;
+    msg_type type;
+    switch(type){
+        case NOTE_OFF:
+            M_NOTE_OFF msg;
+            break;
+        case NOTE_ON:
+            M_NOTE_ON msg;
+            break;
+        case POLY_PRS:
+            M_POLY_PRS msg;
+            break;
+        case CTRL_CHG:
+            M_CTRL_CHG msg;
+            break;
+        case PRGM_CHG:
+            M_PRGM_CHG msg;
+            break;
+        case CHAN_PRS:
+            M_CHAN_PRS msg;
+            break;
+        case PITCH_BD:
+            M_PITCH_BD msg;
+            break;
+    }
+} midi_message<optimize=false>;
+
+typedef struct {
+    uint tick;
+    PSTR lyric;
+} LYRIC<read=LYRIC_READ,optimize=false>;
+string LYRIC_READ(LYRIC& l){
+    return PSTR_READ(l.lyric);
+}
+
+typedef struct {
+    PSTR track_name;
+    int num_events;
+    LYRIC lyrics[num_events];
+    int unknown;
+    int unknown_2;
+    char unk;
+} TRACK<read=TRACK_READ,optimize=false>;
+string TRACK_READ(TRACK& t){
+    return PSTR_READ(t.track_name);
+}
+
+int format;
+if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
+    int num_tracks;
+    TRACK tracks[num_tracks];
+    int num_tracks_2;
+    int num_unk_1;
+    struct {
+        int unk1;
+        int unk2;
+    } unk_1[num_unk_1];
+    int num_unk_2;
+    struct {
+        int  unk[2];
+        char unk;
+    } unk_2[num_unk_2];
+    char unk[8*num_tracks - 4];
+    int num_tracks_3;
+    int num_unk_3;
+    struct {
+        int unk1;
+        int unk2;
+    } unk_3[num_unk_3];
+    struct {
+        int unk_1[2];
+        int unk_3;
+        int unk_2[2];
+    } unk_4[num_tracks_3];
+    if(num_tracks != num_tracks_2 || num_tracks_2 != num_tracks_3){
+        Printf("Error: Assumption broken.");
+    }
+}
+if(format == 0x2){ // mid_ps4/pc
+    char header[29];
+    PSTR seq_name;
+    char unk;
+    int unk2;
+    int num_msgs;
+    int unk3;
+    int unk4;
+    midi_message msgs[num_msgs];
+    
+}

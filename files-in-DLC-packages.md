@@ -24,6 +24,7 @@ This file has the album artwork for the song.
 
 ## shortname.rbmid_ps4
 This file has the instrument authoring data (tempo, notes, lyrics, markup).
+See `010/ForgeMidi.bt` for an 010 Editor template describing the known data structures in this file.
 
 ## shortname.rbsong
 This file seems to contain the venue authoring data.
