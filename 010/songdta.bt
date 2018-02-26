@@ -1,33 +1,38 @@
 // Forge .songdta file
 
-uint version;
-uint songid;
-short neg;
-char source[18];
+LittleEndian();
+
+uint songdta_type;
+uint song_id;
+short version;
+char game_origin[18];
 uint64 unknown;
 char name[256];
 char artist[256];
-char album[256];
-short tracknum;
+char album_name[256];
+short album_track_number;
 FSeek(FTell()+2);
-int year1;
-int year2;
+int album_year;
+int original_year;
 char genre[64];
 float length;
-BigEndian();
-int unk_1;
-int unk_2;
-int unk_3;
-int unk_4;
-int unk_5;
+float band;
+float bass;
+float guitar;
+float drums;
+float vocals;
 char unk_6[8];
-short unk_7;
-short unk_8;
+byte tutorial;
+byte album_art;
+byte cover;
+enum <byte> {
+    Male = 1,
+    Female = 2
+} vocal_gender;
 char medium[16];
 char unk_9;
 FSeek(FTell()+3);
-LittleEndian();
 int unk_10;
 int unk_11;
-char unk_12;
+char fake;
 char shortname[256];
