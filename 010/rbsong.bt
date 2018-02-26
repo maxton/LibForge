@@ -6,53 +6,208 @@
 // Some object definitions are present in the .script_dta_ps4 files,
 // while others are hardcoded into the game (such as EntityHeader, RBSongMetadata, etc)
 
-typedef enum {
-    floating  = 0x0,
-    integer   = 0x3,
-    unknown   = 0x7,
-    enumerate = 0x8,
-    boolean   = 0x9,
-    symbol    = 0xB,
-    structure = 0xF
-} prop_type;
+typedef struct {
+    enum {
+        kFloat  = 0x0,
+        // 0x1, 0x2
+        kInt    = 0x3,
+        kByte   = 0x5,
+        kFlag   = 0x7,
+        kEnum   = 0x8,
+        kBool   = 0x9,
+        kSymbol = 0xB,
+        kString = 0xC,
+        // 0xD, 0xE
+        kStruct = 0xF,
+        kUnknown= 0x10
+    } data_type : 8;
+    int is_array : 1;
+} prop_type<read=prop_type_read>;
+string prop_type_read(prop_type& t)
+{
+    local string result;
+    SPrintf(result, "%s%s", EnumToString(t.data_type), t.is_array ? "[]" : "");
+    return result;
+}
+
+typedef struct {
+    int flag_0 : 1;
+    int ChangeName : 1;
+    int ChangeLayer : 1;
+    int Delete : 1;
+    int ChangeProps : 1;
+    int AddComponent : 1;
+    int RemComponent : 1;
+    int ShowInLister : 1;
+    int Selectable : 1;
+} editor_capability_flags;
 
 // Arrays might be 0x100 | type ?
 
-struct prop {
+struct PropDef {
         PSTR name;
         prop_type type;
-        if(type == structure){
+        if(type.is_array){
+            int array_type;
+        }
+        if(type.data_type == kStruct){
             int64 refcount;
             int num_children;
-            struct prop children[num_children]<optimize=false>;
+            struct PropDef children[num_children]<optimize=false,read=prop_read>;
         }
 };
+string prop_read(struct PropDef& p) {
+    local string name;
+    SPrintf(name, "%s:%s", p.name.name, prop_type_read(p.type));
+    return name;
+}
+
+typedef struct propVal (struct PropDef& p) {
+    local string name;
+    SPrintf(name, "%s:%s", p.name.name, prop_type_read(p.type));
+    if(p.type.is_array){
+        int num_elements;
+        switch(p.type.data_type){
+            case kFloat:
+                float floatVals[num_elements];
+                break;
+            case kInt:
+                int intVals[num_elements];
+                break;
+            case kFlag:
+                int flagVals[num_elements];
+                break;
+            case kEnum:
+                int64 enumVals[num_elements];
+                break;
+            case kBool:
+            case kByte:
+                byte boolVals[num_elements];
+                break;
+            case kSymbol:
+                struct {
+                    PSTR symbolVal;
+                    if((symbolVal.strlen == 0) && (ReadByte() == 0))
+                        FSkip(1);
+                } symbolVals[num_elements] <optimize=false>;
+                break;
+            case kString:
+                struct {
+                    PSTR stringVal; 
+                    if(ReadByte() == 0) FSkip(1);
+                } stringVals[num_elements] <optimize=false>;
+                break;
+            case kStruct:
+                struct (struct PropDef& p) {
+                    local int x = 0;
+                    for(x = 0; x < p.num_children; x++){
+                        struct propVal child(p.children[x]) <read=propVal_READ>;
+                    }
+                } structVals(p)[num_elements]<optimize=false>;
+                break;
+            default:
+                int unkVal[num_elements];
+                break;
+        }
+    } else {
+        switch(p.type.data_type){
+            case kFloat:
+                float floatVal;
+                break;
+            case kInt:
+                int intVal;
+                break;
+            case kFlag:
+                int flagVal;
+                break;
+            case kEnum:
+                int64 enumVal;
+                break;
+            case kBool:
+            case kByte:
+                byte boolVal;
+                break;
+            case kSymbol:
+                PSTR symbolVal;
+                if((symbolVal.strlen == 0) && (ReadByte() == 0))
+                    FSkip(1);
+                break;
+            case kString:
+                PSTR stringVal; 
+                if(ReadByte() == 0)
+                    FSkip(1);
+                break;
+            case kStruct:
+                local int x = 0;
+                for(x = 0; x < p.num_children; x++){
+                    struct propVal child(p.children[x]) <read=propVal_READ>;
+                }
+                break;
+            case kUnknown:
+                char unknown[160];
+                break;
+            default:
+                int unkVal;
+                break;
+        }
+    }
+} PropVal<read=PropVal_READ>;
+string PropVal_READ(PropVal& v)
+{
+  return v.name;
+}
+string propVal_READ(struct propVal& v)
+{
+  return v.name;
+}
+
+typedef struct {
+    PSTR ent_name;
+    PSTR ent_name_2;
+    int unk_type;
+    int64 unk_count;
+    int num_props;
+    struct PropDef props[num_props]<optimize=false,read=prop_read>;
+    local int x = 0;
+    local int data_size;
+    for(x = 0; x < num_props; x++){
+      PropVal value(props[x]) <optimize=false>;
+    }
+    char prop_data[data_size];
+} Entity<read=ENTITY_READ>;
+string ENTITY_READ(Entity& e){
+    return e.ent_name.name;
+}
+
+typedef struct {
+    int16 unk_0;
+    int16 unk_1;
+    int32 unk_two_0;
+    PSTR  name;
+    int32 num_children;
+    Entity children[num_children] <optimize=false>;
+} forge_object<read=forge_object_read>;
+string forge_object_read(forge_object& f){
+    return f.name.name;
+}
+
+typedef struct {
+    int32 version_or_type;
+    int64 unknown_1;
+    int32 unk_19_or_20;
+    int32 unk_one_1;
+    int32 same_19_or_20;
+    int32 unk_zero_1;
+    int16 unk_flag1;
+    int32 unk_flag2;
+    forge_object objects[unk_flag2]<optimize=false>;
+} forge_tree;
 
 // Todo: Figure out this tree/graph structure
 // (assuming it is a tree, since the first string is "root")
-int32 version_or_type;
-int64 unknown_1;
-int32 unk_19_or_20;
-int32 unk_one_1;
-int32 same_19_or_20;
-int32 unk_zero_1;
-int16 unk_flag1;
-int64 unk_flag2;
-int32 unk_two_0;
-PSTR  root_name;
-int32 unk_four;
-PSTR  editor_name_1;
-PSTR  editor_name_2;
-int32 unk_three;
-int64 unk_two_1;
-int num_props;
-struct prop editor_props[num_props]<optimize=false>;
-struct {
-    int unk0;
-    PSTR ent_name;
-    PSTR ent_name_2;
-    prop_type unk_type;
-    int64 unk_count;
-    int num_props;
-    struct prop props[num_props]<optimize=false>;
-} EntityHeader;
+forge_tree tree_1;
+int unk_0E;
+int unk_one_2;
+PSTR prop_anim_resource;
+PSTR venue_auth_data;
+forge_tree tree_2;

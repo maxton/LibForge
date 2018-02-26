@@ -6,5 +6,6 @@ typedef struct {
     char name[strlen]<optimize=false>;
 } PSTR<read=PSTR_READ>;
 string PSTR_READ(PSTR&st){
+    if(st.strlen == 0) return "";
     return st.name;
 }
