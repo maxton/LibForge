@@ -6,7 +6,8 @@ uint songdta_type;
 uint song_id;
 short version;
 char game_origin[18];
-uint64 unknown;
+float preview_start;
+float preview_end;
 char name[256];
 char artist[256];
 char album_name[256];
@@ -31,9 +32,16 @@ enum <byte> {
     Female = 2
 } vocal_gender;
 char medium[16];
-char unk_9;
+char has_freestyle_vox;
 FSeek(FTell()+3);
-int unk_10;
-int unk_11;
+int vocal_parts; // not certain about this one
+struct {
+    int unk_0 : 1;
+    int tambourine : 1;
+    int unk_2 : 1;
+    int unk_3 : 1;
+    int unk_4 : 1;
+    int unk_5 : 1;
+} flags;
 char fake;
 char shortname[256];
