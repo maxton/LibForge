@@ -3,6 +3,22 @@ for each song in the package. There is no per-package songs.dta to describe
 every song in the package, they are just enumerated based on the folders in the
 `songs` folder.
 
+```
+Image0 Root
+|-- sce_sys
+|   `-- param.sfo
+`-- songs
+    `-- shortname
+        |-- shortname.lipsync_ps4
+        |-- shortname.mogg
+        |-- shortname.mogg.dta
+        |-- shortname.moggsong
+        |-- shortname.png_ps4
+        |-- shortname.rbmid_ps4
+        |-- shortname.rbsong
+        `-- shortname.songdta_ps4
+```
+
 Within each song's folder, there are 8 files.
 
 ## shortname.lipsync_ps4
