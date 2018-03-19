@@ -19,7 +19,7 @@ typedef struct {
         kString = 0xC,
         // 0xD, 0xE
         kStruct = 0xF,
-        kUnknown= 0x10
+        kDrivenProp = 0x10
     } data_type : 8;
     int is_array : 1;
 } prop_type<read=prop_type_read>;
@@ -67,6 +67,7 @@ typedef struct propVal (struct PropDef& p) {
     SPrintf(name, "%s:%s", p.name.name, prop_type_read(p.type));
     if(p.type.is_array){
         int num_elements;
+        if(num_elements != 0){
         switch(p.type.data_type){
             case kFloat:
                 float floatVals[num_elements];
@@ -105,9 +106,19 @@ typedef struct propVal (struct PropDef& p) {
                     }
                 } structVals(p)[num_elements]<optimize=false>;
                 break;
+            case kDrivenProp:
+                struct {
+                    int64 unk_driven_prop_1;
+                    PSTR propType;
+                    int32 unk_driven_prop_2;
+                    int64 unk_driven_prop_3;
+                    PSTR propName;
+                } drivenProps[num_elements] <optimize=false>;
+                break;
             default:
                 int unkVal[num_elements];
                 break;
+        }
         }
     } else {
         switch(p.type.data_type){
@@ -129,7 +140,10 @@ typedef struct propVal (struct PropDef& p) {
                 break;
             case kSymbol:
                 PSTR symbolVal;
+                // Weird: sometimes there is an extra '\0' after symbols / strings?
                 if((symbolVal.strlen == 0) && (ReadByte() == 0))
+                    FSkip(1);
+                else if(ReadByte() == 0 && ReadShort() != 0 && (ReadShort() == ReadInt()))
                     FSkip(1);
                 break;
             case kString:
@@ -143,8 +157,12 @@ typedef struct propVal (struct PropDef& p) {
                     struct propVal child(p.children[x]) <read=propVal_READ>;
                 }
                 break;
-            case kUnknown:
-                char unknown[160];
+            case kDrivenProp:
+                int64 unk_driven_prop_1;
+                PSTR propType;
+                int32 unk_driven_prop_2;
+                int64 unk_driven_prop_3;
+                PSTR propName;
                 break;
             default:
                 int unkVal;
@@ -173,16 +191,19 @@ typedef struct {
     for(x = 0; x < num_props; x++){
       PropVal value(props[x]) <optimize=false>;
     }
-    char prop_data[data_size];
+    if(data_size != 0)
+        char prop_data[data_size];
 } Entity<read=ENTITY_READ>;
 string ENTITY_READ(Entity& e){
     return e.ent_name.name;
 }
 
 typedef struct {
-    int16 unk_0;
-    int16 unk_1;
+    int16 index_0;
+    int16 index_1;
+    //Assert(index_0 == index_1, "indices should be equal");
     int32 unk_two_0;
+    Assert(unk_two_0 == 2, "unk_two_0 should be 2");
     PSTR  name;
     int32 num_children;
     Entity children[num_children] <optimize=false>;
@@ -192,22 +213,33 @@ string forge_object_read(forge_object& f){
 }
 
 typedef struct {
-    int32 version_or_type;
-    int64 unknown_1;
-    int32 unk_19_or_20;
-    int32 unk_one_1;
-    int32 same_19_or_20;
-    int32 unk_zero_1;
-    int16 unk_flag1;
-    int32 unk_flag2;
-    forge_object objects[unk_flag2]<optimize=false>;
+    int32 version;
+    int32 more_data;
+} forge_hdr;
+
+typedef struct {
+    if(ReadInt() == 0){
+        FSkip(4);
+        int32 unk_19_or_20;
+        int32 unk_one_1;
+        int32 same_19_or_20;
+        int32 unk_zero_1;
+        int16 unk_flag1;
+        int32 num_objects;
+        forge_object objects[num_objects]<optimize=false>;
+    } else {
+        PSTR type;
+        PSTR value;
+    }
 } forge_tree;
 
-// Todo: Figure out this tree/graph structure
-// (assuming it is a tree, since the first string is "root")
-forge_tree tree_1;
-int unk_0E;
-int unk_one_2;
-PSTR prop_anim_resource;
-PSTR venue_auth_data;
-forge_tree tree_2;
+// The file is a list of what I am calling forge_tree structs.
+// They start with a header. At the end of the list there is another header
+// that signals the end of the file by setting more_data=0
+forge_hdr hdr <hidden = true>;
+local int cont = hdr.more_data;
+while(cont) {
+    forge_tree tree;
+    forge_hdr hdr <hidden = true>;
+    cont = hdr.more_data;
+}
