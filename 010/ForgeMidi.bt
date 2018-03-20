@@ -97,32 +97,48 @@ int format;
 if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int num_tracks;
     TRACK tracks[num_tracks];
-    int num_tracks_2;
-    int num_unk_1;
+    int num_fills;
     struct {
-        int unk1;
-        int unk2;
-    } unk_1[num_unk_1];
-    int num_unk_2;
+        int num_fills_1;
+        struct {
+            int tick;
+            int unk;
+        } fills_1[num_fills_1];
+        int num_fills_2;
+        struct {
+            int fill_start_tick;
+            int fill_end_tick;
+            char unk;
+        } fill_start_stop[num_fills_2];
+    } drum_fills[num_fills] <optimize=false>;
+    int num_keys_anim;
     struct {
-        int  unk[2];
-        char unk;
-    } unk_2[num_unk_2];
-    char unk[8*num_tracks - 4];
+        PSTR track_name;
+        int unk;
+        int unk;
+        int num_events;
+        struct {
+            char unk_event_data[22];
+        } events[num_events];
+        int unk;
+    } anims[num_keys_anim] <optimize=false>;
     int num_tracks_3;
-    int num_unk_3;
+    int num_pro_markers;
     struct {
-        int unk1;
-        int unk2;
-    } unk_3[num_unk_3];
+        int tick;
+        struct {
+            int unk : 1;
+            int unk2: 1;
+            int PRO_YELLOW : 1;
+            int PRO_BLUE : 1;
+            int PRO_GREEN : 1;
+        } flags;
+    } pro_markers[num_pro_markers];
     struct {
         int unk_1[2];
         int unk_3;
         int unk_2[2];
     } unk_4[num_tracks_3];
-    if(num_tracks != num_tracks_2 || num_tracks_2 != num_tracks_3){
-        Printf("Error: Assumption broken.");
-    }
 }
 if(format == 0x2){ // mid_ps4/pc
     char header[29];
