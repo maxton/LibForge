@@ -134,11 +134,45 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
             int PRO_GREEN : 1;
         } flags;
     } pro_markers[num_pro_markers];
+    char no_idea[20 * num_tracks_3 - 12];
+    int num_unk_4;
     struct {
-        int unk_1[2];
-        int unk_3;
-        int unk_2[2];
-    } unk_4[num_tracks_3];
+        int num;
+        struct {
+            int unk1;
+        } data[num];
+    } unk_4[num_unk_4]<optimize=false>;
+    int num_unk_5;
+    int unk_5[num_unk_5];
+    int num_drum_mixes;
+    struct {
+        int num_difficulties;
+        struct {
+            int num_mixes;
+            LYRIC mix[num_mixes];
+        } drum_mixes[num_difficulties]<optimize=false>;
+    } drum_mixes[num_drum_mixes]<optimize=false>;
+    int num_gem_tracks;
+    struct {
+        int num_difficulties;
+        struct {
+            int unknown_aa;
+            int num_events;
+            struct {
+                float start_millis;
+                int start_ticks;
+                short unk;
+                short unk_2;
+                char one_1;
+                int unk_3;
+                char one_2;
+                int unk_4;
+            } gem[num_events];
+        } difficulty[num_difficulties]<optimize=false>;
+        int end;
+    } gems[num_gem_tracks]<optimize=false>;
+    int num_tracks_again;
+    int num_difficulties;
 }
 if(format == 0x2){ // mid_ps4/pc
     char header[29];
