@@ -4,14 +4,26 @@ LittleEndian();
 
 // Forge MIDI
 typedef enum <uchar> {
-    NOTE_OFF = 0x80,
-    NOTE_ON  = 0x90,
-    POLY_PRS = 0xA0,
-    CTRL_CHG = 0xB0,
-    PRGM_CHG = 0xC0,
-    CHAN_PRS = 0xD0,
-    PITCH_BD = 0xE0
+    NOTE_OFF = 0x8,
+    NOTE_ON  = 0x9,
+    POLY_PRS = 0xA,
+    CTRL_CHG = 0xB,
+    PRGM_CHG = 0xC,
+    CHAN_PRS = 0xD,
+    PITCH_BD = 0xE
 } msg_type;
+
+typedef struct {
+    char channel : 4;
+    msg_type type : 4;
+} msg_type_chan;
+
+typedef int tick_t<read=tick_t_read>;
+string tick_t_read(tick_t tick){
+    string result;
+    SPrintf(result, "%d:%d", tick / 480, tick % 480);
+    return result;
+}
 
 typedef struct {
     char note;
@@ -44,32 +56,53 @@ typedef struct {
     char msb;
 } M_PITCH_BD;
 
+typedef char int24[3];
+
 typedef struct {
     uint tick;
-    char channel;
-    msg_type type;
-    switch(type){
-        case NOTE_OFF:
-            M_NOTE_OFF msg;
-            break;
-        case NOTE_ON:
-            M_NOTE_ON msg;
-            break;
-        case POLY_PRS:
-            M_POLY_PRS msg;
-            break;
-        case CTRL_CHG:
-            M_CTRL_CHG msg;
-            break;
-        case PRGM_CHG:
-            M_PRGM_CHG msg;
-            break;
-        case CHAN_PRS:
-            M_CHAN_PRS msg;
-            break;
-        case PITCH_BD:
-            M_PITCH_BD msg;
-            break;
+    char kind;
+    if(kind == 1){
+        msg_type_chan tc;
+        switch(tc.type){
+            case NOTE_OFF:
+                M_NOTE_OFF msg;
+                break;
+            case NOTE_ON:
+                M_NOTE_ON msg;
+                break;
+            case POLY_PRS:
+                M_POLY_PRS msg;
+                break;
+            case CTRL_CHG:
+                M_CTRL_CHG msg;
+                break;
+            case PRGM_CHG:
+                M_PRGM_CHG msg;
+                break;
+            case CHAN_PRS:
+                M_CHAN_PRS msg;
+                break;
+            case PITCH_BD:
+                M_PITCH_BD msg;
+                break;
+        }
+    }
+    else if(kind == 2) {
+        int24 tempo;
+    }
+    else if(kind == 4) {
+        char num;
+        char denom;
+        char unused;
+    }
+    else if(kind == 8) {
+        char unk;
+        int16 string_offset;
+    }
+    else {
+        local string tmp;
+        SPrintf(tmp, "Unknown kind %d", kind);
+        Assert(false, tmp);
     }
 } midi_message<optimize=false>;
 
@@ -124,7 +157,7 @@ typedef struct {
 typedef struct {
     int num_pro_markers;
     struct {
-        int tick;
+        tick_t tick;
         struct {
             int unk : 1;
             int unk2: 1;
@@ -136,6 +169,23 @@ typedef struct {
     int unk;
     int unk;
 } MARKER;
+
+typedef struct {
+    int num;
+    if(num > 0){
+        struct {
+            int32 data;
+            int32 data2;
+            int32 data3;
+        } data2[num]<optimize=false>;
+    }    
+} UNKTRACK;
+
+typedef struct {
+    int num;
+    if(num > 0)
+        int data[num];
+} UNKTRACK2;
 
 typedef struct {
     int num_difficulties;
@@ -167,11 +217,113 @@ typedef struct {
 } GEMTRACK;
 
 typedef struct {
-    int num;
-    if(num > 0)
-        int data[num];
+    int num_difficulties;
+    struct {
+        int num_events;
+        struct {
+            int num_events_2;
+            struct { 
+                int tick_1;
+                int tick_2; 
+            } what[num_events_2]<optimize=false>;
+        } events[num_events]<optimize=false>;
+    } again[num_difficulties]<optimize=false>;
+} UNKTRACK3;
+
+typedef struct {
+    int num_phrase_markers;
+    struct {
+        float start_ms;
+        float length;
+        int unk;
+        int unk;
+        int unk;
+        int unk;
+        int unk;
+        char unknown[25];
+    } phrase_markers[num_phrase_markers] <optimize=false>;
+    int num_phrase_markers_2;
+    struct {
+        float start_ms;
+        float length;
+        int unk;
+        int unk;
+        int unk;
+        int unk;
+        int unk;
+        char unknown[25];
+    } phrase_markers_2[num_phrase_markers_2] <optimize=false>;
+    int num_notes;
+    struct {
+        int type;
+        int midi_note;
+        int midi_note_2;
+        float start_ms;
+        tick_t start;
+        float length;
+        short unk1;
+        PSTR lyric;
+        char unk[9];
+    } vocal_notes[num_notes]<optimize=false>;
+    int num_something;
+    int something[num_something];
+    int num_unk2;
+    struct {
+        float data;
+        float data2;
+    }unk2[num_unk2];
+} VOCALTRACK;
+
+typedef struct {
+    int num_maps;
+    struct {
+        float start_ms;
+        int map;
+    } hand_maps[num_maps];
+} HANDMAP;
+
+typedef struct {
+    int num_hand_positions;
+    struct {
+        float start;
+        float end;
+        int position;
+        char unk;
+    } hand_pos_events[num_hand_positions];
+} HANDPOS;
+
+typedef struct {
+    int count;
+    float data[count];
 } UNKTRACK4;
 
+typedef struct {
+    char unk;
+    int unk2;
+    int num_events;
+    midi_message events[num_events];
+    int num_strs;
+    PSTR strings[num_strs]<optimize=false>;
+} MIDITRACK;
+
+typedef struct {
+    tick_t tick;
+    int is_downbeat;
+} BEAT;
+
+
+
+typedef int tempo_t<read=tempo_t_read>;
+string tempo_t_read(tempo_t tempo){
+    string result;
+    SPrintf(result, "%f", 60000000.0 / tempo);
+    return result;
+}
+typedef struct {
+    float time;
+    tick_t tick;
+    tempo_t tempo;
+} TEMPO;
 // File starts here!
 
 int format;
@@ -185,15 +337,80 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int num_marker_tracks;
     MARKER pro_markers[num_marker_tracks] <optimize=false>;
     int num_unk_tracks;
-    UNKTRACK4 unk_1[num_unk_tracks] <optimize=false>;
+    UNKTRACK unk_1[num_unk_tracks] <optimize=false>;
     int num_unk_tracks_2;
-    UNKTRACK4 unk_2[num_unk_tracks_2] <optimize=false>;
+    UNKTRACK2 unk_2[num_unk_tracks_2] <optimize=false>;
     int num_drum_mixes;
     DRUMMIX drum_mixes[num_drum_mixes] <optimize=false>;
     int num_gem_tracks;
     GEMTRACK gems[num_gem_tracks] <optimize=false>;
-    int num_tracks_again;
-    int num_difficulties;
+    int num_unk_tracks_3;
+    UNKTRACK3 unk_3[num_unk_tracks_3] <optimize=false>;
+    int num_vocal_tracks;
+    VOCALTRACK vocal_tracks[num_vocal_tracks]<optimize=false>;
+    int what;
+    int what;
+    float what;
+    int what;
+    int what;
+    int what;
+    int what;
+    float what;
+    float what;
+    int what;
+    int what;
+    int what;
+    char what;
+    float what;
+    float what;
+    int num_guitar_handmap_tracks;
+    HANDMAP guitar_handmap_tracks[num_guitar_handmap_tracks]<optimize=false>;
+    int num_left_hand_tracks;
+    HANDPOS left_hand_tracks[num_left_hand_tracks]<optimize=false>;
+    int num_unk_tracks_4;
+    UNKTRACK4 unk_4[num_unk_tracks_4]<optimize=false>;
+    int num_unk;
+    struct {
+        tick_t start;
+        tick_t end;
+        int unk;
+    } unk[num_unk];
+    int zero;
+    struct {
+        int num_unk_markup;
+        struct {
+            tick_t start;
+            tick_t end;
+            int count;
+            int unk[count];
+        } unk_markup[num_unk_markup]<optimize=false>;
+    } unk_markup;
+    int zero;
+    int count;
+    struct {
+        tick_t start;
+        tick_t end;
+        int unk;
+    } unk2[count];
+    int zero;
+    int two;
+    int unk;
+    int num_midi_tracks;
+    MIDITRACK tracks[num_midi_tracks]<optimize=false>;
+    int unknown[13];
+    int num_tempos;
+    TEMPO tempos[num_tempos];
+    int num_unk_5;
+    struct {
+        int unk[3];
+    } unk_5[num_unk_5];
+    int num_beats;
+    BEAT beats[num_beats];
+    int unk_zero;
+    int num_midi_track_names;
+    PSTR midi_track_names[num_midi_track_names]<optimize=false>;
+
+    // File End
 }
 else if(format == 0x2){ // mid_ps4/pc
     char header[29];
@@ -204,5 +421,4 @@ else if(format == 0x2){ // mid_ps4/pc
     int unk3;
     int unk4;
     midi_message msgs[num_msgs];
-    
 }
