@@ -306,13 +306,6 @@ typedef struct {
     PSTR strings[num_strs]<optimize=false>;
 } MIDITRACK;
 
-typedef struct {
-    tick_t tick;
-    int is_downbeat;
-} BEAT;
-
-
-
 typedef int tempo_t<read=tempo_t_read>;
 string tempo_t_read(tempo_t tempo){
     string result;
@@ -324,6 +317,23 @@ typedef struct {
     tick_t tick;
     tempo_t tempo;
 } TEMPO;
+
+typedef struct {
+    int unk;
+    int tick;
+    int16 numerator;
+    int16 denominator;
+} TIMESIG<read=TIMESIG_read>;
+string TIMESIG_read(TIMESIG& t){
+    string ret;
+    SPrintf(ret, "%d : %d/%d", t.tick, t.numerator, t.denominator);
+    return ret;
+}
+
+typedef struct {
+    tick_t tick;
+    int is_downbeat;
+} BEAT;
 // File starts here!
 
 int format;
@@ -400,10 +410,8 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int unknown[13];
     int num_tempos;
     TEMPO tempos[num_tempos];
-    int num_unk_5;
-    struct {
-        int unk[3];
-    } unk_5[num_unk_5];
+    int num_time_sigs;
+    TIMESIG time_signatures[num_time_sigs];
     int num_beats;
     BEAT beats[num_beats];
     int unk_zero;
