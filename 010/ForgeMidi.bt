@@ -96,7 +96,8 @@ typedef struct {
         char unused;
     }
     else if(kind == 8) {
-        char unk;
+        // I think this is 1 -> text event, 3 -> track name
+        char string_type;
         int16 string_offset;
     }
     else {
@@ -175,16 +176,27 @@ typedef struct {
     if(num > 0){
         struct {
             int32 data;
-            int32 data2;
-            int32 data3;
+            if(data > 0){
+                int32 data2;
+                int32 data3;
+            }
         } data2[num]<optimize=false>;
+        int unk;
     }    
 } UNKTRACK;
 
 typedef struct {
     int num;
     if(num > 0)
-        int data[num];
+        struct{
+            int count;
+            struct {
+                int tick1;
+                int tick2;
+                int unk1;
+                int unk2;
+            } unk[count];
+        } data[num]<optimize=false>;
 } UNKTRACK2;
 
 typedef struct {
