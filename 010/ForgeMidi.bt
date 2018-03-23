@@ -334,6 +334,19 @@ typedef struct {
 } UNKTRACK4;
 
 typedef struct {
+    tick_t start;
+    tick_t end;
+    int unk;
+} UNKSTRUCT;
+
+typedef struct {
+    tick_t start;
+    tick_t end;
+    int count;
+    int unk[count];
+} UNKMARKUP;
+
+typedef struct {
     char unk;
     int unk2;
     int num_events;
@@ -416,28 +429,17 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int num_unk_tracks_4;
     UNKTRACK4 unk_4[num_unk_tracks_4]<optimize=false>;
     int num_unk;
-    struct {
-        tick_t start;
-        tick_t end;
-        int unk;
-    } unk[num_unk];
+    UNKSTRUCT unk[num_unk];
     int zero;
+    // this outer struct is just to collapse the array down into one item
+    // because apparently 010 editor can only do that on optimized arrays
     struct {
         int num_unk_markup;
-        struct {
-            tick_t start;
-            tick_t end;
-            int count;
-            int unk[count];
-        } unk_markup[num_unk_markup]<optimize=false>;
+        UNKMARKUP unk_markup[num_unk_markup]<optimize=false>;
     } unk_markup;
     int zero;
     int count;
-    struct {
-        tick_t start;
-        tick_t end;
-        int unk;
-    } unk2[count];
+    UNKSTRUCT unk2[count];
     int zero;
     int two;
     int unk;
