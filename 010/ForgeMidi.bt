@@ -407,8 +407,8 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int what;
     int what;
     char what;
-    float what;
-    float what;
+    float preview_start_ms;
+    float preview_end_ms;
     int num_guitar_handmap_tracks;
     HANDMAP guitar_handmap_tracks[num_guitar_handmap_tracks]<optimize=false>;
     int num_left_hand_tracks;

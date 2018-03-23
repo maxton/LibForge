@@ -244,8 +244,8 @@ namespace LibForge.Midi
     public int Unknown11;
     public int Unknown12;
     public byte Unknown13;
-    public float Unknown14;
-    public float Unknown15;
+    public float PreviewStartMillis;
+    public float PreviewEndMillis;
     public HANDMAP[] GuitarHandmap;
     public HANDPOS[] GuitarLeftHandPos;
     public UNKTRACK4[] Unktrack4;
