@@ -56,13 +56,23 @@ typedef struct {
     char msb;
 } M_PITCH_BD;
 
-typedef char int24[3];
+typedef unsigned char int24[3]<read=int24_read>;
+string int24_read(int24 v)
+{
+    int val = ((int)v[0] << 16) | ((int)v[2] << 8) | v[1];
+    string ret;
+    SPrintf(ret, "%d", val);
+    return ret;
+}
 
 typedef struct {
     uint tick;
     char kind;
     if(kind == 1){
         msg_type_chan tc;
+        if(tc.type > 9){
+            Printf("Type %d\n", tc.type);
+        }
         switch(tc.type){
             case NOTE_OFF:
                 M_NOTE_OFF msg;
@@ -88,6 +98,7 @@ typedef struct {
         }
     }
     else if(kind == 2) {
+		// weird: MSB first, then remaining bytes in LE
         int24 tempo;
     }
     else if(kind == 4) {
@@ -96,7 +107,7 @@ typedef struct {
         char unused;
     }
     else if(kind == 8) {
-        // I think this is 1 -> text event, 3 -> track name
+        // I think this is 1 -> text event, 3 -> track name, 5 -> lyric
         char string_type;
         int16 string_offset;
     }
@@ -150,10 +161,23 @@ typedef struct {
     int unk;
     int num_events;
     struct {
-        char unk_event_data[22];
+        float time;
+        tick_t ticks;
+        int unk1;
+        // Stores each key down as (1 << (MIDI_NOTE - 48))
+        int key_bitfield<read=READ_KEY_POS>;
+        int unk2;
+        short unk3;
     } events[num_events];
     int unk;
 } ANIM;
+string READ_KEY_POS(int k)
+{
+    int bit = (int)(Log(k)/Log(2.0));
+    string ret;
+    SPrintf(ret, "%d", bit);
+    return ret;
+}
 
 typedef struct {
     int num_pro_markers;
