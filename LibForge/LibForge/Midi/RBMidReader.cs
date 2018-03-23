@@ -113,6 +113,7 @@ namespace LibForge.Midi
     };
     private RBMid.UNKTRACK ReadUnktrack()
     {
+      // TODO: This struct is actually completely wrong but works sometimes
       var ret = default(RBMid.UNKTRACK);
       var num = Int();
       if(num > 0)
@@ -121,7 +122,7 @@ namespace LibForge.Midi
           var data = Int();
           if (data > 0)
           {
-            Skip(8);
+            Skip(8)();
           }
         }
         Skip(4)();
@@ -130,6 +131,7 @@ namespace LibForge.Midi
     }
     private RBMid.UNKTRACK2 ReadUnktrack2() => new RBMid.UNKTRACK2
     {
+      // TODO: This works more often than the previous struct but it's still not right
       Data = Arr(() => Arr(() => new RBMid.UNKTRACK2.DATA
       {
         Tick1 = UInt(),
