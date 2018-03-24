@@ -197,7 +197,8 @@ namespace LibForge.Midi
       public uint EndTick;
       public int Unknown;
     }
-    public struct UNKMARKUP {
+    public struct UNKMARKUP
+    {
       public uint StartTick;
       public uint EndTick;
       public int[] Unknown;
@@ -250,12 +251,20 @@ namespace LibForge.Midi
     public HANDPOS[] GuitarLeftHandPos;
     public UNKTRACK4[] Unktrack4;
     public UNKSTRUCT[] Unkstruct;
-    public UNKMARKUP[] UnkMarkup;
     public UNKSTRUCT[] Unkstruct2;
-    public MidiCS.MidiTrack[] MidiTracks;
+    public int Unknown14;
+    public UNKMARKUP[] UnkMarkup;
+    public UNKMARKUP[] UnkMarkup2;
+    public UNKSTRUCT[] Unkstruct3;
+    public int Unknown16;
+    public int Unknown17;
+    public int Unknown18;
+    public MidiTrack[] MidiTracks;
+    public int[] Unknown19;
     public TEMPO[] Tempos;
     public TIMESIG[] TimeSigs;
     public BEAT[] Beats;
+    public int Unknown20;
     public string[] MidiTrackNames;
   }
 

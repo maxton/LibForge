@@ -14,49 +14,60 @@ namespace LibForge.Midi
       return new RBMidReader(s).Read();
     }
     public RBMidReader(Stream s) : base(s) { }
-    
+
+    const uint MaxInstTracks = 10;
+    const uint MaxKeysAnimTracks = 2;
+    const uint MaxVocalTracks = 4;
     private RBMid Read()
     {
-      return new RBMid
-      {
-        Format = Int(),
-        Lyrics = Arr(ReadLyrics),
-        DrumFills = Arr(ReadDrumFills),
-        Anims = Arr(ReadAnims),
-        ProMarkers = Arr(ReadMarkers),
-        UnkTrack = Arr(ReadUnktrack),
-        UnkTrack2 = Arr(ReadUnktrack2),
-        DrumMixes = Arr(ReadDrumMixes),
-        GemTracks = Arr(ReadGemTracks),
-        UnkTrack3 = Arr(ReadUnktrack3),
-        VocalTracks = Arr(ReadVocalTrack),
-        Unknown1 = Int(),
-        Unknown2 = Int(),
-        Unknown3 = Float(),
-        Unknown4 = Int(),
-        Unknown5 = Int(),
-        Unknown6 = Int(),
-        Unknown7 = Int(),
-        Unknown8 = Float(),
-        Unknown9 = Float(),
-        Unknown10 = Int(),
-        Unknown11 = Int(),
-        Unknown12 = Int(),
-        Unknown13 = Byte(),
-        PreviewStartMillis = Float(),
-        PreviewEndMillis = Float(),
-        GuitarHandmap = Arr(ReadHandMap),
-        GuitarLeftHandPos = Arr(ReadHandPos),
-        Unktrack4 = Arr(ReadUnktrack4),
-        Unkstruct = Arr(ReadUnkstruct).Then(Skip(4)),
-        UnkMarkup = Arr(ReadUnkmarkup).Then(Skip(4)),
-        Unkstruct2 = Arr(ReadUnkstruct).Then(Skip(12)),
-        MidiTracks = Arr(ReadMidiTrack).Then(Skip(13*4)),
-        Tempos = Arr(ReadTempo),
-        TimeSigs = Arr(ReadTimesig),
-        Beats = Arr(ReadBeat).Then(Skip(4)),
-        MidiTrackNames = Arr(String)
-      };
+      var r = new RBMid();
+      r.Format = Check(Int(), 16);
+      r.Lyrics = Arr(ReadLyrics, MaxInstTracks);
+      r.DrumFills = Arr(ReadDrumFills, MaxInstTracks);
+      r.Anims = Arr(ReadAnims, MaxKeysAnimTracks);
+      r.ProMarkers = Arr(ReadMarkers, MaxInstTracks);
+      r.UnkTrack = Arr(ReadUnktrack, MaxInstTracks);
+      r.UnkTrack2 = Arr(ReadUnktrack2, MaxInstTracks);
+      r.DrumMixes = Arr(ReadDrumMixes, MaxInstTracks);
+      r.GemTracks = Arr(ReadGemTracks, MaxInstTracks);
+      r.UnkTrack3 = Arr(ReadUnktrack3, MaxInstTracks);
+      r.VocalTracks = Arr(ReadVocalTrack, MaxVocalTracks);
+      r.Unknown1 = Int();
+      r.Unknown2 = Int();
+      r.Unknown3 = Float();
+      r.Unknown4 = Int();
+      r.Unknown5 = Int();
+      r.Unknown6 = Int();
+      r.Unknown7 = Int();
+      r.Unknown8 = Float();
+      r.Unknown9 = Float();
+      r.Unknown10 = Int();
+      r.Unknown11 = Int();
+      r.Unknown12 = Int();
+      r.Unknown13 = Byte();
+      r.PreviewStartMillis = Float();
+      r.PreviewEndMillis = Float();
+      r.GuitarHandmap = Arr(ReadHandMap, MaxInstTracks);
+      r.GuitarLeftHandPos = Arr(ReadHandPos, MaxInstTracks);
+      r.Unktrack4 = Arr(ReadUnktrack4, MaxInstTracks);
+      r.Unkstruct = Arr(ReadUnkstruct);
+      r.Unkstruct2 = Arr(ReadUnkstruct);
+      if(r.Unkstruct2.Length > 0) Check(Int(), 0);
+      r.UnkMarkup = Arr(ReadUnkmarkup);
+      r.UnkMarkup2 = Arr(ReadUnkmarkup);
+      if (r.UnkMarkup2.Length > 0) Check(Int(), 0);
+      r.Unkstruct3 = Arr(ReadUnkstruct);
+      r.Unknown16 = Check(Int(), 0);
+      r.Unknown17 = Check(Int(), 2);
+      r.Unknown18 = Int();
+      r.MidiTracks = Arr(ReadMidiTrack);
+      r.Unknown19 = FixedArr(Int, 13);
+      r.Tempos = Arr(ReadTempo);
+      r.TimeSigs = Arr(ReadTimesig);
+      r.Beats = Arr(ReadBeat);
+      r.Unknown20 = Check(Int(), 0);
+      r.MidiTrackNames = CheckedArr(String, (uint)r.MidiTracks.Length);
+      return r;
     }
     private RBMid.TICKTEXT ReadTickText() => new RBMid.TICKTEXT
     {
@@ -181,7 +192,7 @@ namespace LibForge.Midi
         Length = Float(),
         Unknown1 = Short(),
         Lyric = String(),
-        Unknown2 = Arr(Byte, 9)
+        Unknown2 = FixedArr(Byte, 9)
       }),
       Unknown1 = Arr(Int),
       Unknown2 = Arr(() => new RBMid.VOCALTRACK.UNKNOWN
@@ -200,7 +211,7 @@ namespace LibForge.Midi
         Unknown3 = Int(),
         Unknown4 = Int(),
         Unknown5 = Int(),
-        Unknown6 = Arr(Byte, 25)
+        Unknown6 = FixedArr(Byte, 25)
       };
     private RBMid.HANDMAP ReadHandMap() => new RBMid.HANDMAP
     {
@@ -243,7 +254,7 @@ namespace LibForge.Midi
     {
       var unk = Byte();
       var unk2 = Int();
-      var num_events = Int();
+      var num_events = UInt();
       midiTick = 0;
       trackName = "";
       var start = s.Position;
@@ -251,7 +262,7 @@ namespace LibForge.Midi
       trackStrings = Arr(String);
       var end = s.Position;
       s.Position = start;
-      var msgs = new List<IMidiMessage>(Arr(ReadMessage, num_events));
+      var msgs = new List<IMidiMessage>(FixedArr(ReadMessage, num_events));
       msgs.Add(new EndOfTrackEvent(0));
       s.Position = end;
       return new MidiTrack(msgs, midiTick, trackName);

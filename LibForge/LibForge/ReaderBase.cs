@@ -12,6 +12,11 @@ namespace LibForge.Util
       a();
       return v;
     }
+    public static T Then<T>(this T v, Action<T> a)
+    {
+      a(v);
+      return v;
+    }
   }
   public abstract class ReaderBase
   {
@@ -29,9 +34,20 @@ namespace LibForge.Util
       };
     }
 
-    // For reading a fixed size array of something
-    protected T[] Arr<T>(Func<T> constructor, int size)
+    protected T Check<T>(T v, T expected)
     {
+      if (v.Equals(expected))
+        return v;
+      throw new Exception($"Invalid data encountered at {s.Position:X}: expected {expected}, got {v}");
+    }
+
+    // For reading a fixed size array of something
+    protected T[] FixedArr<T>(Func<T> constructor, uint size)
+    {
+      if(size > s.Length - s.Position)
+      {
+        throw new Exception($"Invalid array size {size:X} encountered at {s.Position:X}. File is corrupt or not understood.");
+      }
       var arr = new T[size];
       for (var i = 0; i < size; i++)
         arr[i] = constructor();
@@ -39,7 +55,20 @@ namespace LibForge.Util
       return arr;
     }
     // For reading a length-prefixed array of something
-    protected T[] Arr<T>(Func<T> constructor) => Arr(constructor, Int());
+    protected T[] Arr<T>(Func<T> constructor, uint maxSize = 0)
+    {
+      var size = UInt();
+      if (maxSize != 0 && size > maxSize)
+        throw new Exception($"Array was too big ({size} > {maxSize}) at {s.Position:X}");
+      return FixedArr(constructor, size);
+    }
+    protected T[] CheckedArr<T>(Func<T> constructor, uint size)
+    {
+      var fileSize = UInt();
+      if(fileSize != size)
+        throw new Exception($"Invalid array size ({fileSize} != {size}) at {s.Position:X}");
+      return FixedArr(constructor, size);
+    }
     // For skipping unknown data
     protected Action Skip(int count) => () => s.Position += count;
     // For reading simple types
