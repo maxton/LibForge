@@ -44,18 +44,14 @@ namespace LibForge.Midi
       Write(r.PreviewEndMillis);
       Write(r.GuitarHandmap, WriteHandMap);
       Write(r.GuitarLeftHandPos, WriteHandPos);
-      Write(r.Unktrack4, WriteUnktrack4);
-      Write(r.Unkstruct, WriteUnkstruct);
-      Write(r.Unkstruct2, WriteUnkstruct2);
-      if (r.Unkstruct2.Length > 0)
-        Write(r.Unkstruct4, WriteUnkstruct2);
-      Write(r.MarkupChords1, WriteUnkmarkup);
-      if (r.MarkupChords1.Length == 0)
-      {
-        Write(r.MarkupChords2, WriteUnkmarkup);
-        if (r.MarkupChords2.Length > 0) Write(0);
-      }
-      Write(r.Unkstruct3, WriteUnkstruct);
+      Write(r.Unktrack, WriteUnktrack);
+      // begin weirdness
+      Write(r.MarkupSoloNotes1, WriteSoloNotes);
+      Write(r.TwoTicks1, WriteTwoTicks);
+      Write(r.MarkupChords1, WriteMarkupChord);
+      Write(r.MarkupSoloNotes2, WriteSoloNotes);
+      Write(r.MarkupSoloNotes3, WriteSoloNotes);
+      // end weirdness
       Write(r.UnknownTwo);
       Write(r.Unknown16);
       Write(r.MidiTracks, WriteMidiTrack);
@@ -222,22 +218,22 @@ namespace LibForge.Midi
         Write(x.Unknown);
       });
     }
-    private void WriteUnktrack4(RBMid.UNKTRACK4 obj)
+    private void WriteUnktrack(RBMid.UNKTRACK obj)
     {
       Write(obj.Unknown, Write);
     }
-    private void WriteUnkstruct(RBMid.MARKUP_SOLO_NOTES obj)
+    private void WriteSoloNotes(RBMid.MARKUP_SOLO_NOTES obj)
     {
       Write(obj.StartTick);
       Write(obj.EndTick);
       Write(obj.NoteOffset);
     }
-    private void WriteUnkstruct2(RBMid.UNKSTRUCT2 obj)
+    private void WriteTwoTicks(RBMid.TWOTICKS obj)
     {
       Write(obj.Tick1);
       Write(obj.Tick2);
     }
-    private void WriteUnkmarkup(RBMid.MARKUPCHORD obj)
+    private void WriteMarkupChord(RBMid.MARKUPCHORD obj)
     {
       Write(obj.StartTick);
       Write(obj.EndTick);

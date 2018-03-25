@@ -341,8 +341,8 @@ typedef struct {
 typedef struct {
     int count;
     float data[count];
-} UNKTRACK4<read=UNKTRACK4_read>;
-string UNKTRACK4_read(UNKTRACK4& u)
+} UNKTRACK<read=UNKTRACK_read>;
+string UNKTRACK_read(UNKTRACK& u)
 {
     string ret;
     SPrintf(ret, "%d", u.count);
@@ -361,7 +361,7 @@ typedef struct {
 typedef struct {
     tick_t start;
     tick_t end;
-} UNKSTRUCT2;
+} TWOTICKS;
 
 // Notes are taken relative to C, mod 12. So 0 => C, 2 => D, etc.
 typedef struct {
@@ -458,38 +458,38 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     float preview_end_ms;
     Assert(preview_end_ms > preview_start_ms, "preview_end_ms > preview_start_ms");
     int num_guitar_handmap_tracks;
+    Assert(num_guitar_handmap_tracks == num_lyric_tracks);
     HANDMAP guitar_handmap_tracks[num_guitar_handmap_tracks]<optimize=false>;
     int num_left_hand_tracks;
+    Assert(num_left_hand_tracks == num_lyric_tracks);
     HANDPOS left_hand_tracks[num_left_hand_tracks]<optimize=false>;
-    int num_unk_tracks_4;
-    UNKTRACK4 unk_4[num_unk_tracks_4]<optimize=false>;
-    int num_unk;
-    MARKUP_SOLO_NOTES markup_notes_midi0[num_unk];
-    int num_unk2;
-    UNKSTRUCT2 unk2[num_unk2];
-    if(num_unk2) {
-        int num_unk4;
-        UNKSTRUCT2 unk4[num_unk4];
-    }
+    int num_unk_tracks;
+    Assert(num_unk_tracks == num_lyric_tracks);
+    UNKTRACK unktracks[num_unk_tracks]<optimize=false>;
+
+    // =============================================
+    // Begin confusing section
+
+    int num_markup_solo_notes;
+    MARKUP_SOLO_NOTES markup_notes_midi0[num_markup_solo_notes];
+    int num_twoticks_1;
+    TWOTICKS twoticks_1[num_twoticks_1];
     // this outer struct is just to collapse the array down into one item
     // because apparently 010 editor can only do that on optimized arrays
     struct {
-        int num_unk_markup;
-        MARKUP_CHORD unk_markup[num_unk_markup]<optimize=false>;
+        int num_markup_chords_1;
+        MARKUP_CHORD markup_chords[num_markup_chords_1]<optimize=false>;
     } markup_chords_1;
-    if(markup_chords_1.num_unk_markup == 0){
-        struct {
-            int num_unk_markup;
-            MARKUP_CHORD unk_markup[num_unk_markup]<optimize=false>;
-        } markup_chords_2;
-        if(markup_chords_2.num_unk_markup) int zero;
-    }
-    int num_unk3;
-    MARKUP_SOLO_NOTES unk3[num_unk3];
-    int num_unk5;
-    MARKUP_SOLO_NOTES markup_notes_midi12[num_unk5];
-    if(num_unk5)
-        int zero;
+    int num_solo_notes_2;
+    MARKUP_SOLO_NOTES markup_notes[num_solo_notes_2];
+    int num_solo_notes_3;
+    MARKUP_SOLO_NOTES markup_notes_midi12[num_solo_notes_3];
+    int num_twotick_2;
+    TWOTICKS twoticks_2[num_twotick_2];
+
+    // End confusing section
+    // =============================================
+
     int two;
     Assert(two == 2, "This has always been 2");
     int unk;

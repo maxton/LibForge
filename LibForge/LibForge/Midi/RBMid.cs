@@ -209,7 +209,7 @@ namespace LibForge.Midi
       }
       public POS[] Events;
     }
-    public struct UNKTRACK4
+    public struct UNKTRACK
     {
       public float[] Unknown;
     }
@@ -219,7 +219,7 @@ namespace LibForge.Midi
       public uint EndTick;
       public int NoteOffset;
     }
-    public struct UNKSTRUCT2
+    public struct TWOTICKS
     {
       public uint Tick1;
       public uint Tick2;
@@ -276,14 +276,15 @@ namespace LibForge.Midi
     public float PreviewEndMillis;
     public HANDMAP[] GuitarHandmap;
     public HANDPOS[] GuitarLeftHandPos;
-    public UNKTRACK4[] Unktrack4;
-    public MARKUP_SOLO_NOTES[] Unkstruct;
-    public UNKSTRUCT2[] Unkstruct2;
-    public UNKSTRUCT2[] Unkstruct4;
+    public UNKTRACK[] Unktrack;
+
+    public MARKUP_SOLO_NOTES[] MarkupSoloNotes1;
+    public TWOTICKS[] TwoTicks1;
     public MARKUPCHORD[] MarkupChords1;
-    public MARKUPCHORD[] MarkupChords2;
-    public MARKUP_SOLO_NOTES[] Unkstruct3;
-    public MARKUP_SOLO_NOTES[] Unkstruct5;
+    public MARKUP_SOLO_NOTES[] MarkupSoloNotes2;
+    public MARKUP_SOLO_NOTES[] MarkupSoloNotes3;
+    public TWOTICKS[] TwoTicks2;
+
     public int UnknownTwo;
     public int Unknown16;
     public MidiTrack[] MidiTracks;

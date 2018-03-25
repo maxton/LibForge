@@ -49,20 +49,15 @@ namespace LibForge.Midi
       r.PreviewEndMillis = Float();
       r.GuitarHandmap = Arr(ReadHandMap, MaxInstTracks);
       r.GuitarLeftHandPos = Arr(ReadHandPos, MaxInstTracks);
-      r.Unktrack4 = Arr(ReadUnktrack4, MaxInstTracks);
-      r.Unkstruct = Arr(ReadUnkstruct);
-      r.Unkstruct2 = Arr(ReadUnkstruct2);
-      if (r.Unkstruct2.Length > 0)
-        r.Unkstruct4 = Arr(ReadUnkstruct2);
+      r.Unktrack = Arr(ReadUnkTrack, MaxInstTracks);
+
+      r.MarkupSoloNotes1 = Arr(ReadMarkupSoloNotes);
+      r.TwoTicks1 = Arr(ReadTwoTicks);
       r.MarkupChords1 = Arr(ReadMarkupChord);
-      if (r.MarkupChords1.Length == 0)
-      {
-        r.MarkupChords2 = Arr(ReadMarkupChord);
-        if (r.MarkupChords2.Length > 0) Check(Int(), 0);
-      }
-      r.Unkstruct3 = Arr(ReadUnkstruct);
-      r.Unkstruct5 = Arr(ReadUnkstruct);
-      if (r.Unkstruct5.Length > 0) Check(Int(), 0);
+      r.MarkupSoloNotes2 = Arr(ReadMarkupSoloNotes);
+      r.MarkupSoloNotes3 = Arr(ReadMarkupSoloNotes);
+      r.TwoTicks2 = Arr(ReadTwoTicks);
+
       r.UnknownTwo = Check(Int(), 2);
       r.Unknown16 = Int();
       r.MidiTracks = Arr(ReadMidiTrack);
@@ -227,17 +222,17 @@ namespace LibForge.Midi
         Unknown = Byte()
       })
     };
-    private RBMid.UNKTRACK4 ReadUnktrack4() => new RBMid.UNKTRACK4
+    private RBMid.UNKTRACK ReadUnkTrack() => new RBMid.UNKTRACK
     {
       Unknown = Arr(Float)
     };
-    private RBMid.MARKUP_SOLO_NOTES ReadUnkstruct() => new RBMid.MARKUP_SOLO_NOTES
+    private RBMid.MARKUP_SOLO_NOTES ReadMarkupSoloNotes() => new RBMid.MARKUP_SOLO_NOTES
     {
       StartTick = UInt(),
       EndTick = UInt(),
       NoteOffset = Int()
     };
-    private RBMid.UNKSTRUCT2 ReadUnkstruct2() => new RBMid.UNKSTRUCT2
+    private RBMid.TWOTICKS ReadTwoTicks() => new RBMid.TWOTICKS
     {
       Tick1 = UInt(),
       Tick2 = UInt()
