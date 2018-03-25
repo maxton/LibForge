@@ -59,7 +59,6 @@ namespace ForgeTool
                     ms.Position = 0;
                     if (ms.Length == fi.Length)
                     {
-                      Console.WriteLine($"[OK] {name}");
                       succ++;
                     }
                     else

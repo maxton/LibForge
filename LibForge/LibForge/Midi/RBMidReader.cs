@@ -288,6 +288,8 @@ namespace LibForge.Midi
               return new NoteOffEvent(deltaTime, channel, note, velocity);
             case 9:
               return new NoteOnEvent(deltaTime, channel, note, velocity);
+            case 11: // seen in touchofgrey and others, assuming ctrl chg
+              return new ControllerEvent(deltaTime, channel, note, velocity);
             case 12: // seen in foreplaylongtime, assuming prgmchg
               return new ProgramChgEvent(deltaTime, channel, note);
             default:

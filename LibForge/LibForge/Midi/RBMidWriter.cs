@@ -276,6 +276,12 @@ namespace LibForge.Midi
             d2 = e.Key;
             d3 = e.Velocity;
             break;
+          case ControllerEvent e:
+            kind = 1;
+            d1 = (byte)(0xB0 | e.Channel);
+            d2 = e.Controller;
+            d3 = e.Value;
+            break;
           case ProgramChgEvent e:
             kind = 1;
             d1 = (byte)(0xC0 | e.Channel);
