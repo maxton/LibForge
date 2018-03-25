@@ -71,7 +71,7 @@ typedef struct {
     if(kind == 1){
         msg_type_chan tc;
         if(tc.type > 9){
-            Printf("Type %d\n", tc.type);
+            Printf("0x%X: Type %d\n", FTell(), tc.type);
         }
         switch(tc.type){
             case NOTE_OFF:
@@ -143,15 +143,15 @@ typedef struct {
     int num_fills_1;
     if(num_fills_1 > 0)
         struct {
-            int tick;
+            tick_t tick;
             int unk;
         } fills_1[num_fills_1];
     int num_fills_2;
     if(num_fills_2 > 0)
         struct {
-            int fill_start_tick;
-            int fill_end_tick;
-            char unk;
+            tick_t fill_start_tick;
+            tick_t fill_end_tick;
+            char is_BRE;
         } fill_start_stop[num_fills_2];
 } DRUMFILL;
 
@@ -193,35 +193,43 @@ typedef struct {
     } markers[num_pro_markers];
     int unk;
     int unk;
-} MARKER;
+} CYMBALMARKER;
 
 typedef struct {
-    int num;
-    if(num > 0){
+    int difficulties;
+    if(difficulties > 0){
         struct {
-            int32 data;
-            if(data > 0){
-                int32 data2;
-                int32 data3;
+            int32 num_markers;
+            if(num_markers > 0){
+                struct{
+                    tick_t StartTick;
+                    tick_t EndTick;
+                    struct {
+                        int Glissando : 1;
+                        int Trill : 1;
+                        int Roll_1Lane : 1;
+                        int Roll_2Lane : 1;
+                        int Unk : 28;
+                    } flags;
+                } markers[num_markers];
             }
-        } data2[num]<optimize=false>;
-        int unk;
+        } data2[difficulties]<optimize=false>;
     }    
-} UNKTRACK;
+} LANEMARKER;
 
 typedef struct {
-    int num;
-    if(num > 0)
+    int difficulties;
+    if(difficulties > 0)
         struct{
             int count;
             struct {
-                int tick1;
-                int tick2;
-                int unk1;
-                int unk2;
-            } unk[count];
-        } data[num]<optimize=false>;
-} UNKTRACK2;
+                tick_t Start;
+                tick_t End;
+                int LowFret;
+                int HighFret;
+            } trills[count];
+        } difficulty[difficulties]<optimize=false>;
+} GTRTRILLS;
 
 typedef struct {
     int num_difficulties;
@@ -240,7 +248,7 @@ typedef struct {
         if(num_events)
             struct {
                 float start_millis;
-                int start_ticks;
+                tick_t start_ticks;
                 short unk;
                 short unk_2;
                 char one_1;
@@ -255,16 +263,18 @@ typedef struct {
 typedef struct {
     int num_difficulties;
     struct {
-        int num_events;
+        int num_section_types;
+        // 1st element: Overdrive sections
+        // 2nd element: Solo sections
         struct {
-            int num_events_2;
+            int num_sections;
             struct { 
-                int tick_1;
-                int tick_2; 
-            } what[num_events_2]<optimize=false>;
-        } events[num_events]<optimize=false>;
-    } again[num_difficulties]<optimize=false>;
-} UNKTRACK3;
+                tick_t start_ticks;
+                tick_t duration_ticks; 
+            } sections[num_sections]<optimize=false>;
+        } section_types[num_section_types]<optimize=false>;
+    } difficulties[num_difficulties]<optimize=false>;
+} OVERDRIVE;
 
 typedef struct {
     int num_phrase_markers;
@@ -348,9 +358,16 @@ typedef struct {
 typedef struct {
     tick_t start;
     tick_t end;
-    int count;
-    int unk[count];
-} UNKMARKUP;
+} UNKSTRUCT2;
+
+// Notes are taken relative to C, mod 12. So 0 => C, 2 => D, etc.
+typedef struct {
+    tick_t start;
+    tick_t end;
+    int notes_in_chord;
+    Assert(notes_in_chord <= 12, "Only 12 notes in an octave");
+    int notes[notes_in_chord];
+} MARKUP_CHORD;
 
 typedef struct {
     char unk;
@@ -396,21 +413,28 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int num_lyric_tracks;
     LYRICS lyrics[num_lyric_tracks] <optimize=false>;
     int num_fill_tracks;
+    Assert(num_fill_tracks == num_lyric_tracks);
     DRUMFILL drum_fills[num_fill_tracks] <optimize=false>;
     int num_anim_tracks;
     ANIM anims[num_anim_tracks] <optimize=false>;
     int num_marker_tracks;
-    MARKER pro_markers[num_marker_tracks] <optimize=false>;
-    int num_unk_tracks;
-    UNKTRACK unk_1[num_unk_tracks] <optimize=false>;
-    int num_unk_tracks_2;
-    UNKTRACK2 unk_2[num_unk_tracks_2] <optimize=false>;
+    Assert(num_marker_tracks == num_lyric_tracks);
+    CYMBALMARKER pro_markers[num_marker_tracks] <optimize=false>;
+    int num_lane_markers;
+    Assert(num_lane_markers == num_lyric_tracks);
+    LANEMARKER lane_markers[num_lane_markers] <optimize=false>;
+    int num_gtr_trills;
+    Assert(num_gtr_trills == num_lyric_tracks);
+    GTRTRILLS gtr_trills[num_gtr_trills] <optimize=false>;
     int num_drum_mixes;
+    Assert(num_drum_mixes == num_lyric_tracks);
     DRUMMIX drum_mixes[num_drum_mixes] <optimize=false>;
     int num_gem_tracks;
+    Assert(num_gem_tracks == num_lyric_tracks);
     GEMTRACK gems[num_gem_tracks] <optimize=false>;
-    int num_unk_tracks_3;
-    UNKTRACK3 unk_3[num_unk_tracks_3] <optimize=false>;
+    int num_sections;
+    Assert(num_sections == num_lyric_tracks);
+    OVERDRIVE overdrive_solo_sections[num_sections] <optimize=false>;
     int num_vocal_tracks;
     VOCALTRACK vocal_tracks[num_vocal_tracks]<optimize=false>;
     int what;
@@ -428,6 +452,7 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     char what;
     float preview_start_ms;
     float preview_end_ms;
+    Assert(preview_end_ms > preview_start_ms, "preview_end_ms > preview_start_ms");
     int num_guitar_handmap_tracks;
     HANDMAP guitar_handmap_tracks[num_guitar_handmap_tracks]<optimize=false>;
     int num_left_hand_tracks;
@@ -437,27 +462,37 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int num_unk;
     UNKSTRUCT unk[num_unk];
     int num_unk2;
-    UNKSTRUCT unk2[num_unk2];
-    if(num_unk2) int zero;
+    UNKSTRUCT2 unk2[num_unk2];
+    if(num_unk2) {
+        int num_unk4;
+        UNKSTRUCT2 unk4[num_unk4];
+    }
     // this outer struct is just to collapse the array down into one item
     // because apparently 010 editor can only do that on optimized arrays
     struct {
         int num_unk_markup;
-        UNKMARKUP unk_markup[num_unk_markup]<optimize=false>;
-    } unk_markup;
-    struct {
-        int num_unk_markup;
-        UNKMARKUP unk_markup[num_unk_markup]<optimize=false>;
-    } unk_markup2;
-    if(unk_markup2.num_unk_markup) int zero;
+        MARKUP_CHORD unk_markup[num_unk_markup]<optimize=false>;
+    } markup_chords_1;
+    if(markup_chords_1.num_unk_markup == 0){
+        struct {
+            int num_unk_markup;
+            MARKUP_CHORD unk_markup[num_unk_markup]<optimize=false>;
+        } markup_chords_2;
+        if(markup_chords_2.num_unk_markup) int zero;
+    }
     int num_unk3;
     UNKSTRUCT unk3[num_unk3];
-    int zero;
+    int num_unk5;
+    UNKSTRUCT unk5[num_unk5];
+    if(num_unk5)
+        int zero;
     int two;
+    Assert(two == 2, "This has always been 2");
     int unk;
     int num_midi_tracks;
     MIDITRACK tracks[num_midi_tracks]<optimize=false>;
-    int unknown[13];
+    int unknown[9];
+    float unk_floats[4];
     int num_tempos;
     TEMPO tempos[num_tempos];
     int num_time_sigs;

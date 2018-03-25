@@ -40,7 +40,7 @@ namespace LibForge.Midi
       {
         public uint StartTick;
         public uint EndTick;
-        public byte Unknown;
+        public byte IsBRE;
       }
       public FILLS_UNK[] Unknown;
       public DRUMFILL[] Fills;
@@ -63,7 +63,7 @@ namespace LibForge.Midi
       public int Unknown3;
     }
 
-    public struct MARKERS
+    public struct CYMBALMARKER
     {
       public struct MARKER
       {
@@ -83,21 +83,36 @@ namespace LibForge.Midi
       public int Unknown2;
     }
 
-    public struct UNKTRACK
+    public struct LANEMARKER
     {
-      // TODO
+      public struct MARKER {
+        public uint StartTick;
+        public uint EndTick;
+        [Flags]
+        public enum Flag : uint
+        {
+          Glissando = 1,
+          Unknown = 2,
+          Roll_1Lane = 4,
+          Roll_2Lane = 8
+        }
+        public Flag Flags;
+      }
+      // First dimension: difficulty
+      public MARKER[][] Markers;
     }
 
-    public struct UNKTRACK2
+    public struct GTRTRILLS
     {
-      public struct DATA
+      public struct TRILL
       {
-        public uint Tick1;
-        public uint Tick2;
-        public int Unknown1;
-        public int Unknown2;
+        public uint StartTick;
+        public uint EndTick;
+        public int LowFret;
+        public int HighFret;
       }
-      public DATA[][] Data;
+      // First dimension: difficulty
+      public TRILL[][] Trills;
     }
 
     public struct DRUMMIXES
@@ -122,14 +137,21 @@ namespace LibForge.Midi
       public GEM[][] Gems;
       public int Unknown;
     }
-    public struct UNKTRACK3
+    public struct SECTIONS
     { 
-      public struct EVENT
+      public struct SECTION
       {
-        public uint Tick1;
-        public uint Tick2;
+        public uint StartTicks;
+        public uint LengthTicks;
       }
-      public EVENT[][][] Unknown;
+      // Only seen 0 and 1 used although there are always 6 entries...
+      public enum SectionType : int
+      {
+        Overdrive = 0,
+        Solo = 1
+      }
+      // 1st dimension: difficulty, 2nd: section type, 3rd: list of sections
+      public SECTION[][][] Sections;
     }
     public struct VOCALTRACK
     {
@@ -197,11 +219,16 @@ namespace LibForge.Midi
       public uint EndTick;
       public int Unknown;
     }
-    public struct UNKMARKUP
+    public struct UNKSTRUCT2
+    {
+      public uint Tick1;
+      public uint Tick2;
+    }
+    public struct MARKUPCHORD
     {
       public uint StartTick;
       public uint EndTick;
-      public int[] Unknown;
+      public int[] Pitches;
     }
     public struct TEMPO
     {
@@ -225,12 +252,12 @@ namespace LibForge.Midi
     public LYRICS[] Lyrics;
     public DRUMFILLS[] DrumFills;
     public ANIM[] Anims;
-    public MARKERS[] ProMarkers;
-    public UNKTRACK[] UnkTrack;
-    public UNKTRACK2[] UnkTrack2;
+    public CYMBALMARKER[] ProMarkers;
+    public LANEMARKER[] LaneMarkers;
+    public GTRTRILLS[] TrillMarkers;
     public DRUMMIXES[] DrumMixes;
     public GEMTRACK[] GemTracks;
-    public UNKTRACK3[] UnkTrack3;
+    public SECTIONS[] OverdriveSoloSections;
     public VOCALTRACK[] VocalTracks;
     public int Unknown1;
     public int Unknown2;
@@ -251,20 +278,21 @@ namespace LibForge.Midi
     public HANDPOS[] GuitarLeftHandPos;
     public UNKTRACK4[] Unktrack4;
     public UNKSTRUCT[] Unkstruct;
-    public UNKSTRUCT[] Unkstruct2;
-    public int Unknown14;
-    public UNKMARKUP[] UnkMarkup;
-    public UNKMARKUP[] UnkMarkup2;
+    public UNKSTRUCT2[] Unkstruct2;
+    public UNKSTRUCT2[] Unkstruct4;
+    public MARKUPCHORD[] MarkupChords1;
+    public MARKUPCHORD[] MarkupChords2;
     public UNKSTRUCT[] Unkstruct3;
+    public UNKSTRUCT[] Unkstruct5;
+    public int UnknownTwo;
     public int Unknown16;
-    public int Unknown17;
-    public int Unknown18;
     public MidiTrack[] MidiTracks;
-    public int[] Unknown19;
+    public int[] UnknownInts;
+    public float[] UnknownFloats;
     public TEMPO[] Tempos;
     public TIMESIG[] TimeSigs;
     public BEAT[] Beats;
-    public int Unknown20;
+    public int Unknown19;
     public string[] MidiTrackNames;
   }
 

@@ -26,11 +26,11 @@ namespace LibForge.Midi
       r.DrumFills = Arr(ReadDrumFills, MaxInstTracks);
       r.Anims = Arr(ReadAnims, MaxKeysAnimTracks);
       r.ProMarkers = Arr(ReadMarkers, MaxInstTracks);
-      r.UnkTrack = Arr(ReadUnktrack, MaxInstTracks);
-      r.UnkTrack2 = Arr(ReadUnktrack2, MaxInstTracks);
+      r.LaneMarkers = Arr(ReadUnktrack, MaxInstTracks);
+      r.TrillMarkers = Arr(ReadUnktrack2, MaxInstTracks);
       r.DrumMixes = Arr(ReadDrumMixes, MaxInstTracks);
       r.GemTracks = Arr(ReadGemTracks, MaxInstTracks);
-      r.UnkTrack3 = Arr(ReadUnktrack3, MaxInstTracks);
+      r.OverdriveSoloSections = Arr(ReadOverdrives, MaxInstTracks);
       r.VocalTracks = Arr(ReadVocalTrack, MaxVocalTracks);
       r.Unknown1 = Int();
       r.Unknown2 = Int();
@@ -51,21 +51,27 @@ namespace LibForge.Midi
       r.GuitarLeftHandPos = Arr(ReadHandPos, MaxInstTracks);
       r.Unktrack4 = Arr(ReadUnktrack4, MaxInstTracks);
       r.Unkstruct = Arr(ReadUnkstruct);
-      r.Unkstruct2 = Arr(ReadUnkstruct);
-      if(r.Unkstruct2.Length > 0) Check(Int(), 0);
-      r.UnkMarkup = Arr(ReadUnkmarkup);
-      r.UnkMarkup2 = Arr(ReadUnkmarkup);
-      if (r.UnkMarkup2.Length > 0) Check(Int(), 0);
+      r.Unkstruct2 = Arr(ReadUnkstruct2);
+      if (r.Unkstruct2.Length > 0)
+        r.Unkstruct4 = Arr(ReadUnkstruct2);
+      r.MarkupChords1 = Arr(ReadMarkupChord);
+      if (r.MarkupChords1.Length == 0)
+      {
+        r.MarkupChords2 = Arr(ReadMarkupChord);
+        if (r.MarkupChords2.Length > 0) Check(Int(), 0);
+      }
       r.Unkstruct3 = Arr(ReadUnkstruct);
-      r.Unknown16 = Check(Int(), 0);
-      r.Unknown17 = Check(Int(), 2);
-      r.Unknown18 = Int();
+      r.Unkstruct5 = Arr(ReadUnkstruct);
+      if (r.Unkstruct5.Length > 0) Check(Int(), 0);
+      r.UnknownTwo = Check(Int(), 2);
+      r.Unknown16 = Int();
       r.MidiTracks = Arr(ReadMidiTrack);
-      r.Unknown19 = FixedArr(Int, 13);
+      r.UnknownInts = FixedArr(Int, 9);
+      r.UnknownFloats = FixedArr(Float, 4);
       r.Tempos = Arr(ReadTempo);
       r.TimeSigs = Arr(ReadTimesig);
       r.Beats = Arr(ReadBeat);
-      r.Unknown20 = Check(Int(), 0);
+      r.Unknown19 = Check(Int(), 0);
       r.MidiTrackNames = CheckedArr(String, (uint)r.MidiTracks.Length);
       return r;
     }
@@ -93,7 +99,7 @@ namespace LibForge.Midi
       {
         StartTick = UInt(),
         EndTick = UInt(),
-        Unknown = Byte()
+        IsBRE = Byte()
       })
     };
     private RBMid.ANIM ReadAnims() => new RBMid.ANIM
@@ -112,43 +118,33 @@ namespace LibForge.Midi
       }),
       Unknown3 = Int()
     };
-    private RBMid.MARKERS ReadMarkers() => new RBMid.MARKERS
+    private RBMid.CYMBALMARKER ReadMarkers() => new RBMid.CYMBALMARKER
     {
-      Markers = Arr(() => new RBMid.MARKERS.MARKER
+      Markers = Arr(() => new RBMid.CYMBALMARKER.MARKER
       {
         Tick = UInt(),
-        Flags = (RBMid.MARKERS.MARKER.FLAGS)Int()
+        Flags = (RBMid.CYMBALMARKER.MARKER.FLAGS)Int()
       }),
       Unknown1 = Int(),
       Unknown2 = Int()
     };
-    private RBMid.UNKTRACK ReadUnktrack()
+    private RBMid.LANEMARKER ReadUnktrack() => new RBMid.LANEMARKER
     {
-      // TODO: This struct is actually completely wrong but works sometimes
-      var ret = default(RBMid.UNKTRACK);
-      var num = Int();
-      if(num > 0)
+      Markers = Arr(() => Arr(() => new RBMid.LANEMARKER.MARKER
       {
-        for (var i = 0; i < num; i++) {
-          var data = Int();
-          if (data > 0)
-          {
-            Skip(8)();
-          }
-        }
-        Skip(4)();
-      }
-      return ret;
-    }
-    private RBMid.UNKTRACK2 ReadUnktrack2() => new RBMid.UNKTRACK2
+        StartTick = UInt(),
+        EndTick = UInt(),
+        Flags = (RBMid.LANEMARKER.MARKER.Flag)UInt()
+      }))
+    };
+    private RBMid.GTRTRILLS ReadUnktrack2() => new RBMid.GTRTRILLS
     {
-      // TODO: This works more often than the previous struct but it's still not right
-      Data = Arr(() => Arr(() => new RBMid.UNKTRACK2.DATA
+      Trills = Arr(() => Arr(() => new RBMid.GTRTRILLS.TRILL
       {
-        Tick1 = UInt(),
-        Tick2 = UInt(),
-        Unknown1 = Int(),
-        Unknown2 = Int()
+        StartTick = UInt(),
+        EndTick = UInt(),
+        LowFret = Int(),
+        HighFret = Int()
       }))
     };
     private RBMid.DRUMMIXES ReadDrumMixes() => new RBMid.DRUMMIXES
@@ -170,12 +166,12 @@ namespace LibForge.Midi
       }))),
       Unknown = Int()
     };
-    private RBMid.UNKTRACK3 ReadUnktrack3() => new RBMid.UNKTRACK3
+    private RBMid.SECTIONS ReadOverdrives() => new RBMid.SECTIONS
     {
-      Unknown = Arr(() => Arr(() => Arr(() => new RBMid.UNKTRACK3.EVENT
+      Sections = Arr(() => Arr(() => Arr(() => new RBMid.SECTIONS.SECTION
       {
-        Tick1 = UInt(),
-        Tick2 = UInt()
+        StartTicks = UInt(),
+        LengthTicks = UInt()
       })))
     };
     private RBMid.VOCALTRACK ReadVocalTrack() => new RBMid.VOCALTRACK
@@ -241,11 +237,16 @@ namespace LibForge.Midi
       EndTick = UInt(),
       Unknown = Int()
     };
-    private RBMid.UNKMARKUP ReadUnkmarkup() => new RBMid.UNKMARKUP
+    private RBMid.UNKSTRUCT2 ReadUnkstruct2() => new RBMid.UNKSTRUCT2
+    {
+      Tick1 = UInt(),
+      Tick2 = UInt()
+    };
+    private RBMid.MARKUPCHORD ReadMarkupChord() => new RBMid.MARKUPCHORD
     {
       StartTick = UInt(),
       EndTick = UInt(),
-      Unknown = Arr(Int)
+      Pitches = Arr(Int)
     };
     private uint midiTick;
     private string trackName;
@@ -288,6 +289,8 @@ namespace LibForge.Midi
               return new NoteOffEvent(deltaTime, channel, note, velocity);
             case 9:
               return new NoteOnEvent(deltaTime, channel, note, velocity);
+            case 12: // seen in foreplaylongtime, assuming prgmchg
+              return new ProgramChgEvent(deltaTime, channel, note);
             default:
               throw new NotImplementedException($"Message type {type}");
           }

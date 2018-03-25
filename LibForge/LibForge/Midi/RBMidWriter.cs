@@ -20,12 +20,12 @@ namespace LibForge.Midi
       Write(r.Lyrics, WriteLyrics);
       Write(r.DrumFills, WriteDrumFills);
       Write(r.Anims, WriteAnims);
-      Write(r.ProMarkers, WriteMarkers);
-      Write(r.UnkTrack, WriteUnktrack);
-      Write(r.UnkTrack2, WriteUnktrack2);
+      Write(r.ProMarkers, WriteProCymbalMarkers);
+      Write(r.LaneMarkers, WriteLaneMarkers);
+      Write(r.TrillMarkers, WriteTrillMarkers);
       Write(r.DrumMixes, WriteDrumMixes);
       Write(r.GemTracks, WriteGemTracks);
-      Write(r.UnkTrack3, WriteUnktrack3);
+      Write(r.OverdriveSoloSections, WriteSectionMarkers);
       Write(r.VocalTracks, WriteReadVocalTrack);
       Write(r.Unknown1);
       Write(r.Unknown2);
@@ -46,21 +46,25 @@ namespace LibForge.Midi
       Write(r.GuitarLeftHandPos, WriteHandPos);
       Write(r.Unktrack4, WriteUnktrack4);
       Write(r.Unkstruct, WriteUnkstruct);
-      Write(r.Unkstruct2, WriteUnkstruct);
-      if (r.Unkstruct2.Length > 0) Write(0);
-      Write(r.UnkMarkup, WriteUnkmarkup);
-      Write(r.UnkMarkup2, WriteUnkmarkup);
-      if (r.UnkMarkup2.Length > 0) Write(0);
+      Write(r.Unkstruct2, WriteUnkstruct2);
+      if (r.Unkstruct2.Length > 0)
+        Write(r.Unkstruct4, WriteUnkstruct2);
+      Write(r.MarkupChords1, WriteUnkmarkup);
+      if (r.MarkupChords1.Length == 0)
+      {
+        Write(r.MarkupChords2, WriteUnkmarkup);
+        if (r.MarkupChords2.Length > 0) Write(0);
+      }
       Write(r.Unkstruct3, WriteUnkstruct);
+      Write(r.UnknownTwo);
       Write(r.Unknown16);
-      Write(r.Unknown17);
-      Write(r.Unknown18);
       Write(r.MidiTracks, WriteMidiTrack);
-      Array.ForEach(r.Unknown19, Write);
+      Array.ForEach(r.UnknownInts, Write);
+      Array.ForEach(r.UnknownFloats, Write);
       Write(r.Tempos, WriteTempo);
       Write(r.TimeSigs, WriteTimesig);
       Write(r.Beats, WriteBeat);
-      Write(r.Unknown20);
+      Write(r.Unknown19);
       Write(r.MidiTrackNames, Write);
     }
 
@@ -88,7 +92,7 @@ namespace LibForge.Midi
       {
         Write(o.StartTick);
         Write(o.EndTick);
-        Write(o.Unknown);
+        Write(o.IsBRE);
       });
     }
     private void WriteAnims(RBMid.ANIM obj)
@@ -107,7 +111,7 @@ namespace LibForge.Midi
       });
       Write(obj.Unknown3);
     }
-    private void WriteMarkers(RBMid.MARKERS obj)
+    private void WriteProCymbalMarkers(RBMid.CYMBALMARKER obj)
     {
       Write(obj.Markers, o =>
       {
@@ -117,19 +121,23 @@ namespace LibForge.Midi
       Write(obj.Unknown1);
       Write(obj.Unknown2);
     }
-    // TODO: Fix when we actually define this
-    private void WriteUnktrack(RBMid.UNKTRACK obj)
+    private void WriteLaneMarkers(RBMid.LANEMARKER obj)
     {
-      Write(0);
-    }
-    private void WriteUnktrack2(RBMid.UNKTRACK2 obj)
-    {
-      Write(obj.Data, x => Write(x, o =>
+      Write(obj.Markers, diff => Write(diff, marker => 
       {
-        Write(o.Tick1);
-        Write(o.Tick2);
-        Write(o.Unknown1);
-        Write(o.Unknown2);
+        Write(marker.StartTick);
+        Write(marker.EndTick);
+        Write((uint)marker.Flags);
+      }));
+    }
+    private void WriteTrillMarkers(RBMid.GTRTRILLS obj)
+    {
+      Write(obj.Trills, x => Write(x, o =>
+      {
+        Write(o.StartTick);
+        Write(o.EndTick);
+        Write(o.LowFret);
+        Write(o.HighFret);
       }));
     }
     private void WriteDrumMixes(RBMid.DRUMMIXES obj)
@@ -155,11 +163,11 @@ namespace LibForge.Midi
       });
       Write(obj.Unknown);
     }
-    private void WriteUnktrack3(RBMid.UNKTRACK3 obj)
+    private void WriteSectionMarkers(RBMid.SECTIONS obj)
     {
-      Write(obj.Unknown, a => Write(a, b => Write(b, x => {
-        Write(x.Tick1);
-        Write(x.Tick2);
+      Write(obj.Sections, a => Write(a, b => Write(b, x => {
+        Write(x.StartTicks);
+        Write(x.LengthTicks);
       })));
     }
     private void WriteReadVocalTrack(RBMid.VOCALTRACK obj)
@@ -224,11 +232,16 @@ namespace LibForge.Midi
       Write(obj.EndTick);
       Write(obj.Unknown);
     }
-    private void WriteUnkmarkup(RBMid.UNKMARKUP obj)
+    private void WriteUnkstruct2(RBMid.UNKSTRUCT2 obj)
+    {
+      Write(obj.Tick1);
+      Write(obj.Tick2);
+    }
+    private void WriteUnkmarkup(RBMid.MARKUPCHORD obj)
     {
       Write(obj.StartTick);
       Write(obj.EndTick);
-      Write(obj.Unknown, Write);
+      Write(obj.Pitches, Write);
     }
     private bool first_track = true;
     private List<string> track_strings;
@@ -261,6 +274,12 @@ namespace LibForge.Midi
             d1 = (byte)(0x90 | e.Channel);
             d2 = e.Key;
             d3 = e.Velocity;
+            break;
+          case ProgramChgEvent e:
+            kind = 1;
+            d1 = (byte)(0xC0 | e.Channel);
+            d2 = e.Program;
+            d3 = 0;
             break;
           case TempoEvent e:
             kind = 2;
