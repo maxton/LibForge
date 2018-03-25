@@ -189,6 +189,18 @@ namespace LibForge.Midi
       public int[] Unknown1;
       public UNKNOWN[] Unknown2;
     }
+    public struct UNKSTRUCT1
+    {
+      public uint Tick;
+      public float FloatData;
+    }
+    public struct UNKSTRUCT2
+    {
+      public int Unknown1;
+      public int Unknown2;
+      public float Unknown3;
+      public float Unknown4;
+    }
     public struct HANDMAP
     {
       public struct MAP
@@ -267,12 +279,8 @@ namespace LibForge.Midi
     public int Unknown1;
     public int Unknown2;
     public float Unknown3;
-    public int Unknown4;
-    public int Unknown5;
-    public int Unknown6;
-    public int Unknown7;
-    public float Unknown8;
-    public float Unknown9;
+    public UNKSTRUCT1[] Unknown4;
+    public UNKSTRUCT2[] Unknown5;
     public int Unknown10;
     public int NumPlayableTracks;
     public int Unknown12;

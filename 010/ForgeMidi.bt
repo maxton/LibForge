@@ -446,12 +446,18 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int what;
     int what;
     float what;
-    int what;
-    int what;
-    int what;
-    int what;
-    float what;
-    float what;
+    int num_unk_structs;
+    struct {
+        tick_t unk_tick;
+        float unk_float;
+    } unk_structs[num_unk_structs];
+    int num_unk_structs_2;
+    struct {
+        int what;
+        int what;
+        float what;
+        float what;
+    } unk_structs_2[num_unk_structs_2];
     int what;
     int num_tracks_repeat;
     Assert(num_tracks_repeat == num_lyric_tracks);

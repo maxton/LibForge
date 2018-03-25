@@ -30,12 +30,8 @@ namespace LibForge.Midi
       Write(r.Unknown1);
       Write(r.Unknown2);
       Write(r.Unknown3);
-      Write(r.Unknown4);
-      Write(r.Unknown5);
-      Write(r.Unknown6);
-      Write(r.Unknown7);
-      Write(r.Unknown8);
-      Write(r.Unknown9);
+      Write(r.Unknown4, WriteUnkstruct1);
+      Write(r.Unknown5, WriteUnkstruct2);
       Write(r.Unknown10);
       Write(r.NumPlayableTracks);
       Write(r.Unknown12);
@@ -201,6 +197,18 @@ namespace LibForge.Midi
       Write(obj.Unknown5);
       Array.ForEach(obj.Unknown6, Write);
     }
+    private void WriteUnkstruct1(RBMid.UNKSTRUCT1 obj)
+    {
+      Write(obj.Tick);
+      Write(obj.FloatData);
+    }
+    private void WriteUnkstruct2(RBMid.UNKSTRUCT2 obj)
+    {
+      Write(obj.Unknown1);
+      Write(obj.Unknown2);
+      Write(obj.Unknown3);
+      Write(obj.Unknown4);
+    }
     private void WriteHandMap(RBMid.HANDMAP obj)
     {
       Write(obj.Maps, x =>
@@ -287,6 +295,18 @@ namespace LibForge.Midi
             d1 = (byte)(0xC0 | e.Channel);
             d2 = e.Program;
             d3 = 0;
+            break;
+          case ChannelPressureEvent e:
+            kind = 1;
+            d1 = (byte)(0xD0 | e.Channel);
+            d2 = e.Pressure;
+            d3 = 0;
+            break;
+          case PitchBendEvent e:
+            kind = 1;
+            d1 = (byte)(0xE0 | e.Channel);
+            d2 = (byte)(e.Bend & 0xFF);
+            d3 = (byte)(e.Bend >> 8);
             break;
           case TempoEvent e:
             kind = 2;

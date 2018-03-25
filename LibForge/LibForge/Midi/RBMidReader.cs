@@ -35,12 +35,8 @@ namespace LibForge.Midi
       r.Unknown1 = Int();
       r.Unknown2 = Int();
       r.Unknown3 = Float();
-      r.Unknown4 = Int();
-      r.Unknown5 = Int();
-      r.Unknown6 = Int();
-      r.Unknown7 = Int();
-      r.Unknown8 = Float();
-      r.Unknown9 = Float();
+      r.Unknown4 = Arr(ReadUnkstruct1);
+      r.Unknown5 = Arr(ReadUnkstruct2);
       r.Unknown10 = Int();
       r.NumPlayableTracks = Int();
       r.Unknown12 = Int();
@@ -204,6 +200,18 @@ namespace LibForge.Midi
         Unknown5 = Int(),
         Unknown6 = FixedArr(Byte, 25)
       };
+    private RBMid.UNKSTRUCT1 ReadUnkstruct1() => new RBMid.UNKSTRUCT1
+    {
+      Tick = UInt(),
+      FloatData = Float()
+    };
+    private RBMid.UNKSTRUCT2 ReadUnkstruct2() => new RBMid.UNKSTRUCT2
+    {
+      Unknown1 = Int(),
+      Unknown2 = Int(),
+      Unknown3 = Float(),
+      Unknown4 = Float(),
+    };
     private RBMid.HANDMAP ReadHandMap() => new RBMid.HANDMAP
     {
       Maps = Arr(() => new RBMid.HANDMAP.MAP
@@ -292,6 +300,10 @@ namespace LibForge.Midi
               return new ControllerEvent(deltaTime, channel, note, velocity);
             case 12: // seen in foreplaylongtime, assuming prgmchg
               return new ProgramChgEvent(deltaTime, channel, note);
+            case 13: // seen in huckleberrycrumble, assuming channel pressure
+              return new ChannelPressureEvent(deltaTime, channel, note);
+            case 14: // seen in theballadofirahayes, assuming pitch bend
+              return new PitchBendEvent(deltaTime, channel, (ushort)(note | (velocity << 8)));
             default:
               throw new NotImplementedException($"Message type {type}");
           }
