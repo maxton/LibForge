@@ -51,6 +51,7 @@ namespace LibForge.Midi
       Write(r.MarkupChords1, WriteMarkupChord);
       Write(r.MarkupSoloNotes2, WriteSoloNotes);
       Write(r.MarkupSoloNotes3, WriteSoloNotes);
+      Write(r.TwoTicks2, WriteTwoTicks);
       // end weirdness
       Write(r.UnknownTwo);
       Write(r.Unknown16);
