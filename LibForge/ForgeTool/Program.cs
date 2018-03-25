@@ -40,6 +40,46 @@ namespace ForgeTool
             }
           }
           break;
+        case "test":
+          {
+            var dir = args[1];
+            int succ = 0, warn = 0, fail = 0;
+            foreach (var f in Directory.EnumerateFiles(dir, "*.rbmid_ps4"))
+            {
+              var info = new FileInfo(f);
+              var name = info.Name;
+              using (var fi = File.OpenRead(f))
+              {
+                try
+                {
+                  var rbmid = RBMidReader.ReadStream(fi);
+                  using (var ms = new MemoryStream((int)fi.Length))
+                  {
+                    RBMidWriter.WriteStream(rbmid, ms);
+                    ms.Position = 0;
+                    if (ms.Length == fi.Length)
+                    {
+                      Console.WriteLine($"[OK] {name}");
+                      succ++;
+                    }
+                    else
+                    {
+                      Console.WriteLine($"[WARN] {name}:");
+                      Console.WriteLine($"  Processed file had different length ({fi.Length} orig, {ms.Length} processed)");
+                      warn++;
+                    }
+                  }
+                } catch(Exception e)
+                {
+                  Console.WriteLine($"[ERROR] {name}:");
+                  Console.WriteLine("  " + e.Message);
+                  fail++;
+                }
+              }
+            }
+            Console.WriteLine($"Summary: {succ} OK, {warn} WARN, {fail} ERROR");
+          }
+          break;
         default:
           Usage();
           break;
