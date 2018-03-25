@@ -42,7 +42,7 @@ namespace LibForge.Midi
       r.Unknown8 = Float();
       r.Unknown9 = Float();
       r.Unknown10 = Int();
-      r.Unknown11 = Int();
+      r.NumPlayableTracks = Int();
       r.Unknown12 = Int();
       r.Unknown13 = Byte();
       r.PreviewStartMillis = Float();
@@ -231,11 +231,11 @@ namespace LibForge.Midi
     {
       Unknown = Arr(Float)
     };
-    private RBMid.UNKSTRUCT ReadUnkstruct() => new RBMid.UNKSTRUCT
+    private RBMid.MARKUP_SOLO_NOTES ReadUnkstruct() => new RBMid.MARKUP_SOLO_NOTES
     {
       StartTick = UInt(),
       EndTick = UInt(),
-      Unknown = Int()
+      NoteOffset = Int()
     };
     private RBMid.UNKSTRUCT2 ReadUnkstruct2() => new RBMid.UNKSTRUCT2
     {

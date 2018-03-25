@@ -37,7 +37,7 @@ namespace LibForge.Midi
       Write(r.Unknown8);
       Write(r.Unknown9);
       Write(r.Unknown10);
-      Write(r.Unknown11);
+      Write(r.NumPlayableTracks);
       Write(r.Unknown12);
       Write(r.Unknown13);
       Write(r.PreviewStartMillis);
@@ -226,11 +226,11 @@ namespace LibForge.Midi
     {
       Write(obj.Unknown, Write);
     }
-    private void WriteUnkstruct(RBMid.UNKSTRUCT obj)
+    private void WriteUnkstruct(RBMid.MARKUP_SOLO_NOTES obj)
     {
       Write(obj.StartTick);
       Write(obj.EndTick);
-      Write(obj.Unknown);
+      Write(obj.NoteOffset);
     }
     private void WriteUnkstruct2(RBMid.UNKSTRUCT2 obj)
     {

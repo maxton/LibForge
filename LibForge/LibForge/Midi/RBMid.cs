@@ -213,11 +213,11 @@ namespace LibForge.Midi
     {
       public float[] Unknown;
     }
-    public struct UNKSTRUCT
+    public struct MARKUP_SOLO_NOTES
     {
       public uint StartTick;
       public uint EndTick;
-      public int Unknown;
+      public int NoteOffset;
     }
     public struct UNKSTRUCT2
     {
@@ -269,7 +269,7 @@ namespace LibForge.Midi
     public float Unknown8;
     public float Unknown9;
     public int Unknown10;
-    public int Unknown11;
+    public int NumPlayableTracks;
     public int Unknown12;
     public byte Unknown13;
     public float PreviewStartMillis;
@@ -277,13 +277,13 @@ namespace LibForge.Midi
     public HANDMAP[] GuitarHandmap;
     public HANDPOS[] GuitarLeftHandPos;
     public UNKTRACK4[] Unktrack4;
-    public UNKSTRUCT[] Unkstruct;
+    public MARKUP_SOLO_NOTES[] Unkstruct;
     public UNKSTRUCT2[] Unkstruct2;
     public UNKSTRUCT2[] Unkstruct4;
     public MARKUPCHORD[] MarkupChords1;
     public MARKUPCHORD[] MarkupChords2;
-    public UNKSTRUCT[] Unkstruct3;
-    public UNKSTRUCT[] Unkstruct5;
+    public MARKUP_SOLO_NOTES[] Unkstruct3;
+    public MARKUP_SOLO_NOTES[] Unkstruct5;
     public int UnknownTwo;
     public int Unknown16;
     public MidiTrack[] MidiTracks;

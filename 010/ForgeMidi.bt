@@ -349,11 +349,14 @@ string UNKTRACK4_read(UNKTRACK4& u)
     return ret;
 }
 
+// Used during guitar solos. Maybe for freestyle?
 typedef struct {
     tick_t start;
     tick_t end;
-    int unk;
-} UNKSTRUCT;
+    // Seem to be notes from MIDI 0-11, and then 12-23
+    // This is the offset to those notes
+    int note_offset;
+} MARKUP_SOLO_NOTES;
 
 typedef struct {
     tick_t start;
@@ -447,7 +450,8 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     float what;
     float what;
     int what;
-    int what;
+    int num_tracks_repeat;
+    Assert(num_tracks_repeat == num_lyric_tracks);
     int what;
     char what;
     float preview_start_ms;
@@ -460,7 +464,7 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int num_unk_tracks_4;
     UNKTRACK4 unk_4[num_unk_tracks_4]<optimize=false>;
     int num_unk;
-    UNKSTRUCT unk[num_unk];
+    MARKUP_SOLO_NOTES markup_notes_midi0[num_unk];
     int num_unk2;
     UNKSTRUCT2 unk2[num_unk2];
     if(num_unk2) {
@@ -481,9 +485,9 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
         if(markup_chords_2.num_unk_markup) int zero;
     }
     int num_unk3;
-    UNKSTRUCT unk3[num_unk3];
+    MARKUP_SOLO_NOTES unk3[num_unk3];
     int num_unk5;
-    UNKSTRUCT unk5[num_unk5];
+    MARKUP_SOLO_NOTES markup_notes_midi12[num_unk5];
     if(num_unk5)
         int zero;
     int two;
