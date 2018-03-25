@@ -340,7 +340,10 @@ typedef struct {
 
 typedef struct {
     int count;
-    float data[count];
+    struct {
+        float flt;
+        int i;
+    } data[count]<optimize=false>;
 } UNKTRACK<read=UNKTRACK_read>;
 string UNKTRACK_read(UNKTRACK& u)
 {

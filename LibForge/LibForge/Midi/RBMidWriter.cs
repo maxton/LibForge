@@ -220,7 +220,11 @@ namespace LibForge.Midi
     }
     private void WriteUnktrack(RBMid.UNKTRACK obj)
     {
-      Write(obj.Unknown, Write);
+      Write(obj.Data, data =>
+      {
+        Write(data.FloatData);
+        Write(data.IntData);
+      });
     }
     private void WriteSoloNotes(RBMid.MARKUP_SOLO_NOTES obj)
     {

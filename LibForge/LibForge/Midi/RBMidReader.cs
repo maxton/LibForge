@@ -224,7 +224,11 @@ namespace LibForge.Midi
     };
     private RBMid.UNKTRACK ReadUnkTrack() => new RBMid.UNKTRACK
     {
-      Unknown = Arr(Float)
+      Data = Arr(() => new RBMid.UNKTRACK.DATA
+      {
+        FloatData = Float(),
+        IntData = Int()
+      })
     };
     private RBMid.MARKUP_SOLO_NOTES ReadMarkupSoloNotes() => new RBMid.MARKUP_SOLO_NOTES
     {

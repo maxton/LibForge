@@ -211,7 +211,12 @@ namespace LibForge.Midi
     }
     public struct UNKTRACK
     {
-      public float[] Unknown;
+      public struct DATA
+      {
+        public float FloatData;
+        public int IntData;
+      }
+      public DATA[] Data;
     }
     public struct MARKUP_SOLO_NOTES
     {
