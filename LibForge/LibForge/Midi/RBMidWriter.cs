@@ -32,7 +32,7 @@ namespace LibForge.Midi
       Write(r.Unknown3);
       Write(r.Unknown4, WriteUnkstruct1);
       Write(r.Unknown5, WriteUnkstruct2);
-      Write(r.Unknown10);
+      Write(r.Unknown6);
       Write(r.NumPlayableTracks);
       Write(r.Unknown12);
       Write(r.Unknown13);

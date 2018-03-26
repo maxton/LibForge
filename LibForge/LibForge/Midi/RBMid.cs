@@ -281,8 +281,9 @@ namespace LibForge.Midi
     public float Unknown3;
     public UNKSTRUCT1[] Unknown4;
     public UNKSTRUCT2[] Unknown5;
-    public int Unknown10;
-    public int NumPlayableTracks;
+    // Takes values 90, 92, 125, 130, 170, 250
+    public int Unknown6;
+    public uint NumPlayableTracks;
     public int Unknown12;
     public byte Unknown13;
     public float PreviewStartMillis;

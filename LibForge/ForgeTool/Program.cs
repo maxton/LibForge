@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using LibForge.Midi;
 
@@ -39,6 +40,14 @@ namespace ForgeTool
               RBMidWriter.WriteStream(rbmid, fo);
             }
           }
+          break;
+        case "version":
+          var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+          var version = FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
+          var libAssembly = System.Reflection.Assembly.GetAssembly(typeof(RBMid));
+          var libVersion = FileVersionInfo.GetVersionInfo(libAssembly.Location).FileVersion;
+          Console.WriteLine($"ForgeTool v{version}");
+          Console.WriteLine($"LibForge v{libVersion}");
           break;
         case "test":
           {
@@ -89,6 +98,8 @@ namespace ForgeTool
     {
       Console.WriteLine("Usage: ForgeTool.exe <verb> [options]");
       Console.WriteLine("Verbs: ");
+      Console.WriteLine("  version");
+      Console.WriteLine("    - Prints the version number and exits");
       Console.WriteLine("  rbmid2mid <input.rbmid> <output.mid>");
       Console.WriteLine("   - converts a Forge midi to a Standard Midi File");
       Console.WriteLine("  reprocess <input.rbmid> <output.rbmid>");
