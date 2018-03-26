@@ -26,6 +26,12 @@ namespace LibForge.Util
     }
     protected void Write<T>(T[] arr, Action<T> writer)
     {
+      // Treat uninitialized arrays as empty ones
+      if(arr == null)
+      {
+        Write(0);
+        return;
+      }
       Write(arr.Length);
       foreach (var x in arr)
       {

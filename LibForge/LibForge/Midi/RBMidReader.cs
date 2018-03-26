@@ -101,9 +101,10 @@ namespace LibForge.Midi
       Unknown2 = Int(),
       Events = Arr(() => new RBMid.ANIM.EVENT
       {
-        Time = Float(),
-        Tick = UInt(),
-        Unknown1 = Int(),
+        StartMillis = Float(),
+        StartTick = UInt(),
+        OtherLength = UShort(),
+        LengthTicks = UShort(),
         KeyBitfield = Int(),
         Unknown2 = Int(),
         Unknown3 = Short()
@@ -348,7 +349,7 @@ namespace LibForge.Midi
     };
     private RBMid.TIMESIG ReadTimesig() => new RBMid.TIMESIG
     {
-      Unknown = Int(),
+      Measure = Int(),
       Tick = UInt(),
       Numerator = Short(),
       Denominator = Short()

@@ -95,9 +95,10 @@ namespace LibForge.Midi
       Write(obj.Unknown2);
       Write(obj.Events, o =>
       {
-        Write(o.Time);
-        Write(o.Tick);
-        Write(o.Unknown1);
+        Write(o.StartMillis);
+        Write(o.StartTick);
+        Write(o.OtherLength);
+        Write(o.LengthTicks);
         Write(o.KeyBitfield);
         Write(o.Unknown2);
         Write(o.Unknown3);
@@ -370,7 +371,7 @@ namespace LibForge.Midi
     }
     private void WriteTimesig(RBMid.TIMESIG obj)
     {
-      Write(obj.Unknown);
+      Write(obj.Measure);
       Write(obj.Tick);
       Write(obj.Numerator);
       Write(obj.Denominator);

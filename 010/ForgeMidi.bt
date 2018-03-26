@@ -136,7 +136,9 @@ typedef struct {
     char unk;
 } LYRICS<read=LYRICS_READ,optimize=false>;
 string LYRICS_READ(LYRICS& t){
-    return PSTR_READ(t.track_name);
+    string ret;
+    SPrintf(ret, "%s (%d, %d, %d)", PSTR_READ(t.track_name), t.unknown, t.unknown_2, t.unk);
+    return ret;
 }
 
 typedef struct {
@@ -163,7 +165,8 @@ typedef struct {
     struct {
         float time;
         tick_t ticks;
-        int unk1;
+        ushort Other_length_ticks;
+        ushort Length_ticks;
         // Stores each key down as (1 << (MIDI_NOTE - 48))
         int key_bitfield<read=READ_KEY_POS>;
         int unk2;
@@ -302,14 +305,16 @@ typedef struct {
     int num_notes;
     struct {
         int type;
-        int midi_note;
-        int midi_note_2;
+        int midi_note_start;
+        int midi_note_end; // same as start unless portamento
         float start_ms;
         tick_t start;
         float length;
-        short unk1;
-        PSTR lyric;
-        char unk[9];
+        ushort length_ticks;
+        PSTR lyric; // empty string on portamento, symbols always stripped
+        char unk[9]; // 0 0 0 0 0 1 0 0 1 for normal notes
+                     // 0 0 0 0 0 1 1 0 1 for portamento
+                     // 0 0 1 0 0 1 0 0 1 for unpitched
     } vocal_notes[num_notes]<optimize=false>;
     int num_something;
     int something[num_something];
@@ -397,14 +402,14 @@ typedef struct {
 } TEMPO;
 
 typedef struct {
-    int unk;
-    int tick;
+    int measure;
+    tick_t tick;
     int16 numerator;
     int16 denominator;
 } TIMESIG<read=TIMESIG_read>;
 string TIMESIG_read(TIMESIG& t){
     string ret;
-    SPrintf(ret, "%d : %d/%d", t.tick, t.numerator, t.denominator);
+    SPrintf(ret, "%s : %d/%d, %d", tick_t_read(t.tick), t.numerator, t.denominator, t.measure);
     return ret;
 }
 

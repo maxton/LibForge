@@ -24,8 +24,21 @@ namespace ForgeTool
             using (var fo = File.OpenWrite(output))
             {
               var rbmid = RBMidReader.ReadStream(fi);
-              var midi = rbmid.ToMidiFile();
+              var midi = RBMidConverter.ToMid(rbmid);
               MidiCS.MidiFileWriter.WriteSMF(midi, fo);
+            }
+          }
+          break;
+        case "mid2rbmid":
+          {
+            var input = args[1];
+            var output = args[2];
+            using (var fi = File.OpenRead(input))
+            using (var fo = File.OpenWrite(output))
+            {
+              var mid = MidiCS.MidiFileReader.FromStream(fi);
+              var rbmid = RBMidConverter.ToRBMid(mid);
+              RBMidWriter.WriteStream(rbmid, fo);
             }
           }
           break;
@@ -51,6 +64,7 @@ namespace ForgeTool
           break;
         case "test":
           {
+            // TODO: Test RBMid -> Mid -> RBMid (currently only testing RBMid -> RBMid)
             var dir = args[1];
             int succ = 0, warn = 0, fail = 0;
             foreach (var f in Directory.EnumerateFiles(dir, "*.rbmid_ps4"))
@@ -104,6 +118,8 @@ namespace ForgeTool
       Console.WriteLine("   - converts a Forge midi to a Standard Midi File");
       Console.WriteLine("  reprocess <input.rbmid> <output.rbmid>");
       Console.WriteLine("   - converts a Forge midi to a Forge midi");
+      Console.WriteLine("  mid2rbmid <input.mid> <output.rbmid>");
+      Console.WriteLine("   - converts a Standard Midi File to a Forge midi");
     }
   }
 }

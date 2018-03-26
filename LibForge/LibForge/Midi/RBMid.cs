@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using LibForge.Extensions;
-using GameArchives.Common;
 using MidiCS;
 
 
@@ -12,9 +6,6 @@ namespace LibForge.Midi
 {
   public class RBMid
   {
-    public MidiFile ToMidiFile() =>
-      new MidiFile(MidiFormat.MultiTrack, new List<MidiTrack>(MidiTracks), 480);
-
     public struct TICKTEXT
     {
       public uint Tick;
@@ -49,9 +40,10 @@ namespace LibForge.Midi
     {
       public struct EVENT
       {
-        public float Time;
-        public uint Tick;
-        public int Unknown1;
+        public float StartMillis;
+        public uint StartTick;
+        public ushort OtherLength;
+        public ushort LengthTicks;
         public int KeyBitfield;
         public int Unknown2;
         public short Unknown3;
@@ -176,6 +168,10 @@ namespace LibForge.Midi
         public float Length;
         public short Unknown1;
         public string Lyric;
+        // 9 Bytes are flags
+        // 0 0 0 0 0 1 0 0 1 for normal notes
+        // 0 0 0 0 0 1 1 0 1 for portamento
+        // 0 0 1 0 0 1 0 0 1 for unpitched
         public byte[] Unknown2;
       }
       public struct UNKNOWN
@@ -255,7 +251,7 @@ namespace LibForge.Midi
     }
     public struct TIMESIG
     {
-      public int Unknown;
+      public int Measure;
       public uint Tick;
       public short Numerator;
       public short Denominator;
