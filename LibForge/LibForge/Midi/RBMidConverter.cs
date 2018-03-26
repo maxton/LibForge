@@ -44,6 +44,8 @@ namespace LibForge.Midi
       private List<RBMid.TIMESIG> TimeSigs;
       private List<RBMid.BEAT> Beats;
       private List<string> MidiTrackNames;
+      private float PreviewStart;
+      private float PreviewEnd;
 
       public MidiConverter(MidiFile mf)
       {
@@ -154,7 +156,8 @@ namespace LibForge.Midi
           UnknownInts = new int[9],
           UnknownFloats = new float[4],
           MidiTrackNames = MidiTrackNames.ToArray(),
-          PreviewEndMillis = 1.0f,
+          PreviewStartMillis = PreviewStart,
+          PreviewEndMillis = PreviewEnd,
           UnknownTwo = 2,
           NumPlayableTracks = (uint)Lyrics.Count,
         };
@@ -224,6 +227,8 @@ namespace LibForge.Midi
         var fill = new RBMid.DRUMFILLS.DRUMFILL();
         var fills_unk = new List<RBMid.DRUMFILLS.FILLS_UNK>();
         var cymbal_markers = new SortedDictionary<uint, RBMid.CYMBALMARKER.MARKER>();
+        var overdrive_markers = new List<RBMid.SECTIONS.SECTION>();
+        var solo_markers = new List<RBMid.SECTIONS.SECTION>();
         cymbal_markers[0] = default;
         RBMid.CYMBALMARKER.MARKER.FLAGS GetFlag(byte key)
         {
@@ -254,11 +259,22 @@ namespace LibForge.Midi
               }
               else if (e.Key == OverdriveMarker)
               {
-
+                overdrive_markers.Add(new RBMid.SECTIONS.SECTION
+                {
+                  StartTicks = ticks
+                });
+              }
+              else if (e.Key == SoloMarker)
+              {
+                solo_markers.Add(new RBMid.SECTIONS.SECTION
+                {
+                  StartTicks = ticks
+                });
               }
               else if (e.Key == ProYellow || e.Key == ProBlue || e.Key == ProGreen)
               {
-                var marker = cymbal_markers.ContainsKey(ticks) ? cymbal_markers[ticks] : new RBMid.CYMBALMARKER.MARKER { Tick = ticks };
+                var marker = cymbal_markers.ContainsKey(ticks) ? cymbal_markers[ticks]
+                                                               : new RBMid.CYMBALMARKER.MARKER { Tick = ticks };
                 marker.Flags |= GetFlag(e.Key);
                 cymbal_markers[ticks] = marker;
               }
@@ -272,6 +288,18 @@ namespace LibForge.Midi
                   EndTick = ticks,
                   IsBRE = 0
                 });
+              }
+              else if (e.Key == OverdriveMarker)
+              {
+                var marker = overdrive_markers[overdrive_markers.Count - 1];
+                marker.LengthTicks = ticks - marker.StartTicks;
+                overdrive_markers[overdrive_markers.Count - 1] = marker;
+              }
+              else if (e.Key == SoloMarker)
+              {
+                var marker = overdrive_markers[overdrive_markers.Count - 1];
+                marker.LengthTicks = ticks - marker.StartTicks;
+                overdrive_markers[overdrive_markers.Count - 1] = marker;
               }
               else if (e.Key == ProYellow || e.Key == ProBlue || e.Key == ProGreen)
               {
@@ -314,9 +342,15 @@ namespace LibForge.Midi
         {
 
         });
+        var sections = new RBMid.SECTIONS.SECTION[6][];
+        sections[0] = overdrive_markers.ToArray();
+        sections[1] = solo_markers.ToArray();
         OverdriveSoloSections.Add(new RBMid.SECTIONS
         {
-
+          Sections = new RBMid.SECTIONS.SECTION[4][][]
+          {
+            sections, sections, sections, sections
+          }
         });
         HandMap.Add(new RBMid.HANDMAP
         {
@@ -711,7 +745,21 @@ namespace LibForge.Midi
         {
           switch (msg)
           {
-
+            case MetaTextEvent e:
+              switch (e.Text)
+              {
+                case "[preview_start]":
+                  PreviewStart = time * 1000;
+                  break;
+                case "[preview_end]":
+                  PreviewEnd = time * 1000;
+                  break;
+                case "[preview]":
+                  PreviewStart = time * 1000;
+                  PreviewEnd = PreviewStart + 30_000;
+                  break;
+              }
+              break;
           }
         });
       }
