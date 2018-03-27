@@ -368,11 +368,35 @@ namespace LibForge.Midi
 
       private void HandleBassTrk(MidiTrack track)
       {
+        var drumfills = new List<RBMid.DRUMFILLS.DRUMFILL>();
+        var fill = new RBMid.DRUMFILLS.DRUMFILL();
+        var fills_unk = new List<RBMid.DRUMFILLS.FILLS_UNK>();
         EachMessage(track, (msg, ticks, time) =>
         {
           switch (msg)
           {
-
+            case NoteOnEvent e:
+              if (e.Key == DrumFillMarkerStart)
+              {
+                fills_unk.Add(new RBMid.DRUMFILLS.FILLS_UNK
+                {
+                  Tick = ticks,
+                  Unknown = 31
+                });
+                fill.StartTick = ticks;
+              }
+              break;
+            case NoteOffEvent e:
+              if (e.Key == DrumFillMarkerStart)
+              {
+                drumfills.Add(new RBMid.DRUMFILLS.DRUMFILL
+                {
+                  StartTick = fill.StartTick,
+                  EndTick = ticks,
+                  IsBRE = 1
+                });
+              }
+              break;
           }
         });
 
@@ -385,7 +409,8 @@ namespace LibForge.Midi
         });
         DrumFills.Add(new RBMid.DRUMFILLS
         {
-
+          Fills = drumfills.ToArray(),
+          Unknown = fills_unk.ToArray()
         });
         ProMarkers.Add(new RBMid.CYMBALMARKER
         {
@@ -427,11 +452,35 @@ namespace LibForge.Midi
 
       private void HandleGtrTrk(MidiTrack track)
       {
+        var drumfills = new List<RBMid.DRUMFILLS.DRUMFILL>();
+        var fill = new RBMid.DRUMFILLS.DRUMFILL();
+        var fills_unk = new List<RBMid.DRUMFILLS.FILLS_UNK>();
         EachMessage(track, (msg, ticks, time) =>
         {
           switch (msg)
           {
-
+            case NoteOnEvent e:
+              if (e.Key == DrumFillMarkerStart)
+              {
+                fills_unk.Add(new RBMid.DRUMFILLS.FILLS_UNK
+                {
+                  Tick = ticks,
+                  Unknown = 31
+                });
+                fill.StartTick = ticks;
+              }
+              break;
+            case NoteOffEvent e:
+              if (e.Key == DrumFillMarkerStart)
+              {
+                drumfills.Add(new RBMid.DRUMFILLS.DRUMFILL
+                {
+                  StartTick = fill.StartTick,
+                  EndTick = ticks,
+                  IsBRE = 1
+                });
+              }
+              break;
           }
         });
 
@@ -444,6 +493,8 @@ namespace LibForge.Midi
         });
         DrumFills.Add(new RBMid.DRUMFILLS
         {
+          Fills = drumfills.ToArray(),
+          Unknown = fills_unk.ToArray()
         });
         ProMarkers.Add(new RBMid.CYMBALMARKER
         {
@@ -757,6 +808,14 @@ namespace LibForge.Midi
                 case "[preview]":
                   PreviewStart = time * 1000;
                   PreviewEnd = PreviewStart + 30_000;
+                  break;
+                case "[coda]":
+                  // TODO: This would be better in the Drum track code,
+                  // but we don't know if it's a BRE there because the lanes are the same for normal fills
+                  var idx = DrumFills[0].Fills.Length - 1;
+                  var lastDrumFill = DrumFills[0].Fills[idx];
+                  lastDrumFill.IsBRE = 1;
+                  DrumFills[0].Fills[idx] = lastDrumFill;
                   break;
               }
               break;
