@@ -82,12 +82,12 @@ namespace LibForge.Midi
     };
     private RBMid.DRUMFILLS ReadDrumFills() => new RBMid.DRUMFILLS
     {
-      Unknown = Arr(() => new RBMid.DRUMFILLS.FILLS_UNK
+      Lanes = Arr(() => new RBMid.DRUMFILLS.FILL_LANES
       {
         Tick = UInt(),
-        Unknown = UInt()
+        Lanes = UInt()
       }),
-      Fills = Arr(() => new RBMid.DRUMFILLS.DRUMFILL
+      Fills = Arr(() => new RBMid.DRUMFILLS.FILL
       {
         StartTick = UInt(),
         EndTick = UInt(),

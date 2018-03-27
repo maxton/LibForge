@@ -22,19 +22,19 @@ namespace LibForge.Midi
 
     public struct DRUMFILLS
     {
-      public struct FILLS_UNK
+      public struct FILL_LANES
       {
         public uint Tick;
-        public uint Unknown;
+        public uint Lanes;
       }
-      public struct DRUMFILL
+      public struct FILL
       {
         public uint StartTick;
         public uint EndTick;
         public byte IsBRE;
       }
-      public FILLS_UNK[] Unknown;
-      public DRUMFILL[] Fills;
+      public FILL_LANES[] Lanes;
+      public FILL[] Fills;
     }
     public struct ANIM
     {

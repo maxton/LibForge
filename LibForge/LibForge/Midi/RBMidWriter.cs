@@ -76,10 +76,10 @@ namespace LibForge.Midi
     }
     private void WriteDrumFills(RBMid.DRUMFILLS obj)
     {
-      Write(obj.Unknown, o => 
+      Write(obj.Lanes, o => 
       {
         Write(o.Tick);
-        Write(o.Unknown);
+        Write(o.Lanes);
       });
       Write(obj.Fills, o =>
       {
