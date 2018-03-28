@@ -34,7 +34,7 @@ namespace LibForge.Midi
       Write(r.Unknown5, WriteUnkstruct2);
       Write(r.Unknown6);
       Write(r.NumPlayableTracks);
-      Write(r.Unknown12);
+      Write(r.FinalTick);
       Write(r.Unknown13);
       Write(r.PreviewStartMillis);
       Write(r.PreviewEndMillis);
@@ -50,7 +50,7 @@ namespace LibForge.Midi
       Write(r.TwoTicks2, WriteTwoTicks);
       // end weirdness
       Write(r.UnknownTwo);
-      Write(r.Unknown16);
+      Write(r.LastMarkupEventTick);
       Write(r.MidiTracks, WriteMidiTrack);
       Array.ForEach(r.UnknownInts, Write);
       Array.ForEach(r.UnknownFloats, Write);
@@ -147,12 +147,12 @@ namespace LibForge.Midi
         {
           Write(x.StartMillis);
           Write(x.StartTicks);
+          Write(x.Length1);
+          Write(x.Length2);
+          Write(x.Lanes);
+          Write(x.IsHopo);
+          Write(x.NoTail);
           Write(x.Unknown);
-          Write(x.Unknown2);
-          Write(x.Unknown3);
-          Write(x.Unknown4);
-          Write(x.Unknown5);
-          Write(x.Unknown6);
         });
       });
       Write(obj.Unknown);

@@ -46,6 +46,8 @@ namespace LibForge.Midi
       private List<string> MidiTrackNames;
       private float PreviewStart;
       private float PreviewEnd;
+      private uint LastMarkupTick;
+      private uint FinalTick = 0;
 
       public MidiConverter(MidiFile mf)
       {
@@ -159,7 +161,9 @@ namespace LibForge.Midi
           PreviewStartMillis = PreviewStart,
           PreviewEndMillis = PreviewEnd,
           UnknownTwo = 2,
+          LastMarkupEventTick = LastMarkupTick,
           NumPlayableTracks = (uint)Lyrics.Count,
+          FinalTick = FinalTick,
         };
         return rb;
       }
@@ -201,6 +205,7 @@ namespace LibForge.Midi
         foreach(var msg in track.Messages)
         {
           ticks += msg.DeltaTime;
+          if (ticks > FinalTick) FinalTick = ticks;
           var tempo = GetTempo(ticks);
           var time = tempo.Time + ((ticks - tempo.Tick) / 480.0) * (60 / tempo.BPM);
           action(msg, ticks, (float)time);
@@ -215,6 +220,7 @@ namespace LibForge.Midi
       const byte ProBlue = 111;
       const byte ProYellow = 110;
       const byte SoloMarker = 103;
+      const byte ExpertEnd = 100;
       const byte ExpertStart = 96;
       const byte HardStart = 84;
       const byte MediumStart = 72;
@@ -450,11 +456,14 @@ namespace LibForge.Midi
         });
       }
 
+      const byte TrillMarker = 127;
       private void HandleGtrTrk(MidiTrack track)
       {
         var drumfills = new List<RBMid.DRUMFILLS.FILL>();
         var fill = new RBMid.DRUMFILLS.FILL();
         var fills_unk = new List<RBMid.DRUMFILLS.FILL_LANES>();
+        var trills = new List<RBMid.GTRTRILLS.TRILL>();
+        var trill = new RBMid.GTRTRILLS.TRILL();
         EachMessage(track, (msg, ticks, time) =>
         {
           switch (msg)
@@ -469,6 +478,22 @@ namespace LibForge.Midi
                 });
                 fill.StartTick = ticks;
               }
+              else if(e.Key == TrillMarker)
+              {
+                trill.StartTick = ticks;
+                trill.EndTick = uint.MaxValue;
+                trill.LowFret = 4;
+                trill.HighFret = 0;
+              }
+              else if(e.Key >= ExpertStart && e.Key <= ExpertEnd)
+              {
+                if (trill.EndTick >= ticks)
+                {
+                  var note = e.Key - ExpertStart;
+                  if (note < trill.LowFret) trill.LowFret = note;
+                  if (note > trill.HighFret) trill.HighFret = note;
+                }
+              }
               break;
             case NoteOffEvent e:
               if (e.Key == DrumFillMarkerStart)
@@ -479,6 +504,11 @@ namespace LibForge.Midi
                   EndTick = ticks,
                   IsBRE = 1
                 });
+              }
+              else if (e.Key == TrillMarker)
+              {
+                trill.EndTick = ticks;
+                trills.Add(trill);
               }
               break;
           }
@@ -506,7 +536,10 @@ namespace LibForge.Midi
         });
         TrillMarkers.Add(new RBMid.GTRTRILLS
         {
-
+          Trills = new RBMid.GTRTRILLS.TRILL[4][]
+          {
+            null, null, null, trills.ToArray()
+          }
         });
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
@@ -850,6 +883,7 @@ namespace LibForge.Midi
       {
         EachMessage(track, (msg, ticks, time) =>
         {
+          LastMarkupTick = ticks;
           switch (msg)
           {
 

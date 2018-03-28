@@ -119,12 +119,12 @@ namespace LibForge.Midi
       {
         public float StartMillis;
         public uint StartTicks;
-        public short Unknown;
-        public short Unknown2;
-        public byte Unknown3;
-        public int Unknown4;
-        public byte Unknown5;
-        public int Unknown6;
+        public ushort Length1;
+        public ushort Length2;
+        public int Lanes;
+        public byte IsHopo;
+        public byte NoTail;
+        public int Unknown;
       }
       public GEM[][] Gems;
       public int Unknown;
@@ -280,7 +280,7 @@ namespace LibForge.Midi
     // Takes values 90, 92, 125, 130, 170, 250
     public int Unknown6;
     public uint NumPlayableTracks;
-    public int Unknown12;
+    public uint FinalTick;
     public byte Unknown13;
     public float PreviewStartMillis;
     public float PreviewEndMillis;
@@ -296,7 +296,7 @@ namespace LibForge.Midi
     public TWOTICKS[] TwoTicks2;
 
     public int UnknownTwo;
-    public int Unknown16;
+    public uint LastMarkupEventTick;
     public MidiTrack[] MidiTracks;
     public int[] UnknownInts;
     public float[] UnknownFloats;

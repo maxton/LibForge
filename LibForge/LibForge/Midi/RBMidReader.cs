@@ -40,7 +40,7 @@ namespace LibForge.Midi
       r.Unknown5 = Arr(ReadUnkstruct2);
       r.Unknown6 = Int();
       r.NumPlayableTracks = Check(UInt(), numTracks);
-      r.Unknown12 = Int();
+      r.FinalTick = UInt();
       r.Unknown13 = Byte();
       r.PreviewStartMillis = Float();
       r.PreviewEndMillis = Float();
@@ -56,7 +56,7 @@ namespace LibForge.Midi
       r.TwoTicks2 = Arr(ReadTwoTicks);
 
       r.UnknownTwo = Check(Int(), 2);
-      r.Unknown16 = Int();
+      r.LastMarkupEventTick = UInt();
       r.MidiTracks = Arr(ReadMidiTrack);
       r.UnknownInts = FixedArr(Int, 9);
       r.UnknownFloats = FixedArr(Float, 4);
@@ -150,12 +150,12 @@ namespace LibForge.Midi
       {
         StartMillis = Float(),
         StartTicks = UInt(),
-        Unknown = Short(),
-        Unknown2 = Short(),
-        Unknown3 = Byte(),
-        Unknown4 = Int(),
-        Unknown5 = Byte(),
-        Unknown6 = Int()
+        Length1 = UShort(),
+        Length2 = UShort(),
+        Lanes = Int(),
+        IsHopo = Byte(),
+        NoTail = Byte(),
+        Unknown = Int()
       }))),
       Unknown = Int()
     };

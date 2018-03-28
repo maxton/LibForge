@@ -66,7 +66,7 @@ string int24_read(int24 v)
 }
 
 typedef struct {
-    uint tick;
+    tick_t tick;
     char kind;
     if(kind == 1){
         msg_type_chan tc;
@@ -244,21 +244,37 @@ typedef struct {
 } DRUMMIX;
 
 typedef struct {
+    float start_millis;
+    tick_t start_ticks;
+    short length_ticks_unknown;
+    short length_ticks;
+    struct {
+        int lane_1 : 1;
+        int lane_2 : 1;
+        int lane_3 : 1;
+        int lane_4 : 1;
+        int lane_5 : 1;
+        int additional_real_keys_lanes : 27;
+    } lanes ;
+    char is_hopo;
+    Assert(is_hopo == 0 || is_hopo == 1);
+    char no_tail;
+    Assert(no_tail == 0 || no_tail == 1);
+    int unknown;
+    Assert(unknown == 0 || unknown == 1);
+} GEM<read=GEM_read>;
+string GEM_read(GEM& gem){
+    string ret;
+    SPrintf(ret, "%f", gem.start_millis/1000);
+    return ret;
+}
+typedef struct {
     int num_difficulties;
     struct {
         int unknown_aa;
         int num_events;
         if(num_events)
-            struct {
-                float start_millis;
-                tick_t start_ticks;
-                short unk;
-                short unk_2;
-                char one_1;
-                int unk_3;
-                char one_2;
-                int unk_4;
-            } gem[num_events];
+            GEM gem[num_events];
     } difficulty[num_difficulties]<optimize=false>;
     int end;
 } GEMTRACK;
@@ -466,7 +482,7 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int what;
     int num_tracks_repeat;
     Assert(num_tracks_repeat == num_lyric_tracks);
-    int what;
+    tick_t FinalTick;
     char what;
     float preview_start_ms;
     float preview_end_ms;
@@ -506,7 +522,7 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
 
     int two;
     Assert(two == 2, "This has always been 2");
-    int unk;
+    tick_t LastMarkupEventTick;
     int num_midi_tracks;
     MIDITRACK tracks[num_midi_tracks]<optimize=false>;
     int unknown[9];
