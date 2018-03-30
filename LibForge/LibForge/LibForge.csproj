@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Midi\MidiHelper.cs" />
     <Compile Include="Midi\RBMid.cs" />
     <Compile Include="Midi\RBMidConverter.cs" />
     <Compile Include="Midi\RBMidReader.cs" />

@@ -96,7 +96,7 @@ namespace LibForge.Midi
 
     public struct GTRTRILLS
     {
-      public struct TRILL
+      public class TRILL
       {
         public uint StartTick;
         public uint EndTick;

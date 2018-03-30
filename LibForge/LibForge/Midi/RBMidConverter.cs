@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using MidiCS;
-using MidiCS.Events;
 using System.Linq;
 
 namespace LibForge.Midi
@@ -52,7 +51,7 @@ namespace LibForge.Midi
       public MidiConverter(MidiFile mf)
       {
         this.mf = mf;
-        trackHandlers = new Dictionary<string, Action<MidiTrack>>
+        trackHandlers = new Dictionary<string, Action<MidiTrackProcessed>>
         {
           {"PART DRUMS", HandleDrumTrk },
           {"PART BASS", HandleBassTrk },
@@ -98,7 +97,8 @@ namespace LibForge.Midi
         TimeSigs = new List<RBMid.TIMESIG>();
         Beats = new List<RBMid.BEAT>();
         MidiTrackNames = new List<string>();
-        mf.Tracks.ForEach(ProcessTrack);
+        var processedTracks = new MidiHelper().ProcessTracks(mf);
+        processedTracks.ForEach(ProcessTrack);
         var lastTimeSig = mf.TempoTimeSigMap[0];
         var measure = 0;
         foreach (var tempo in mf.TempoTimeSigMap)
@@ -174,49 +174,17 @@ namespace LibForge.Midi
         };
         return rb;
       }
-      private Dictionary<string, Action<MidiTrack>> trackHandlers;
-      private MidiTrack currentTrack;
+      private Dictionary<string, Action<MidiTrackProcessed>> trackHandlers;
+      private MidiTrackProcessed currentTrack;
 
-      private void ProcessTrack(MidiTrack track)
+      private void ProcessTrack(MidiTrackProcessed track)
       {
         currentTrack = track;
         MidiTrackNames.Add(track.Name);
         if (MidiTrackNames.Count == 1)
-          HandleFirstTrack(track);
+          return;
         else if (trackHandlers.ContainsKey(track.Name))
           trackHandlers[track.Name](track);
-      }
-
-      private void HandleFirstTrack(MidiTrack track)
-      {
-        
-      }
-
-      private TimeSigTempoEvent GetTempo(uint tick)
-      {
-        var idx = 0;
-        for(; idx < mf.TempoTimeSigMap.Count; idx++)
-        {
-          if(mf.TempoTimeSigMap[idx].Tick > tick)
-          {
-            break;
-          }
-        }
-        idx--;
-        return mf.TempoTimeSigMap[idx];
-      }
-      private void EachMessage(MidiTrack track, Action<IMidiMessage, uint, float> action)
-      {
-        var ticks = 0U;
-        var tempoIdx = 0;
-        foreach(var msg in track.Messages)
-        {
-          ticks += msg.DeltaTime;
-          if (ticks > FinalTick) FinalTick = ticks;
-          var tempo = GetTempo(ticks);
-          var time = tempo.Time + ((ticks - tempo.Tick) / 480.0) * (60 / tempo.BPM);
-          action(msg, ticks, (float)time);
-        }
       }
 
       const byte Roll2 = 127;
@@ -234,10 +202,9 @@ namespace LibForge.Midi
       const byte EasyStart = 60;
       const byte DrumAnimEnd = 51;
       const byte DrumAnimStart = 24;
-      private void HandleDrumTrk(MidiTrack track)
+      private void HandleDrumTrk(MidiTrackProcessed track)
       {
         var drumfills = new List<RBMid.DRUMFILLS.FILL>();
-        var fill = new RBMid.DRUMFILLS.FILL();
         var fills_unk = new List<RBMid.DRUMFILLS.FILL_LANES>();
         var cymbal_markers = new SortedDictionary<uint, RBMid.CYMBALMARKER.MARKER>();
         var overdrive_markers = new List<RBMid.SECTIONS.SECTION>();
@@ -256,11 +223,13 @@ namespace LibForge.Midi
           }
           return 0;
         }
-        EachMessage(track, (msg, ticks, time) =>
+        foreach(var item in track.Items)
         {
-          switch (msg)
+          var ticks = item.StartTicks;
+          var time = item.StartTime;
+          switch (item)
           {
-            case NoteOnEvent e:
+            case MidiNote e:
               if (e.Key == DrumFillMarkerStart)
               {
                 fills_unk.Add(new RBMid.DRUMFILLS.FILL_LANES
@@ -268,61 +237,45 @@ namespace LibForge.Midi
                   Tick = ticks,
                   Lanes = 0b11111 // TODO: parse each lane
                 });
-                fill.StartTick = ticks;
+                drumfills.Add(new RBMid.DRUMFILLS.FILL
+                {
+                  StartTick = ticks,
+                  EndTick = ticks + e.LengthTicks, // TODO: this seems to be rounded up to the next note
+                  IsBRE = 0
+                });
               }
               else if (e.Key == OverdriveMarker)
               {
                 overdrive_markers.Add(new RBMid.SECTIONS.SECTION
                 {
-                  StartTicks = ticks
+                  StartTicks = ticks,
+                  LengthTicks = e.LengthTicks
                 });
               }
               else if (e.Key == SoloMarker)
               {
                 solo_markers.Add(new RBMid.SECTIONS.SECTION
                 {
-                  StartTicks = ticks
+                  StartTicks = ticks,
+                  LengthTicks = e.LengthTicks
                 });
               }
               else if (e.Key == ProYellow || e.Key == ProBlue || e.Key == ProGreen)
               {
-                var marker = cymbal_markers.ContainsKey(ticks) ? cymbal_markers[ticks]
+                var startMarker = cymbal_markers.ContainsKey(ticks) ? cymbal_markers[ticks]
                                                                : new RBMid.CYMBALMARKER.MARKER { Tick = ticks };
-                marker.Flags |= GetFlag(e.Key);
-                cymbal_markers[ticks] = marker;
-              }
-              break;
-            case NoteOffEvent e:
-              if (e.Key == DrumFillMarkerStart)
-              {
-                drumfills.Add(new RBMid.DRUMFILLS.FILL
-                {
-                  StartTick = fill.StartTick,
-                  EndTick = ticks, // TODO: this seems to be rounded up to the next note
-                  IsBRE = 0
-                });
-              }
-              else if (e.Key == OverdriveMarker)
-              {
-                var marker = overdrive_markers[overdrive_markers.Count - 1];
-                marker.LengthTicks = ticks - marker.StartTicks;
-                overdrive_markers[overdrive_markers.Count - 1] = marker;
-              }
-              else if (e.Key == SoloMarker)
-              {
-                var marker = overdrive_markers[overdrive_markers.Count - 1];
-                marker.LengthTicks = ticks - marker.StartTicks;
-                overdrive_markers[overdrive_markers.Count - 1] = marker;
-              }
-              else if (e.Key == ProYellow || e.Key == ProBlue || e.Key == ProGreen)
-              {
-                var marker = cymbal_markers.ContainsKey(ticks) ? cymbal_markers[ticks] : new RBMid.CYMBALMARKER.MARKER { Tick = ticks };
-                marker.Flags &= ~GetFlag(e.Key);
-                cymbal_markers[ticks] = marker;
+                startMarker.Flags |= GetFlag(e.Key);
+                cymbal_markers[ticks] = startMarker;
+
+                var endTicks = ticks + e.LengthTicks;
+                var endMarker = cymbal_markers.ContainsKey(endTicks) ? cymbal_markers[endTicks]
+                                                                     : new RBMid.CYMBALMARKER.MARKER { Tick = ticks };
+                endMarker.Flags &= ~GetFlag(e.Key);
+                cymbal_markers[endTicks] = endMarker;
               }
               break;
           }
-        });
+        }
         Lyrics.Add(new RBMid.LYRICS
         {
           TrackName = track.Name,
@@ -379,39 +332,32 @@ namespace LibForge.Midi
         });
       }
 
-      private void HandleBassTrk(MidiTrack track)
+      private void HandleBassTrk(MidiTrackProcessed track)
       {
         var drumfills = new List<RBMid.DRUMFILLS.FILL>();
-        var fill = new RBMid.DRUMFILLS.FILL();
         var fills_unk = new List<RBMid.DRUMFILLS.FILL_LANES>();
-        EachMessage(track, (msg, ticks, time) =>
+        foreach(var item in track.Items)
         {
-          switch (msg)
+          switch (item)
           {
-            case NoteOnEvent e:
+            case MidiNote e:
               if (e.Key == DrumFillMarkerStart)
               {
                 fills_unk.Add(new RBMid.DRUMFILLS.FILL_LANES
                 {
-                  Tick = ticks,
+                  Tick = e.StartTicks,
                   Lanes = 31
                 });
-                fill.StartTick = ticks;
-              }
-              break;
-            case NoteOffEvent e:
-              if (e.Key == DrumFillMarkerStart)
-              {
                 drumfills.Add(new RBMid.DRUMFILLS.FILL
                 {
-                  StartTick = fill.StartTick,
-                  EndTick = ticks,
+                  StartTick = e.StartTicks,
+                  EndTick = e.StartTicks + e.LengthTicks,
                   IsBRE = 1
                 });
               }
               break;
           }
-        });
+        }
 
         Lyrics.Add(new RBMid.LYRICS
         {
@@ -464,37 +410,45 @@ namespace LibForge.Midi
       }
 
       const byte TrillMarker = 127;
-      private void HandleGtrTrk(MidiTrack track)
+      private void HandleGtrTrk(MidiTrackProcessed track)
       {
         var drumfills = new List<RBMid.DRUMFILLS.FILL>();
-        var fill = new RBMid.DRUMFILLS.FILL();
         var fills_unk = new List<RBMid.DRUMFILLS.FILL_LANES>();
         var trills = new List<RBMid.GTRTRILLS.TRILL>();
         var trill = new RBMid.GTRTRILLS.TRILL();
-        EachMessage(track, (msg, ticks, time) =>
+        foreach(var item in track.Items)
         {
-          switch (msg)
+          switch (item)
           {
-            case NoteOnEvent e:
+            case MidiNote e:
               if (e.Key == DrumFillMarkerStart)
               {
                 fills_unk.Add(new RBMid.DRUMFILLS.FILL_LANES
                 {
-                  Tick = ticks,
+                  Tick = e.StartTicks,
                   Lanes = 31
                 });
-                fill.StartTick = ticks;
+                drumfills.Add(new RBMid.DRUMFILLS.FILL
+                {
+                  StartTick = e.StartTicks,
+                  EndTick = e.StartTicks + e.LengthTicks,
+                  IsBRE = 1
+                });
               }
               else if(e.Key == TrillMarker)
               {
-                trill.StartTick = ticks;
-                trill.EndTick = uint.MaxValue;
-                trill.LowFret = 4;
-                trill.HighFret = 0;
+                trill = new RBMid.GTRTRILLS.TRILL
+                {
+                  StartTick = e.StartTicks,
+                  EndTick = e.StartTicks + e.LengthTicks,
+                  LowFret = 4,
+                  HighFret = 0
+                };
+                trills.Add(trill);
               }
               else if(e.Key >= ExpertStart && e.Key <= ExpertEnd)
               {
-                if (trill.EndTick >= ticks)
+                if (trill.EndTick >= e.StartTicks)
                 {
                   var note = e.Key - ExpertStart;
                   if (note < trill.LowFret) trill.LowFret = note;
@@ -502,24 +456,8 @@ namespace LibForge.Midi
                 }
               }
               break;
-            case NoteOffEvent e:
-              if (e.Key == DrumFillMarkerStart)
-              {
-                drumfills.Add(new RBMid.DRUMFILLS.FILL
-                {
-                  StartTick = fill.StartTick,
-                  EndTick = ticks,
-                  IsBRE = 1
-                });
-              }
-              else if (e.Key == TrillMarker)
-              {
-                trill.EndTick = ticks;
-                trills.Add(trill);
-              }
-              break;
           }
-        });
+        }
 
         Lyrics.Add(new RBMid.LYRICS
         {
@@ -574,15 +512,15 @@ namespace LibForge.Midi
         });
       }
 
-      private void HandleRealKeysXTrk(MidiTrack track)
+      private void HandleRealKeysXTrk(MidiTrackProcessed track)
       {
-        EachMessage(track, (msg, ticks, time) =>
+        foreach(var item in track.Items)
         {
-          switch (msg)
+          switch (item)
           {
 
           }
-        });
+        }
 
         Lyrics.Add(new RBMid.LYRICS
         {
@@ -632,42 +570,33 @@ namespace LibForge.Midi
         });
       }
 
-      private void HandleKeysAnimTrk(MidiTrack track)
+      private void HandleKeysAnimTrk(MidiTrackProcessed track)
       {
         var anims = new List<RBMid.ANIM.EVENT>();
-        var notes = new int[25];
-        EachMessage(track, (msg, ticks, time) =>
+        foreach(var item in track.Items)
         {
-          switch (msg)
+          switch (item)
           {
-            case NoteOnEvent e:
+            case MidiNote e:
               if(e.Key >= 48 && e.Key <= 72)
               {
-                notes[e.Key - 48] = anims.Count;
                 anims.Add(new RBMid.ANIM.EVENT
                 {
-                  StartMillis = time * 1000,
-                  StartTick = ticks,
-                  KeyBitfield = 1 << (e.Key - 48)
+                  StartMillis = (float)(e.StartTime * 1000),
+                  StartTick = e.StartTicks,
+                  KeyBitfield = 1 << (e.Key - 48),
+                  LengthTicks = (ushort)(e.LengthTicks),
+                  // TODO: Where does this value actually come from?
+                  OtherLength = (ushort)(e.LengthTicks),
+                  // TODO: Usually this is 256, or 0, or 65536 (so maybe it is actually 4 bools?)
+                  Unknown2 = 256,
+                  // TODO
+                  Unknown3 = 0
                 });
               }
               break;
-            case NoteOffEvent e:
-              if(e.Key >= 48 && e.Key <= 72)
-              {
-                var anim = anims[notes[e.Key - 48]];
-                anim.LengthTicks = (ushort)(ticks - anim.StartTick);
-                // TODO: Where does this value actually come from?
-                anim.OtherLength = anim.LengthTicks;
-                // TODO: Usually this is 256, or 0, or 65536 (so maybe it is actually 4 bools?)
-                anim.Unknown2 = 256;
-                // TODO
-                anim.Unknown3 = 0;
-                anims[notes[e.Key - 48]] = anim;
-              }
-              break;
           }
-        });
+        }
         Anims.Add(new RBMid.ANIM
         {
           TrackName = track.Name,
@@ -678,27 +607,25 @@ namespace LibForge.Midi
         });
       }
 
-      private void HandleVocalsTrk(MidiTrack track)
+      private void HandleVocalsTrk(MidiTrackProcessed track)
       {
         var lyrics = new List<RBMid.TICKTEXT>();
-        EachMessage(track, (msg, ticks, time) =>
+        foreach(var item in track.Items)
         {
-          switch (msg)
+          switch (item)
           {
-            case TrackName e:
-              break;
-            case MetaTextEvent e:
+            case MidiText e:
               if (e.Text[0] != '[')
               {
                 lyrics.Add(new RBMid.TICKTEXT
                 {
                   Text = e.Text,
-                  Tick = ticks,
+                  Tick = e.StartTicks,
                 });
               }
               break;
           }
-        });
+        }
 
 
         Lyrics.Add(new RBMid.LYRICS
@@ -754,27 +681,25 @@ namespace LibForge.Midi
         });
       }
 
-      private void HandleHarmTrk(MidiTrack track)
+      private void HandleHarmTrk(MidiTrackProcessed track)
       {
         var lyrics = new List<RBMid.TICKTEXT>();
-        EachMessage(track, (msg, ticks, time) =>
+        foreach(var item in track.Items)
         {
-          switch (msg)
+          switch (item)
           {
-            case TrackName e:
-              break;
-            case MetaTextEvent e:
+            case MidiText e:
               if (e.Text[0] != '[')
               {
                 lyrics.Add(new RBMid.TICKTEXT
                 {
                   Text = e.Text,
-                  Tick = ticks,
+                  Tick = e.StartTicks,
                 });
               }
               break;
           }
-        });
+        }
 
 
         Lyrics.Add(new RBMid.LYRICS
@@ -830,23 +755,24 @@ namespace LibForge.Midi
         });
       }
 
-      private void HandleEventsTrk(MidiTrack track)
+      private void HandleEventsTrk(MidiTrackProcessed track)
       {
-        EachMessage(track, (msg, ticks, time) =>
+        foreach(var item in track.Items)
         {
-          switch (msg)
+          var timeMillis = (float)(item.StartTime * 1000);
+          switch (item)
           {
-            case MetaTextEvent e:
+            case MidiText e:
               switch (e.Text)
               {
                 case "[preview_start]":
-                  PreviewStart = time * 1000;
+                  PreviewStart = timeMillis;
                   break;
                 case "[preview_end]":
-                  PreviewEnd = time * 1000;
+                  PreviewEnd = timeMillis;
                   break;
                 case "[preview]":
-                  PreviewStart = time * 1000;
+                  PreviewStart = timeMillis;
                   PreviewEnd = PreviewStart + 30_000;
                   break;
                 case "[coda]":
@@ -860,53 +786,53 @@ namespace LibForge.Midi
               }
               break;
           }
-        });
+        }
       }
 
-      private void HandleBeatTrk(MidiTrack track)
+      private void HandleBeatTrk(MidiTrackProcessed track)
       {
-        EachMessage(track, (msg, ticks, time) =>
+        foreach(var item in track.Items)
         {
-          switch (msg)
+          switch (item)
           {
-            case NoteOnEvent e:
+            case MidiNote e:
               switch (e.Key)
               {
                 case 12:
                 case 13:
                   Beats.Add(new RBMid.BEAT
                   {
-                    Tick = ticks,
+                    Tick = e.StartTicks,
                     Downbeat = e.Key == 12
                   });
                   break;
               }
               break;
           }
-        });
+        }
       }
 
-      private void HandleMarkupTrk(MidiTrack track)
+      private void HandleMarkupTrk(MidiTrackProcessed track)
       {
-        EachMessage(track, (msg, ticks, time) =>
+        LastMarkupTick = track.LastTick;
+        foreach(var item in track.Items)
         {
-          LastMarkupTick = ticks;
-          switch (msg)
+          switch (item)
           {
 
           }
-        });
+        }
       }
 
-      private void HandleVenueTrk(MidiTrack track)
+      private void HandleVenueTrk(MidiTrackProcessed track)
       {
-        EachMessage(track, (msg, ticks, time) =>
+        foreach (var item in track.Items)
         {
-          switch (msg)
+          switch (item)
           {
 
           }
-        });
+        }
       }
     }
   }
