@@ -164,6 +164,13 @@ namespace LibForge.Midi
           LastMarkupEventTick = LastMarkupTick,
           NumPlayableTracks = (uint)Lyrics.Count,
           FinalTick = FinalTick,
+          UnknownHundred = 100f,
+          UnknownNegOne = -1,
+          UnknownOne = 1,
+          UnknownZeroByte = 0,
+          UnknownZero = 0,
+          // TODO: When should this not be 0xAA?
+          Unknown6 = 0xAA,
         };
         return rb;
       }

@@ -33,15 +33,15 @@ namespace LibForge.Midi
       r.GemTracks = Arr(ReadGemTracks, numTracks);
       r.OverdriveSoloSections = Arr(ReadOverdrives, numTracks);
       r.VocalTracks = Arr(ReadVocalTrack, MaxVocalTracks);
-      r.Unknown1 = Int();
-      r.Unknown2 = Int();
-      r.Unknown3 = Float();
+      r.UnknownOne = Check(Int(), 1);
+      r.UnknownNegOne = Check(Int(), -1);
+      r.UnknownHundred = Check(Float(), 100f);
       r.Unknown4 = Arr(ReadUnkstruct1);
       r.Unknown5 = Arr(ReadUnkstruct2);
       r.Unknown6 = Int();
       r.NumPlayableTracks = Check(UInt(), numTracks);
       r.FinalTick = UInt();
-      r.Unknown13 = Byte();
+      r.UnknownZeroByte = Check(Byte(), (byte)0);
       r.PreviewStartMillis = Float();
       r.PreviewEndMillis = Float();
       r.GuitarHandmap = Arr(ReadHandMap, numTracks);
@@ -63,7 +63,7 @@ namespace LibForge.Midi
       r.Tempos = Arr(ReadTempo);
       r.TimeSigs = Arr(ReadTimesig);
       r.Beats = Arr(ReadBeat);
-      r.Unknown19 = Check(Int(), 0);
+      r.UnknownZero = Check(Int(), 0);
       r.MidiTrackNames = CheckedArr(String, (uint)r.MidiTracks.Length);
       return r;
     }

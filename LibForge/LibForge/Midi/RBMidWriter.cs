@@ -27,15 +27,15 @@ namespace LibForge.Midi
       Write(r.GemTracks, WriteGemTracks);
       Write(r.OverdriveSoloSections, WriteSectionMarkers);
       Write(r.VocalTracks, WriteReadVocalTrack);
-      Write(r.Unknown1);
-      Write(r.Unknown2);
-      Write(r.Unknown3);
+      Write(r.UnknownOne);
+      Write(r.UnknownNegOne);
+      Write(r.UnknownHundred);
       Write(r.Unknown4, WriteUnkstruct1);
       Write(r.Unknown5, WriteUnkstruct2);
       Write(r.Unknown6);
       Write(r.NumPlayableTracks);
       Write(r.FinalTick);
-      Write(r.Unknown13);
+      Write(r.UnknownZeroByte);
       Write(r.PreviewStartMillis);
       Write(r.PreviewEndMillis);
       Write(r.GuitarHandmap, WriteHandMap);
@@ -57,7 +57,7 @@ namespace LibForge.Midi
       Write(r.Tempos, WriteTempo);
       Write(r.TimeSigs, WriteTimesig);
       Write(r.Beats, WriteBeat);
-      Write(r.Unknown19);
+      Write(r.UnknownZero);
       Write(r.MidiTrackNames, Write);
     }
 

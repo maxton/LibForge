@@ -272,16 +272,16 @@ namespace LibForge.Midi
     public GEMTRACK[] GemTracks;
     public SECTIONS[] OverdriveSoloSections;
     public VOCALTRACK[] VocalTracks;
-    public int Unknown1;
-    public int Unknown2;
-    public float Unknown3;
+    public int UnknownOne;
+    public int UnknownNegOne;
+    public float UnknownHundred;
     public UNKSTRUCT1[] Unknown4;
     public UNKSTRUCT2[] Unknown5;
     // Takes values 90, 92, 125, 130, 170, 250
     public int Unknown6;
     public uint NumPlayableTracks;
     public uint FinalTick;
-    public byte Unknown13;
+    public byte UnknownZeroByte;
     public float PreviewStartMillis;
     public float PreviewEndMillis;
     public HANDMAP[] GuitarHandmap;
@@ -303,7 +303,7 @@ namespace LibForge.Midi
     public TEMPO[] Tempos;
     public TIMESIG[] TimeSigs;
     public BEAT[] Beats;
-    public int Unknown19;
+    public int UnknownZero;
     public string[] MidiTrackNames;
   }
 
