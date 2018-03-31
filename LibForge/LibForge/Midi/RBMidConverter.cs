@@ -189,6 +189,7 @@ namespace LibForge.Midi
 
       const byte Roll2 = 127;
       const byte Roll1 = 126;
+      const byte DrumFillMarkerEnd = 124;
       const byte DrumFillMarkerStart = 120;
       const byte OverdriveMarker = 116;
       const byte ProGreen = 112;
@@ -197,8 +198,11 @@ namespace LibForge.Midi
       const byte SoloMarker = 103;
       const byte ExpertEnd = 100;
       const byte ExpertStart = 96;
+      const byte HardEnd = 88;
       const byte HardStart = 84;
+      const byte MediumEnd = 76;
       const byte MediumStart = 72;
+      const byte EasyEnd = 64;
       const byte EasyStart = 60;
       const byte DrumAnimEnd = 51;
       const byte DrumAnimStart = 24;
@@ -209,6 +213,7 @@ namespace LibForge.Midi
         var cymbal_markers = new SortedDictionary<uint, RBMid.CYMBALMARKER.MARKER>();
         var overdrive_markers = new List<RBMid.SECTIONS.SECTION>();
         var solo_markers = new List<RBMid.SECTIONS.SECTION>();
+        var gem_tracks = new List<RBMid.GEMTRACK.GEM>[4];
         cymbal_markers[0] = default;
         RBMid.CYMBALMARKER.MARKER.FLAGS GetFlag(byte key)
         {
@@ -222,6 +227,49 @@ namespace LibForge.Midi
               return RBMid.CYMBALMARKER.MARKER.FLAGS.ProGreen;
           }
           return 0;
+        }
+        bool AddGem(MidiNote e)
+        {
+          var key = e.Key;
+          var lane = 0;
+          var diff = 0;
+          if(key >= EasyStart && key <= EasyEnd)
+          {
+            lane = key - EasyStart;
+            diff = 0;
+          }
+          else if(key >= MediumStart && key <= MediumEnd)
+          {
+            lane = key - MediumStart;
+            diff = 1;
+          }
+          else if (key >= HardStart && key <= HardEnd)
+          {
+            lane = key - HardStart;
+            diff = 2;
+          }
+          else if (key >= ExpertStart && key <= ExpertEnd)
+          {
+            lane = key - ExpertStart;
+            diff = 3;
+          }
+          else
+          {
+            return false;
+          }
+
+          if (gem_tracks[diff] == null) gem_tracks[diff] = new List<RBMid.GEMTRACK.GEM>();
+          gem_tracks[diff].Add(new RBMid.GEMTRACK.GEM
+          {
+            StartMillis = (float)e.StartTime * 1000,
+            StartTicks = e.StartTicks,
+            Length1 = (ushort)e.LengthTicks,
+            Length2 = (ushort)e.LengthTicks,
+            Lanes = 1 << lane,
+            IsHopo = false,
+            NoTail = true
+          });
+          return true;
         }
         foreach(var item in track.Items)
         {
@@ -244,6 +292,7 @@ namespace LibForge.Midi
                   IsBRE = 0
                 });
               }
+              else if (e.Key >= DrumFillMarkerStart && e.Key <= DrumFillMarkerEnd) { }
               else if (e.Key == OverdriveMarker)
               {
                 overdrive_markers.Add(new RBMid.SECTIONS.SECTION
@@ -272,6 +321,23 @@ namespace LibForge.Midi
                                                                      : new RBMid.CYMBALMARKER.MARKER { Tick = ticks };
                 endMarker.Flags &= ~GetFlag(e.Key);
                 cymbal_markers[endTicks] = endMarker;
+              }
+              else if (AddGem(e)) { }  // everything is handled in AddGem
+              else if (e.Key >= DrumAnimStart && e.Key <= DrumAnimEnd)
+              {
+
+              }
+              else if(e.Key == Roll1)
+              {
+
+              }
+              else if(e.Key == Roll2)
+              {
+
+              }
+              else
+              {
+                throw new Exception("Unhandled gem type ?!");
               }
               break;
           }
@@ -306,7 +372,9 @@ namespace LibForge.Midi
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
-
+          Gems = new RBMid.GEMTRACK.GEM[4][] {
+            gem_tracks[0].ToArray(), gem_tracks[1].ToArray(),
+            gem_tracks[2].ToArray(), gem_tracks[3].ToArray() }
         });
         var sections = new RBMid.SECTIONS.SECTION[6][];
         sections[0] = overdrive_markers.ToArray();
@@ -812,6 +880,10 @@ namespace LibForge.Midi
         }
       }
 
+      const byte MarkupNotes1End = 11;
+      const byte MarkupNotes1Start = 0;
+      const byte MarkupNotes3End = 23;
+      const byte MarkupNotes3Start = 12;
       private void HandleMarkupTrk(MidiTrackProcessed track)
       {
         LastMarkupTick = track.LastTick;
@@ -819,7 +891,26 @@ namespace LibForge.Midi
         {
           switch (item)
           {
-
+            case MidiNote e:
+              if(e.Key >= MarkupNotes1Start && e.Key <= MarkupNotes1End)
+              {
+                MarkupSoloNotes1.Add(new RBMid.MARKUP_SOLO_NOTES
+                {
+                  StartTick = e.StartTicks,
+                  EndTick = e.StartTicks + e.LengthTicks,
+                  NoteOffset = e.Key - MarkupNotes1Start
+                });
+              }
+              else if(e.Key >= MarkupNotes3Start && e.Key <= MarkupNotes3End)
+              {
+                MarkupSoloNotes3.Add(new RBMid.MARKUP_SOLO_NOTES
+                {
+                  StartTick = e.StartTicks,
+                  EndTick = e.StartTicks + e.LengthTicks,
+                  NoteOffset = e.Key - MarkupNotes3Start
+                });
+              }
+              break;
           }
         }
       }

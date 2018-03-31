@@ -19,6 +19,7 @@ namespace LibForge.Util
     protected void Write(long v) => s.WriteInt64LE(v);
     protected void Write(ulong v) => s.WriteUInt64LE(v);
     protected void Write(float v) => s.Write(BitConverter.GetBytes(v), 0, 4);
+    protected void Write(bool v) => s.WriteByte((byte)(v ? 1 : 0));
     protected void Write(string v)
     {
       s.WriteInt32LE(v.Length);

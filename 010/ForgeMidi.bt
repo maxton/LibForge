@@ -344,7 +344,7 @@ typedef struct {
 typedef struct {
     int num_maps;
     struct {
-        float start_ms;
+        float StartTime;
         int map;
     } hand_maps[num_maps];
 } HANDMAP;
@@ -352,8 +352,8 @@ typedef struct {
 typedef struct {
     int num_hand_positions;
     struct {
-        float start;
-        float end;
+        float StartTime;
+        float Length;
         int position;
         char unk;
     } hand_pos_events[num_hand_positions];
@@ -464,9 +464,9 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     OVERDRIVE overdrive_solo_sections[num_sections] <optimize=false>;
     int num_vocal_tracks;
     VOCALTRACK vocal_tracks[num_vocal_tracks]<optimize=false>;
-    int what;
-    int what;
-    float what;
+    int UnknownOne;
+    int UnknownNegOne;
+    float UnknownHundred;
     int num_unk_structs;
     struct {
         tick_t unk_tick;

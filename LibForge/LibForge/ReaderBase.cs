@@ -41,6 +41,12 @@ namespace LibForge.Util
       throw new Exception($"Invalid data encountered at {s.Position:X}: expected {expected}, got {v}");
     }
 
+    protected byte CheckRange(byte v, byte minimum, byte maximum)
+    {
+      if (minimum <= v && maximum >= v)
+        return v;
+      throw new Exception($"Range of {minimum} -> {maximum} exceeded at {s.Position:X}: got {v} ");
+    }
     // For reading a fixed size array of something
     protected T[] FixedArr<T>(Func<T> constructor, uint size)
     {
@@ -80,5 +86,6 @@ namespace LibForge.Util
     protected byte Byte() => (byte)s.ReadByte();
     protected string String() => s.ReadLengthPrefixedString(Encoding.ASCII);
     protected uint UInt24() => s.ReadUInt24LE();
+    protected bool Bool() => CheckRange(Byte(), 0, 1) != 0;
   }
 }

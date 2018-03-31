@@ -153,8 +153,8 @@ namespace LibForge.Midi
         Length1 = UShort(),
         Length2 = UShort(),
         Lanes = Int(),
-        IsHopo = Byte(),
-        NoTail = Byte(),
+        IsHopo = Bool(),
+        NoTail = Bool(),
         Unknown = Int()
       }))),
       Unknown = Int()
@@ -171,18 +171,27 @@ namespace LibForge.Midi
     {
       PhraseMarkers = Arr(ReadPhraseMarker),
       PhraseMarkers2 = Arr(ReadPhraseMarker),
-      Notes = Arr(() => new RBMid.VOCALTRACK.VOCAL_NOTE
-      {
-        Type = Int(),
-        MidiNote = Int(),
-        MidiNote2 = Int(),
-        StartMillis = Float(),
-        StartTick = UInt(),
-        Length = Float(),
-        Unknown1 = Short(),
-        Lyric = String(),
-        Unknown2 = FixedArr(Byte, 9)
-      }),
+      Notes = Arr(() => {
+        var note = new RBMid.VOCALTRACK.VOCAL_NOTE
+        {
+          PhraseIndex = Int(),
+          MidiNote = Int(),
+          MidiNote2 = Int(),
+          StartMillis = Float(),
+          StartTick = UInt(),
+          Length = Float(),
+          Unknown1 = Short(),
+          Lyric = String(),
+          LastNoteInPhrase = Bool(),
+          UnknownFalse = Check(Bool(), false),
+          Unpitched = Bool(),
+          UnknownFalse2 = Bool(),
+          UnkFlag1 = Check(Bool(), false),
+          Unknown = Byte(),
+          Portamento = Bool(),
+          Flag8 = Bool(),
+          Flag9 = Bool(),
+        }; return note; }),
       Unknown1 = Arr(Int),
       Unknown2 = Arr(() => new RBMid.VOCALTRACK.UNKNOWN
       {
@@ -218,7 +227,7 @@ namespace LibForge.Midi
     {
       Maps = Arr(() => new RBMid.HANDMAP.MAP
       {
-        StartMillis = Float(),
+        StartTime = Float(),
         Map = Int()
       })
     };
@@ -226,8 +235,8 @@ namespace LibForge.Midi
     {
       Events = Arr(() => new RBMid.HANDPOS.POS
       {
-        StartMillis = Float(),
-        EndMillis = Float(),
+        StartTime = Float(),
+        Length = Float(),
         Position = Int(),
         Unknown = Byte()
       })

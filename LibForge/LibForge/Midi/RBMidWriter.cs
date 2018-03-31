@@ -170,7 +170,7 @@ namespace LibForge.Midi
       Write(obj.PhraseMarkers2, WritePhraseMarker);
       Write(obj.Notes, x =>
       {
-        Write(x.Type);
+        Write(x.PhraseIndex);
         Write(x.MidiNote);
         Write(x.MidiNote2);
         Write(x.StartMillis);
@@ -178,7 +178,15 @@ namespace LibForge.Midi
         Write(x.Length);
         Write(x.Unknown1);
         Write(x.Lyric);
-        Array.ForEach(x.Unknown2, Write);
+        Write(x.LastNoteInPhrase);
+        Write(x.UnknownFalse);
+        Write(x.Unpitched);
+        Write(x.UnknownFalse2);
+        Write(x.UnkFlag1);
+        Write(x.Unknown);
+        Write(x.Portamento);
+        Write(x.Flag8);
+        Write(x.Flag9);
       });
       Write(obj.Unknown1, Write);
       Write(obj.Unknown2, x =>
@@ -214,7 +222,7 @@ namespace LibForge.Midi
     {
       Write(obj.Maps, x =>
       {
-        Write(x.StartMillis);
+        Write(x.StartTime);
         Write(x.Map);
       });
     }
@@ -222,8 +230,8 @@ namespace LibForge.Midi
     {
       Write(obj.Events, x =>
       {
-        Write(x.StartMillis);
-        Write(x.EndMillis);
+        Write(x.StartTime);
+        Write(x.Length);
         Write(x.Position);
         Write(x.Unknown);
       });

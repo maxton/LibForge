@@ -115,15 +115,15 @@ namespace LibForge.Midi
 
     public struct GEMTRACK
     {
-      public struct GEM
+      public class GEM
       {
         public float StartMillis;
         public uint StartTicks;
         public ushort Length1;
         public ushort Length2;
         public int Lanes;
-        public byte IsHopo;
-        public byte NoTail;
+        public bool IsHopo;
+        public bool NoTail;
         public int Unknown;
       }
       public GEM[][] Gems;
@@ -160,7 +160,7 @@ namespace LibForge.Midi
       }
       public struct VOCAL_NOTE
       {
-        public int Type;
+        public int PhraseIndex;
         public int MidiNote;
         public int MidiNote2;
         public float StartMillis;
@@ -172,7 +172,15 @@ namespace LibForge.Midi
         // 0 0 0 0 0 1 0 0 1 for normal notes
         // 0 0 0 0 0 1 1 0 1 for portamento
         // 0 0 1 0 0 1 0 0 1 for unpitched
-        public byte[] Unknown2;
+        public bool LastNoteInPhrase;
+        public bool UnknownFalse;
+        public bool Unpitched;
+        public bool UnknownFalse2;
+        public bool UnkFlag1;
+        public byte Unknown;
+        public bool Portamento;
+        public bool Flag8;
+        public bool Flag9;
       }
       public struct UNKNOWN
       {
@@ -201,7 +209,7 @@ namespace LibForge.Midi
     {
       public struct MAP
       {
-        public float StartMillis;
+        public float StartTime;
         public int Map;
       }
       public MAP[] Maps;
@@ -210,8 +218,8 @@ namespace LibForge.Midi
     {
       public struct POS
       {
-        public float StartMillis;
-        public float EndMillis;
+        public float StartTime;
+        public float Length;
         public int Position;
         public byte Unknown;
       }
