@@ -97,7 +97,7 @@ namespace LibForge.Midi
       {
         Write(o.StartMillis);
         Write(o.StartTick);
-        Write(o.OtherLength);
+        Write(o.LengthMillis);
         Write(o.LengthTicks);
         Write(o.KeyBitfield);
         Write(o.Unknown2);
@@ -147,8 +147,8 @@ namespace LibForge.Midi
         {
           Write(x.StartMillis);
           Write(x.StartTicks);
-          Write(x.Length1);
-          Write(x.Length2);
+          Write(x.LengthMillis);
+          Write(x.LengthTicks);
           Write(x.Lanes);
           Write(x.IsHopo);
           Write(x.NoTail);

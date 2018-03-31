@@ -42,7 +42,7 @@ namespace LibForge.Midi
       {
         public float StartMillis;
         public uint StartTick;
-        public ushort OtherLength;
+        public ushort LengthMillis;
         public ushort LengthTicks;
         public int KeyBitfield;
         public int Unknown2;
@@ -119,8 +119,8 @@ namespace LibForge.Midi
       {
         public float StartMillis;
         public uint StartTicks;
-        public ushort Length1;
-        public ushort Length2;
+        public ushort LengthMillis;
+        public ushort LengthTicks;
         public int Lanes;
         public bool IsHopo;
         public bool NoTail;

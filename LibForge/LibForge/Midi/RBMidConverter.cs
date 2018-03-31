@@ -267,8 +267,8 @@ namespace LibForge.Midi
           {
             StartMillis = (float)e.StartTime * 1000,
             StartTicks = e.StartTicks,
-            Length1 = (ushort)e.LengthTicks,
-            Length2 = (ushort)e.LengthTicks,
+            LengthMillis = (ushort)(e.Length * 1000),
+            LengthTicks = (ushort)e.LengthTicks,
             Lanes = 1 << lane,
             IsHopo = false,
             NoTail = true
@@ -465,11 +465,11 @@ namespace LibForge.Midi
             {
               StartMillis = (float)e.StartTime * 1000,
               StartTicks = e.StartTicks,
-              Length1 = (ushort)e.LengthTicks,
-              Length2 = (ushort)e.LengthTicks,
+              LengthMillis = (ushort)(e.Length * 1000),
+              LengthTicks = (ushort)e.LengthTicks,
               Lanes = 1 << lane,
               IsHopo = hopo,
-              NoTail = e.LengthTicks < 120
+              NoTail = e.LengthTicks <= 120
             };
             chords[diff] = chord;
             gem_tracks[diff].Add(chord);
@@ -514,8 +514,8 @@ namespace LibForge.Midi
               {
                 StartMillis = (float)e.StartTime * 1000,
                 StartTicks = e.StartTicks,
-                Length1 = (ushort)e.LengthTicks,
-                Length2 = (ushort)e.LengthTicks,
+                LengthMillis = (ushort)(e.Length * 1000),
+                LengthTicks = (ushort)e.LengthTicks,
                 Lanes = 0,
                 IsHopo = force,
                 NoTail = e.LengthTicks < 120
@@ -702,8 +702,7 @@ namespace LibForge.Midi
                   StartTick = e.StartTicks,
                   KeyBitfield = 1 << (e.Key - 48),
                   LengthTicks = (ushort)(e.LengthTicks),
-                  // TODO: Where does this value actually come from?
-                  OtherLength = (ushort)(e.LengthTicks),
+                  LengthMillis = (ushort)(e.Length * 1000),
                   // TODO: Usually this is 256, or 0, or 65536 (so maybe it is actually 4 bools?)
                   Unknown2 = 256,
                   // TODO

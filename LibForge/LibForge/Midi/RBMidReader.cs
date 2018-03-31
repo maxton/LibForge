@@ -103,7 +103,7 @@ namespace LibForge.Midi
       {
         StartMillis = Float(),
         StartTick = UInt(),
-        OtherLength = UShort(),
+        LengthMillis = UShort(),
         LengthTicks = UShort(),
         KeyBitfield = Int(),
         Unknown2 = Int(),
@@ -150,8 +150,8 @@ namespace LibForge.Midi
       {
         StartMillis = Float(),
         StartTicks = UInt(),
-        Length1 = UShort(),
-        Length2 = UShort(),
+        LengthMillis = UShort(),
+        LengthTicks = UShort(),
         Lanes = Int(),
         IsHopo = Bool(),
         NoTail = Bool(),
