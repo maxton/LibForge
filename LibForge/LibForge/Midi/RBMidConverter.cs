@@ -54,8 +54,8 @@ namespace LibForge.Midi
         trackHandlers = new Dictionary<string, Action<MidiTrackProcessed>>
         {
           {"PART DRUMS", HandleDrumTrk },
-          {"PART BASS", HandleBassTrk },
-          {"PART GUITAR", HandleGtrTrk },
+          {"PART BASS", HandleGuitarBass },
+          {"PART GUITAR", HandleGuitarBass },
           {"PART REAL_KEYS_X", HandleRealKeysXTrk },
           {"PART KEYS_ANIM_RH", HandleKeysAnimTrk },
           {"PART KEYS_ANIM_LH", HandleKeysAnimTrk },
@@ -196,8 +196,12 @@ namespace LibForge.Midi
       const byte ProBlue = 111;
       const byte ProYellow = 110;
       const byte SoloMarker = 103;
+      const byte ExpertHopoOff = 102;
+      const byte ExpertHopoOn = 101;
       const byte ExpertEnd = 100;
       const byte ExpertStart = 96;
+      const byte HardHopoOff = 90;
+      const byte HardHopoOn = 89;
       const byte HardEnd = 88;
       const byte HardStart = 84;
       const byte MediumEnd = 76;
@@ -358,14 +362,8 @@ namespace LibForge.Midi
         {
           Markers = cymbal_markers.Values.ToArray()
         });
-        LaneMarkers.Add(new RBMid.LANEMARKER
-        {
-          
-        });
-        TrillMarkers.Add(new RBMid.GTRTRILLS
-        {
-
-        });
+        LaneMarkers.Add(new RBMid.LANEMARKER());
+        TrillMarkers.Add(new RBMid.GTRTRILLS());
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
 
@@ -386,105 +384,148 @@ namespace LibForge.Midi
             sections, sections, sections, sections
           }
         });
-        HandMap.Add(new RBMid.HANDMAP
-        {
-
-        });
-        HandPos.Add(new RBMid.HANDPOS
-        {
-
-        });
+        HandMap.Add(new RBMid.HANDMAP());
+        HandPos.Add(new RBMid.HANDPOS());
         Unktrack.Add(new RBMid.UNKTRACK
         {
 
         });
       }
 
-      private void HandleBassTrk(MidiTrackProcessed track)
+      private static Dictionary<string, int> HandMaps = new Dictionary<string, int>
       {
-        var drumfills = new List<RBMid.DRUMFILLS.FILL>();
-        var fills_unk = new List<RBMid.DRUMFILLS.FILL_LANES>();
-        foreach(var item in track.Items)
-        {
-          switch (item)
-          {
-            case MidiNote e:
-              if (e.Key == DrumFillMarkerStart)
-              {
-                fills_unk.Add(new RBMid.DRUMFILLS.FILL_LANES
-                {
-                  Tick = e.StartTicks,
-                  Lanes = 31
-                });
-                drumfills.Add(new RBMid.DRUMFILLS.FILL
-                {
-                  StartTick = e.StartTicks,
-                  EndTick = e.StartTicks + e.LengthTicks,
-                  IsBRE = 1
-                });
-              }
-              break;
-          }
-        }
-
-        Lyrics.Add(new RBMid.LYRICS
-        {
-          TrackName = track.Name,
-          Unknown1 = 2,
-          Unknown2 = 2,
-          Unknown3 = 0
-        });
-        DrumFills.Add(new RBMid.DRUMFILLS
-        {
-          Fills = drumfills.ToArray(),
-          Lanes = fills_unk.ToArray()
-        });
-        ProMarkers.Add(new RBMid.CYMBALMARKER
-        {
-
-        });
-        LaneMarkers.Add(new RBMid.LANEMARKER
-        {
-
-        });
-        TrillMarkers.Add(new RBMid.GTRTRILLS
-        {
-
-        });
-        DrumMixes.Add(new RBMid.DRUMMIXES
-        {
-
-        });
-        GemTracks.Add(new RBMid.GEMTRACK
-        {
-
-        });
-        OverdriveSoloSections.Add(new RBMid.SECTIONS
-        {
-
-        });
-        HandMap.Add(new RBMid.HANDMAP
-        {
-
-        });
-        HandPos.Add(new RBMid.HANDPOS
-        {
-
-        });
-        Unktrack.Add(new RBMid.UNKTRACK
-        {
-
-        });
-      }
+        {"HandMap_Default", 0 },
+        {"HandMap_AllBend", 1 },
+        {"HandMap_AllChords", 2 },
+        {"HandMap_Chord_A", 3 },
+        {"HandMap_Chord_C", 4 },
+        {"HandMap_Chord_D", 5 },
+        {"HandMap_Chord_DropD", 6 },
+        {"HandMap_Chord_DropD2", 7 },
+        {"HandMap_NoChords", 8 },
+        {"HandMap_Solo", 9 },
+      };
 
       const byte TrillMarker = 127;
-      private void HandleGtrTrk(MidiTrackProcessed track)
+      private void HandleGuitarBass(MidiTrackProcessed track)
       {
         var drumfills = new List<RBMid.DRUMFILLS.FILL>();
         var fills_unk = new List<RBMid.DRUMFILLS.FILL_LANES>();
+        var gem_tracks = new List<RBMid.GEMTRACK.GEM>[4];
+        RBMid.GEMTRACK.GEM[] chords = new RBMid.GEMTRACK.GEM[4];
         var trills = new List<RBMid.GTRTRILLS.TRILL>();
         var trill = new RBMid.GTRTRILLS.TRILL();
-        foreach(var item in track.Items)
+
+        bool AddGem(MidiNote e)
+        {
+          var key = e.Key;
+          var lane = 0;
+          var diff = 0;
+          if (key >= EasyStart && key <= EasyEnd)
+          {
+            lane = key - EasyStart;
+            diff = 0;
+          }
+          else if (key >= MediumStart && key <= MediumEnd)
+          {
+            lane = key - MediumStart;
+            diff = 1;
+          }
+          else if (key >= HardStart && key <= HardEnd)
+          {
+            lane = key - HardStart;
+            diff = 2;
+          }
+          else if (key >= ExpertStart && key <= ExpertEnd)
+          {
+            lane = key - ExpertStart;
+            diff = 3;
+          }
+          else
+          {
+            return false;
+          }
+
+          if (gem_tracks[diff] == null) gem_tracks[diff] = new List<RBMid.GEMTRACK.GEM>();
+          if (chords[diff] != null && chords[diff].StartTicks == e.StartTicks)
+          {
+            chords[diff].Lanes |= (1 << lane);
+          }
+          else
+          {
+            bool hopo = false;
+            if(chords[diff] != null)
+            {
+              if(e.StartTicks - chords[diff].StartTicks <= 120)
+              {
+                hopo = true;
+              }
+            }
+            var chord = new RBMid.GEMTRACK.GEM
+            {
+              StartMillis = (float)e.StartTime * 1000,
+              StartTicks = e.StartTicks,
+              Length1 = (ushort)e.LengthTicks,
+              Length2 = (ushort)e.LengthTicks,
+              Lanes = 1 << lane,
+              IsHopo = hopo,
+              NoTail = e.LengthTicks < 120
+            };
+            chords[diff] = chord;
+            gem_tracks[diff].Add(chord);
+          }
+          return true;
+        }
+        bool AddHopo(MidiNote e)
+        {
+          var key = e.Key;
+          var diff = 0;
+          bool force;
+          switch (e.Key)
+          {
+            case ExpertHopoOff:
+              diff = 3;
+              force = false;
+              break;
+            case ExpertHopoOn:
+              diff = 3;
+              force = true;
+              break;
+            case HardHopoOff:
+              diff = 2;
+              force = false;
+              break;
+            case HardHopoOn:
+              diff = 2;
+              force = true;
+              break;
+            default:
+              return false;
+          }
+          if(chords[diff] != null)
+          {
+            if(chords[diff].StartTicks == e.StartTicks)
+            {
+              chords[diff].IsHopo = force;
+            }
+            else
+            {
+              chords[diff] = new RBMid.GEMTRACK.GEM
+              {
+                StartMillis = (float)e.StartTime * 1000,
+                StartTicks = e.StartTicks,
+                Length1 = (ushort)e.LengthTicks,
+                Length2 = (ushort)e.LengthTicks,
+                Lanes = 0,
+                IsHopo = force,
+                NoTail = e.LengthTicks < 120
+              };
+              gem_tracks[diff].Add(chords[diff]);
+            }
+          }
+          return true;
+        }
+        foreach (var item in track.Items)
         {
           switch (item)
           {
@@ -503,7 +544,9 @@ namespace LibForge.Midi
                   IsBRE = 1
                 });
               }
-              else if(e.Key == TrillMarker)
+              else if (AddGem(e)) { }
+              else if (AddHopo(e)) { }
+              else if (e.Key == TrillMarker)
               {
                 trill = new RBMid.GTRTRILLS.TRILL
                 {
@@ -514,7 +557,7 @@ namespace LibForge.Midi
                 };
                 trills.Add(trill);
               }
-              else if(e.Key >= ExpertStart && e.Key <= ExpertEnd)
+              else if (e.Key >= ExpertStart && e.Key <= ExpertEnd)
               {
                 if (trill.EndTick >= e.StartTicks)
                 {
@@ -527,11 +570,12 @@ namespace LibForge.Midi
           }
         }
 
+        int Unk = track.Name == "PART BASS" ? 2 : 1;
         Lyrics.Add(new RBMid.LYRICS
         {
           TrackName = track.Name,
-          Unknown1 = 1,
-          Unknown2 = 1,
+          Unknown1 = Unk,
+          Unknown2 = Unk,
           Unknown3 = 0
         });
         DrumFills.Add(new RBMid.DRUMFILLS
@@ -541,7 +585,14 @@ namespace LibForge.Midi
         });
         ProMarkers.Add(new RBMid.CYMBALMARKER
         {
-
+          Markers = new RBMid.CYMBALMARKER.MARKER[]
+          {
+            new RBMid.CYMBALMARKER.MARKER
+            {
+              Tick = 0,
+              Flags = 0
+            }
+          }
         });
         LaneMarkers.Add(new RBMid.LANEMARKER
         {
@@ -560,7 +611,11 @@ namespace LibForge.Midi
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
-
+          Gems = new RBMid.GEMTRACK.GEM[4][]
+          {
+            gem_tracks[0].ToArray(), gem_tracks[1].ToArray(), gem_tracks[2].ToArray(),
+            gem_tracks[3].ToArray()
+          }
         });
         OverdriveSoloSections.Add(new RBMid.SECTIONS
         {
@@ -597,17 +652,19 @@ namespace LibForge.Midi
           Unknown2 = 5,
           Unknown3 = 0
         });
-        DrumFills.Add(new RBMid.DRUMFILLS
-        {
-        });
+        DrumFills.Add(new RBMid.DRUMFILLS());
         ProMarkers.Add(new RBMid.CYMBALMARKER
         {
-
+          Markers = new RBMid.CYMBALMARKER.MARKER[]
+          {
+            new RBMid.CYMBALMARKER.MARKER
+            {
+              Tick = 0,
+              Flags = 0
+            }
+          }
         });
-        LaneMarkers.Add(new RBMid.LANEMARKER
-        {
-
-        });
+        LaneMarkers.Add(new RBMid.LANEMARKER());
         TrillMarkers.Add(new RBMid.GTRTRILLS
         {
 
