@@ -607,7 +607,7 @@ namespace LibForge.Midi
         });
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
-
+          Mixes = new RBMid.TICKTEXT[4][]
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
@@ -671,7 +671,7 @@ namespace LibForge.Midi
         });
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
-
+          Mixes = new RBMid.TICKTEXT[4][]
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
@@ -681,18 +681,9 @@ namespace LibForge.Midi
         {
 
         });
-        HandMap.Add(new RBMid.HANDMAP
-        {
-
-        });
-        HandPos.Add(new RBMid.HANDPOS
-        {
-
-        });
-        Unktrack.Add(new RBMid.UNKTRACK
-        {
-
-        });
+        HandMap.Add(new RBMid.HANDMAP());
+        HandPos.Add(new RBMid.HANDPOS());
+        Unktrack.Add(new RBMid.UNKTRACK());
       }
 
       private void HandleKeysAnimTrk(MidiTrackProcessed track)
@@ -761,21 +752,13 @@ namespace LibForge.Midi
           Unknown2 = 3,
           Unknown3 = 0
         });
-        DrumFills.Add(new RBMid.DRUMFILLS
-        {
-        });
+        DrumFills.Add(new RBMid.DRUMFILLS());
         ProMarkers.Add(new RBMid.CYMBALMARKER
         {
           Markers = new RBMid.CYMBALMARKER.MARKER[1]
         });
-        LaneMarkers.Add(new RBMid.LANEMARKER
-        {
-
-        });
-        TrillMarkers.Add(new RBMid.GTRTRILLS
-        {
-
-        });
+        LaneMarkers.Add(new RBMid.LANEMARKER());
+        TrillMarkers.Add(new RBMid.GTRTRILLS());
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
           Mixes = new RBMid.TICKTEXT[4][]
@@ -792,18 +775,9 @@ namespace LibForge.Midi
         {
           
         });
-        HandMap.Add(new RBMid.HANDMAP
-        {
-
-        });
-        HandPos.Add(new RBMid.HANDPOS
-        {
-
-        });
-        Unktrack.Add(new RBMid.UNKTRACK
-        {
-
-        });
+        HandMap.Add(new RBMid.HANDMAP());
+        HandPos.Add(new RBMid.HANDPOS());
+        Unktrack.Add(new RBMid.UNKTRACK());
       }
 
       private void HandleHarmTrk(MidiTrackProcessed track)
@@ -835,24 +809,16 @@ namespace LibForge.Midi
           Unknown2 = 3,
           Unknown3 = 0
         });
-        DrumFills.Add(new RBMid.DRUMFILLS
-        {
-        });
+        DrumFills.Add(new RBMid.DRUMFILLS());
         ProMarkers.Add(new RBMid.CYMBALMARKER
         {
-
+          Markers = new RBMid.CYMBALMARKER.MARKER[1]
         });
-        LaneMarkers.Add(new RBMid.LANEMARKER
-        {
-
-        });
-        TrillMarkers.Add(new RBMid.GTRTRILLS
-        {
-
-        });
+        LaneMarkers.Add(new RBMid.LANEMARKER());
+        TrillMarkers.Add(new RBMid.GTRTRILLS());
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
-
+          Mixes = new RBMid.TICKTEXT[4][]
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
@@ -866,18 +832,9 @@ namespace LibForge.Midi
         {
 
         });
-        HandMap.Add(new RBMid.HANDMAP
-        {
-
-        });
-        HandPos.Add(new RBMid.HANDPOS
-        {
-
-        });
-        Unktrack.Add(new RBMid.UNKTRACK
-        {
-
-        });
+        HandMap.Add(new RBMid.HANDMAP());
+        HandPos.Add(new RBMid.HANDPOS());
+        Unktrack.Add(new RBMid.UNKTRACK());
       }
 
       private void HandleEventsTrk(MidiTrackProcessed track)
