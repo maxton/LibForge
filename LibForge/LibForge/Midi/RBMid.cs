@@ -57,7 +57,7 @@ namespace LibForge.Midi
 
     public struct CYMBALMARKER
     {
-      public struct MARKER
+      public class MARKER
       {
         public uint Tick;
         [Flags]

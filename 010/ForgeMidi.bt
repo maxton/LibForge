@@ -165,7 +165,7 @@ typedef struct {
     struct {
         float time;
         tick_t ticks;
-        ushort Other_length_ticks;
+        ushort Length_millis;
         ushort Length_ticks;
         // Stores each key down as (1 << (MIDI_NOTE - 48))
         int key_bitfield<read=READ_KEY_POS>;
@@ -246,7 +246,7 @@ typedef struct {
 typedef struct {
     float start_millis;
     tick_t start_ticks;
-    short length_ticks_unknown;
+    short length_millis;
     short length_ticks;
     struct {
         int lane_1 : 1;
