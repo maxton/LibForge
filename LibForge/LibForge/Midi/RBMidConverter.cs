@@ -439,6 +439,7 @@ namespace LibForge.Midi
         RBMid.GEMTRACK.GEM[] chords = new RBMid.GEMTRACK.GEM[4];
         var trills = new List<RBMid.GTRTRILLS.TRILL>();
         var trill = new RBMid.GTRTRILLS.TRILL();
+        var maps = new List<RBMid.HANDMAP.MAP>();
 
         bool AddGem(MidiNote e)
         {
@@ -591,6 +592,19 @@ namespace LibForge.Midi
                 }
               }
               break;
+            case MidiText e:
+              var regex = new System.Text.RegularExpressions.Regex("\\[map (HandMap_[A-Za-z_2]+)\\]");
+              var match = regex.Match(e.Text);
+              if (match.Success)
+              {
+                var mapType = HandMaps[match.Captures[0].Value];
+                maps.Add(new RBMid.HANDMAP.MAP
+                {
+                  Map = mapType,
+                  StartTime = (float)e.StartTime
+                });
+              }
+              break;
           }
         }
 
@@ -620,7 +634,7 @@ namespace LibForge.Midi
         });
         LaneMarkers.Add(new RBMid.LANEMARKER
         {
-
+          
         });
         TrillMarkers.Add(new RBMid.GTRTRILLS
         {
@@ -647,7 +661,7 @@ namespace LibForge.Midi
         });
         HandMap.Add(new RBMid.HANDMAP
         {
-
+          Maps = maps.ToArray()
         });
         HandPos.Add(new RBMid.HANDPOS
         {
