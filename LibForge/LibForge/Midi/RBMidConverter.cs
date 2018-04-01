@@ -424,8 +424,8 @@ namespace LibForge.Midi
         {"HandMap_Chord_A", 3 },
         {"HandMap_Chord_C", 4 },
         {"HandMap_Chord_D", 5 },
-        {"HandMap_Chord_DropD", 6 },
-        {"HandMap_Chord_DropD2", 7 },
+        {"HandMap_DropD", 6 },
+        {"HandMap_DropD2", 7 },
         {"HandMap_NoChords", 8 },
         {"HandMap_Solo", 9 },
       };
@@ -597,7 +597,7 @@ namespace LibForge.Midi
               var match = regex.Match(e.Text);
               if (match.Success)
               {
-                var mapType = HandMaps[match.Captures[0].Value];
+                var mapType = HandMaps[match.Groups[1].Value];
                 maps.Add(new RBMid.HANDMAP.MAP
                 {
                   Map = mapType,
