@@ -224,6 +224,11 @@ namespace LibForge.Midi
         };
         var marker_ends = new uint[3];
         var endmarkers = new RBMid.CYMBALMARKER.MARKER[3];
+        var mixes = new List<RBMid.TICKTEXT>[4];
+        for(var i = 0; i < 4; i++)
+        {
+          mixes[i] = new List<RBMid.TICKTEXT>();
+        }
         RBMid.CYMBALMARKER.MARKER.FLAGS GetFlag(byte key)
         {
           switch (key)
@@ -368,6 +373,25 @@ namespace LibForge.Midi
                 throw new Exception("Unhandled gem type ?!");
               }
               break;
+            case MidiText e:
+              switch (e.Text)
+              {
+                default:
+                  var regex = new System.Text.RegularExpressions.Regex("\\[mix ([0-9]) (\\S+)\\]");
+                  var match = regex.Match(e.Text);
+                  if (match.Success)
+                  {
+                    var difficulty = Int32.Parse(match.Groups[1].Value);
+                    var mix = match.Groups[2].Value;
+                    mixes[difficulty].Add(new RBMid.TICKTEXT
+                    {
+                      Text = mix,
+                      Tick = e.StartTicks
+                    });
+                  }
+                  break;
+              }
+              break;
           }
         }
         Lyrics.Add(new RBMid.LYRICS
@@ -390,7 +414,7 @@ namespace LibForge.Midi
         TrillMarkers.Add(new RBMid.GTRTRILLS());
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
-
+          Mixes = mixes.Select(m => m.ToArray()).ToArray()
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
@@ -443,6 +467,8 @@ namespace LibForge.Midi
         var trill = new RBMid.GTRTRILLS.TRILL();
         var maps = new List<RBMid.HANDMAP.MAP>();
         var left_hand = new List<RBMid.HANDPOS.POS>();
+        var overdrive_markers = new List<RBMid.SECTIONS.SECTION>();
+        var solo_markers = new List<RBMid.SECTIONS.SECTION>();
 
         bool AddGem(MidiNote e)
         {
@@ -605,6 +631,22 @@ namespace LibForge.Midi
                   Unknown = 0
                 });
               }
+              else if (e.Key == OverdriveMarker)
+              {
+                overdrive_markers.Add(new RBMid.SECTIONS.SECTION
+                {
+                  StartTicks = e.StartTicks,
+                  LengthTicks = e.LengthTicks
+                });
+              }
+              else if (e.Key == SoloMarker)
+              {
+                solo_markers.Add(new RBMid.SECTIONS.SECTION
+                {
+                  StartTicks = e.StartTicks,
+                  LengthTicks = e.LengthTicks
+                });
+              }
               break;
             case MidiText e:
               var regex = new System.Text.RegularExpressions.Regex("\\[map (HandMap_[A-Za-z_2]+)\\]");
@@ -669,9 +711,15 @@ namespace LibForge.Midi
             gem_tracks[3].ToArray()
           }
         });
+        var sections = new RBMid.SECTIONS.SECTION[6][];
+        sections[0] = overdrive_markers.ToArray();
+        sections[1] = solo_markers.ToArray();
         OverdriveSoloSections.Add(new RBMid.SECTIONS
         {
-
+          Sections = new RBMid.SECTIONS.SECTION[4][][]
+          {
+            sections, sections, sections, sections
+          }
         });
         HandMap.Add(new RBMid.HANDMAP
         {
