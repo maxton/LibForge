@@ -188,11 +188,11 @@ namespace LibForge.Midi
         Write(x.Flag8);
         Write(x.Flag9);
       });
-      Write(obj.Unknown1, Write);
+      Write(obj.Percussion, Write);
       Write(obj.Unknown2, x =>
       {
-        Write(x.Unknown1);
-        Write(x.Unknown2);
+        Write(x.StartMillis);
+        Write(x.EndMillis);
       });
     }
     private void WritePhraseMarker(RBMid.VOCALTRACK.PHRASE_MARKER obj)

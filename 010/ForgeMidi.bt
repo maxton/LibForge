@@ -300,21 +300,27 @@ typedef struct {
     struct {
         float start_ms;
         float length;
+        tick_t start_tick;
+        tick_t length_ticks;
+        int unk_start_note;
+        int unk_end_note;
+        int unk_usually_one;
+        char unk;
         int unk;
         int unk;
         int unk;
         int unk;
         int unk;
-        char unknown[25];
+        int unk;
     } phrase_markers[num_phrase_markers] <optimize=false>;
     int num_phrase_markers_2;
     struct {
         float start_ms;
         float length;
-        int unk;
-        int unk;
-        int unk;
-        int unk;
+        tick_t start_tick;
+        tick_t length_ticks;
+        int unk_start_note;
+        int unk_end_note;
         int unk;
         char unknown[25];
     } phrase_markers_2[num_phrase_markers_2] <optimize=false>;
@@ -328,16 +334,22 @@ typedef struct {
         float length;
         ushort length_ticks;
         PSTR lyric; // empty string on portamento, symbols always stripped
-        char unk[9]; // 0 0 0 0 0 1 0 0 1 for normal notes
-                     // 0 0 0 0 0 1 1 0 1 for portamento
-                     // 0 0 1 0 0 1 0 0 1 for unpitched
+        char IsLastNoteInPhrase;
+        char UnkZero;
+        char Unpitched;
+        char UnkZero;
+        char UnkFlag;  // always 0?
+        char Unknown;  // Not a flag?
+        char IsPortamento;
+        char UnkFlag; // always 0?
+        char UnkFlag; // always 1?
     } vocal_notes[num_notes]<optimize=false>;
-    int num_something;
-    int something[num_something];
+    int num_percussions;
+    tick_t percussions[num_percussions];
     int num_unk2;
     struct {
-        float data;
-        float data2;
+        float StartMillis;
+        float EndMillis;
     }unk2[num_unk2];
 } VOCALTRACK;
 

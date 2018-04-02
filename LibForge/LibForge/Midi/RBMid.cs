@@ -184,13 +184,13 @@ namespace LibForge.Midi
       }
       public struct UNKNOWN
       {
-        public float Unknown1;
-        public float Unknown2;
+        public float StartMillis;
+        public float EndMillis;
       }
       public PHRASE_MARKER[] PhraseMarkers;
       public PHRASE_MARKER[] PhraseMarkers2;
       public VOCAL_NOTE[] Notes;
-      public int[] Unknown1;
+      public uint[] Percussion;
       public UNKNOWN[] Unknown2;
     }
     public struct UNKSTRUCT1

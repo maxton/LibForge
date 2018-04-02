@@ -192,11 +192,11 @@ namespace LibForge.Midi
           Flag8 = Bool(),
           Flag9 = Bool(),
         }; return note; }),
-      Unknown1 = Arr(Int),
+      Percussion = Arr(UInt),
       Unknown2 = Arr(() => new RBMid.VOCALTRACK.UNKNOWN
       {
-        Unknown1 = Float(),
-        Unknown2 = Float()
+        StartMillis = Float(),
+        EndMillis = Float()
       })
     };
     private RBMid.VOCALTRACK.PHRASE_MARKER ReadPhraseMarker() =>

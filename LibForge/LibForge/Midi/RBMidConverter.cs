@@ -218,6 +218,8 @@ namespace LibForge.Midi
         var overdrive_markers = new List<RBMid.SECTIONS.SECTION>();
         var solo_markers = new List<RBMid.SECTIONS.SECTION>();
         var gem_tracks = new List<RBMid.GEMTRACK.GEM>[4];
+        var rolls = new List<RBMid.LANEMARKER.MARKER>();
+
         cymbal_markers[0] = new RBMid.CYMBALMARKER.MARKER
         {
           Tick = 0, Flags = 0
@@ -281,7 +283,9 @@ namespace LibForge.Midi
             LengthTicks = (ushort)e.LengthTicks,
             Lanes = 1 << lane,
             IsHopo = false,
-            NoTail = true
+            NoTail = true,
+            // TODO: Sometimes this is not zero
+            Unknown = 0
           });
           return true;
         }
@@ -360,13 +364,16 @@ namespace LibForge.Midi
               {
 
               }
-              else if(e.Key == Roll1)
+              else if(e.Key == Roll1 || e.Key == Roll2)
               {
-
-              }
-              else if(e.Key == Roll2)
-              {
-
+                rolls.Add(new RBMid.LANEMARKER.MARKER
+                {
+                  StartTick = e.StartTicks,
+                  EndTick = e.StartTicks + e.LengthTicks,
+                  Flags = e.Key == Roll1 ? 
+                      RBMid.LANEMARKER.MARKER.Flag.Roll_1Lane
+                    : RBMid.LANEMARKER.MARKER.Flag.Roll_2Lane
+                });
               }
               else
               {
@@ -410,7 +417,13 @@ namespace LibForge.Midi
         {
           Markers = cymbal_markers.Values.ToArray()
         });
-        LaneMarkers.Add(new RBMid.LANEMARKER());
+        LaneMarkers.Add(new RBMid.LANEMARKER
+        {
+          Markers = rolls.Count == 0 ? null : new RBMid.LANEMARKER.MARKER[4][]
+          {
+            null, null, null, rolls.ToArray()
+          }
+        });
         TrillMarkers.Add(new RBMid.GTRTRILLS());
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
@@ -453,6 +466,7 @@ namespace LibForge.Midi
       };
 
       const byte TrillMarker = 127;
+      const byte TremoloMarker = 126;
       const byte LeftHandEnd = 59;
       const byte LeftHandStart = 40;
       private void HandleGuitarBass(MidiTrackProcessed track)
@@ -467,7 +481,7 @@ namespace LibForge.Midi
         var left_hand = new List<RBMid.HANDPOS.POS>();
         var overdrive_markers = new List<RBMid.SECTIONS.SECTION>();
         var solo_markers = new List<RBMid.SECTIONS.SECTION>();
-
+        var tremolos = new List<RBMid.LANEMARKER.MARKER>();
         bool AddGem(MidiNote e)
         {
           var key = e.Key;
@@ -609,6 +623,15 @@ namespace LibForge.Midi
                 };
                 trills.Add(trill);
               }
+              else if (e.Key == TremoloMarker)
+              {
+                tremolos.Add(new RBMid.LANEMARKER.MARKER
+                {
+                  StartTick = e.StartTicks,
+                  EndTick = e.StartTicks + e.LengthTicks,
+                  Flags = (RBMid.LANEMARKER.MARKER.Flag)1
+                });
+              }
               else if (e.Key >= ExpertStart && e.Key <= ExpertEnd)
               {
                 if (trill.EndTick >= e.StartTicks)
@@ -688,11 +711,14 @@ namespace LibForge.Midi
         });
         LaneMarkers.Add(new RBMid.LANEMARKER
         {
-          
+          Markers = tremolos.Count == 0 ? null : new RBMid.LANEMARKER.MARKER[4][]
+          {
+            null, null, null, tremolos.ToArray()
+          }
         });
         TrillMarkers.Add(new RBMid.GTRTRILLS
         {
-          Trills = new RBMid.GTRTRILLS.TRILL[4][]
+          Trills = trills.Count == 0 ? null : new RBMid.GTRTRILLS.TRILL[4][]
           {
             null, null, null, trills.ToArray()
           }
@@ -929,7 +955,7 @@ namespace LibForge.Midi
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
-
+          Gems = new RBMid.GEMTRACK.GEM[4][]
         });
         OverdriveSoloSections.Add(new RBMid.SECTIONS
         {
