@@ -418,9 +418,7 @@ namespace LibForge.Midi
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
-          Gems = new RBMid.GEMTRACK.GEM[4][] {
-            gem_tracks[0].ToArray(), gem_tracks[1].ToArray(),
-            gem_tracks[2].ToArray(), gem_tracks[3].ToArray() }
+          Gems = gem_tracks.Select(g => g.ToArray()).ToArray()
         });
         var sections = new RBMid.SECTIONS.SECTION[6][];
         sections[0] = overdrive_markers.ToArray();
@@ -705,11 +703,7 @@ namespace LibForge.Midi
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
-          Gems = new RBMid.GEMTRACK.GEM[4][]
-          {
-            gem_tracks[0].ToArray(), gem_tracks[1].ToArray(), gem_tracks[2].ToArray(),
-            gem_tracks[3].ToArray()
-          }
+          Gems = gem_tracks.Select(g => g.ToArray()).ToArray()
         });
         var sections = new RBMid.SECTIONS.SECTION[6][];
         sections[0] = overdrive_markers.ToArray();
