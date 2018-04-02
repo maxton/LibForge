@@ -431,6 +431,8 @@ namespace LibForge.Midi
       };
 
       const byte TrillMarker = 127;
+      const byte LeftHandEnd = 59;
+      const byte LeftHandStart = 40;
       private void HandleGuitarBass(MidiTrackProcessed track)
       {
         var drumfills = new List<RBMid.DRUMFILLS.FILL>();
@@ -440,6 +442,7 @@ namespace LibForge.Midi
         var trills = new List<RBMid.GTRTRILLS.TRILL>();
         var trill = new RBMid.GTRTRILLS.TRILL();
         var maps = new List<RBMid.HANDMAP.MAP>();
+        var left_hand = new List<RBMid.HANDPOS.POS>();
 
         bool AddGem(MidiNote e)
         {
@@ -591,6 +594,17 @@ namespace LibForge.Midi
                   if (note > trill.HighFret) trill.HighFret = note;
                 }
               }
+              else if(e.Key >= LeftHandStart && e.Key <= LeftHandEnd)
+              {
+                left_hand.Add(new RBMid.HANDPOS.POS
+                {
+                  StartTime = (float)e.StartTime,
+                  Length = (float)e.Length,
+                  Position = e.Key - LeftHandStart,
+                  // TODO
+                  Unknown = 0
+                });
+              }
               break;
             case MidiText e:
               var regex = new System.Text.RegularExpressions.Regex("\\[map (HandMap_[A-Za-z_2]+)\\]");
@@ -665,7 +679,7 @@ namespace LibForge.Midi
         });
         HandPos.Add(new RBMid.HANDPOS
         {
-
+          Events = left_hand.ToArray()
         });
         Unktrack.Add(new RBMid.UNKTRACK
         {
