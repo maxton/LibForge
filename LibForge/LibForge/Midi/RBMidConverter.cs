@@ -60,9 +60,9 @@ namespace LibForge.Midi
           {"PART KEYS_ANIM_RH", HandleKeysAnimTrk },
           {"PART KEYS_ANIM_LH", HandleKeysAnimTrk },
           {"PART VOCALS", HandleVocalsTrk },
-          {"HARM1", HandleHarmTrk },
-          {"HARM2", HandleHarmTrk },
-          {"HARM3", HandleHarmTrk },
+          {"HARM1", HandleVocalsTrk },
+          {"HARM2", HandleVocalsTrk },
+          {"HARM3", HandleVocalsTrk },
           {"EVENTS", HandleEventsTrk },
           {"BEAT", HandleBeatTrk },
           {"MARKUP", HandleMarkupTrk },
@@ -845,10 +845,21 @@ namespace LibForge.Midi
       private void HandleVocalsTrk(MidiTrackProcessed track)
       {
         var lyrics = new List<RBMid.TICKTEXT>();
-        foreach(var item in track.Items)
+        var overdrive_markers = new List<RBMid.SECTIONS.SECTION>();
+        foreach (var item in track.Items)
         {
           switch (item)
           {
+            case MidiNote e:
+              if (e.Key == OverdriveMarker)
+              {
+                overdrive_markers.Add(new RBMid.SECTIONS.SECTION
+                {
+                  StartTicks = e.StartTicks,
+                  LengthTicks = e.LengthTicks
+                });
+              }
+              break;
             case MidiText e:
               if (e.Text[0] != '[')
               {
@@ -893,77 +904,20 @@ namespace LibForge.Midi
         {
           Gems = new RBMid.GEMTRACK.GEM[4][]
         });
+        var overdriveSections = new RBMid.SECTIONS.SECTION[6][]
+        {
+          overdrive_markers.ToArray(), null, null, null, null, null
+        };
         OverdriveSoloSections.Add(new RBMid.SECTIONS
         {
           Sections = new RBMid.SECTIONS.SECTION[4][][]
+          {
+            overdriveSections, overdriveSections, overdriveSections, overdriveSections
+          }
         });
         VocalTracks.Add(new RBMid.VOCALTRACK
         {
           
-        });
-        HandMap.Add(new RBMid.HANDMAP());
-        HandPos.Add(new RBMid.HANDPOS());
-        Unktrack.Add(new RBMid.UNKTRACK());
-      }
-
-      private void HandleHarmTrk(MidiTrackProcessed track)
-      {
-        var lyrics = new List<RBMid.TICKTEXT>();
-        foreach(var item in track.Items)
-        {
-          switch (item)
-          {
-            case MidiText e:
-              if (e.Text[0] != '[')
-              {
-                lyrics.Add(new RBMid.TICKTEXT
-                {
-                  Text = e.Text,
-                  Tick = e.StartTicks,
-                });
-              }
-              break;
-          }
-        }
-
-
-        Lyrics.Add(new RBMid.LYRICS
-        {
-          TrackName = track.Name,
-          Lyrics = lyrics.ToArray(),
-          Unknown1 = 3,
-          Unknown2 = 3,
-          Unknown3 = 0
-        });
-        DrumFills.Add(new RBMid.DRUMFILLS());
-        ProMarkers.Add(new RBMid.CYMBALMARKER
-        {
-          Markers = new RBMid.CYMBALMARKER.MARKER[1]
-          {
-            new RBMid.CYMBALMARKER.MARKER
-            {
-              Tick = 0,
-              Flags = 0
-            }
-          }
-        });
-        LaneMarkers.Add(new RBMid.LANEMARKER());
-        TrillMarkers.Add(new RBMid.GTRTRILLS());
-        DrumMixes.Add(new RBMid.DRUMMIXES
-        {
-          Mixes = new RBMid.TICKTEXT[4][]
-        });
-        GemTracks.Add(new RBMid.GEMTRACK
-        {
-          Gems = new RBMid.GEMTRACK.GEM[4][]
-        });
-        OverdriveSoloSections.Add(new RBMid.SECTIONS
-        {
-
-        });
-        VocalTracks.Add(new RBMid.VOCALTRACK
-        {
-
         });
         HandMap.Add(new RBMid.HANDMAP());
         HandPos.Add(new RBMid.HANDPOS());
