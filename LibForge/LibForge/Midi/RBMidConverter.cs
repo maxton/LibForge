@@ -431,7 +431,8 @@ namespace LibForge.Midi
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
-          Gems = gem_tracks.Select(g => g.ToArray()).ToArray()
+          Gems = gem_tracks.Select(g => g.ToArray()).ToArray(),
+          Unknown = 0xAA
         });
         var sections = new RBMid.SECTIONS.SECTION[6][];
         sections[0] = overdrive_markers.ToArray();
@@ -729,7 +730,8 @@ namespace LibForge.Midi
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
-          Gems = gem_tracks.Select(g => g.ToArray()).ToArray()
+          Gems = gem_tracks.Select(g => g.ToArray()).ToArray(),
+          Unknown = 0xAA
         });
         var sections = new RBMid.SECTIONS.SECTION[6][];
         sections[0] = overdrive_markers.ToArray();
@@ -818,7 +820,7 @@ namespace LibForge.Midi
               {
                 anims.Add(new RBMid.ANIM.EVENT
                 {
-                  StartMillis = (float)(e.StartTime * 1000),
+                  StartMillis = (float)e.StartTime * 1000,
                   StartTick = e.StartTicks,
                   KeyBitfield = 1 << (e.Key - 48),
                   LengthTicks = (ushort)(e.LengthTicks),
@@ -842,10 +844,22 @@ namespace LibForge.Midi
         });
       }
 
+      const byte PhraseMarker = 105;
+      const byte Percussion = 96;
+      const byte VocalsEnd = 84;
+      const byte VocalsStart = 36;
       private void HandleVocalsTrk(MidiTrackProcessed track)
       {
         var lyrics = new List<RBMid.TICKTEXT>();
         var overdrive_markers = new List<RBMid.SECTIONS.SECTION>();
+        var percussions = new List<uint>();
+        var notes = new List<RBMid.VOCALTRACK.VOCAL_NOTE>();
+        var phrase_markers_1 = new List<RBMid.VOCALTRACK.PHRASE_MARKER>();
+        var phrase_markers_2 = new List<RBMid.VOCALTRACK.PHRASE_MARKER>();
+        var unknown_pairs = new List<RBMid.VOCALTRACK.UNKNOWN>();
+
+        int phrase_index = 0;
+        RBMid.VOCALTRACK.PHRASE_MARKER last_phrase_1 = null;
         foreach (var item in track.Items)
         {
           switch (item)
@@ -857,6 +871,83 @@ namespace LibForge.Midi
                 {
                   StartTicks = e.StartTicks,
                   LengthTicks = e.LengthTicks
+                });
+              }
+              else if (e.Key == Percussion)
+              {
+                percussions.Add(e.StartTicks);
+              }
+              else if (e.Key == PhraseMarker)
+              {
+                // TODO This is mostly wrong.
+                if(phrase_markers_1.Count == 0)
+                {
+                  phrase_markers_1.Add(new RBMid.VOCALTRACK.PHRASE_MARKER
+                  {
+                    StartMillis = 0,
+                    Length = (float)e.StartTime * 1000,
+                    StartTicks = 0U,
+                    LengthTicks = e.StartTicks,
+                    StartNoteIdx = -1,
+                    EndNoteIdx = -1,
+                    UnkOne = 0,
+                    Unknown6 = new byte[25]
+                  });
+                } else if(last_phrase_1 != null)
+                {
+                  last_phrase_1.EndNoteIdx = notes.Count;
+                }
+                last_phrase_1 = new RBMid.VOCALTRACK.PHRASE_MARKER
+                {
+                  StartMillis = (float)e.StartTime * 1000,
+                  StartTicks = e.StartTicks,
+                  Length = (float)e.Length * 1000,
+                  LengthTicks = e.LengthTicks,
+                  StartNoteIdx = notes.Count,
+                  UnkOne = 1,
+                  Unknown6 = new byte[25]
+                };
+                phrase_markers_1.Add(last_phrase_1);
+              }
+              else if (e.Key >= VocalsStart && e.Key <= VocalsEnd)
+              {
+                var lyric = (track.Items.Find(s => s is MidiText && s.StartTicks == e.StartTicks) as MidiText).Text;
+                if(lyric == "+")
+                {
+                  var previous = notes.LastOrDefault();
+                  notes.Add(new RBMid.VOCALTRACK.VOCAL_NOTE
+                  {
+                    PhraseIndex = phrase_markers_1.Count - 1,
+                    MidiNote = previous.MidiNote2,
+                    MidiNote2 = e.Key,
+                    StartMillis = previous.StartMillis + previous.LengthMillis,
+                    StartTick = previous.StartTick + previous.LengthTicks,
+                    LengthMillis = ((float)e.StartTime * 1000) - (previous.StartMillis + previous.LengthMillis),
+                    LengthTicks = (ushort)(e.StartTicks - previous.StartTick + previous.LengthTicks),
+                    Lyric = "",
+                    LastNoteInPhrase = false,
+                    // TODO: What is this?
+                    Unknown = 1,
+                    Portamento = true,
+                    Flag9 = true
+                  });
+                }
+                notes.Add(new RBMid.VOCALTRACK.VOCAL_NOTE
+                {
+                  PhraseIndex = phrase_index,
+                  MidiNote = e.Key,
+                  MidiNote2 = e.Key,
+                  StartMillis = (float)e.StartTime * 1000,
+                  StartTick = e.StartTicks,
+                  LengthMillis = (float)e.Length * 1000,
+                  LengthTicks = (ushort)e.LengthTicks,
+                  Lyric = lyric == "+" ? "" : lyric,
+                  // TODO
+                  LastNoteInPhrase = false,
+                  // TODO: What is this?
+                  Unknown = 1,
+                  Portamento = lyric == "+",
+                  Flag9 = true
                 });
               }
               break;
@@ -902,7 +993,8 @@ namespace LibForge.Midi
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
-          Gems = new RBMid.GEMTRACK.GEM[4][]
+          Gems = new RBMid.GEMTRACK.GEM[4][],
+          Unknown = 0xAA
         });
         var overdriveSections = new RBMid.SECTIONS.SECTION[6][]
         {
@@ -917,7 +1009,11 @@ namespace LibForge.Midi
         });
         VocalTracks.Add(new RBMid.VOCALTRACK
         {
-          
+          PhraseMarkers = phrase_markers_1.ToArray(),
+          PhraseMarkers2 = phrase_markers_2.ToArray(),
+          Notes = notes.ToArray(),
+          Percussion = percussions.ToArray(),
+          Unknown2 = unknown_pairs.ToArray()
         });
         HandMap.Add(new RBMid.HANDMAP());
         HandPos.Add(new RBMid.HANDPOS());

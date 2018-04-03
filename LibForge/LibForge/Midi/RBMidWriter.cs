@@ -175,8 +175,8 @@ namespace LibForge.Midi
         Write(x.MidiNote2);
         Write(x.StartMillis);
         Write(x.StartTick);
-        Write(x.Length);
-        Write(x.Unknown1);
+        Write(x.LengthMillis);
+        Write(x.LengthTicks);
         Write(x.Lyric);
         Write(x.LastNoteInPhrase);
         Write(x.UnknownFalse);
@@ -199,11 +199,11 @@ namespace LibForge.Midi
     {
       Write(obj.StartMillis);
       Write(obj.Length);
-      Write(obj.Unknown1);
-      Write(obj.Unknown2);
-      Write(obj.Unknown3);
-      Write(obj.Unknown4);
-      Write(obj.Unknown5);
+      Write(obj.StartTicks);
+      Write(obj.LengthTicks);
+      Write(obj.StartNoteIdx);
+      Write(obj.EndNoteIdx);
+      Write(obj.UnkOne);
       Array.ForEach(obj.Unknown6, Write);
     }
     private void WriteUnkstruct1(RBMid.UNKSTRUCT1 obj)

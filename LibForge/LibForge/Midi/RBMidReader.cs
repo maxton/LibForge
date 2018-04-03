@@ -179,8 +179,8 @@ namespace LibForge.Midi
           MidiNote2 = Int(),
           StartMillis = Float(),
           StartTick = UInt(),
-          Length = Float(),
-          Unknown1 = Short(),
+          LengthMillis = Float(),
+          LengthTicks = UShort(),
           Lyric = String(),
           LastNoteInPhrase = Bool(),
           UnknownFalse = Check(Bool(), false),
@@ -204,11 +204,11 @@ namespace LibForge.Midi
       {
         StartMillis = Float(),
         Length = Float(),
-        Unknown1 = Int(),
-        Unknown2 = Int(),
-        Unknown3 = Int(),
-        Unknown4 = Int(),
-        Unknown5 = Int(),
+        StartTicks = UInt(),
+        LengthTicks = UInt(),
+        StartNoteIdx = Int(),
+        EndNoteIdx = Int(),
+        UnkOne = Int(),
         Unknown6 = FixedArr(Byte, 25)
       };
     private RBMid.UNKSTRUCT1 ReadUnkstruct1() => new RBMid.UNKSTRUCT1

@@ -147,15 +147,15 @@ namespace LibForge.Midi
     }
     public struct VOCALTRACK
     {
-      public struct PHRASE_MARKER
+      public class PHRASE_MARKER
       {
         public float StartMillis;
         public float Length;
-        public int Unknown1;
-        public int Unknown2;
-        public int Unknown3;
-        public int Unknown4;
-        public int Unknown5;
+        public uint StartTicks;
+        public uint LengthTicks;
+        public int StartNoteIdx;
+        public int EndNoteIdx;
+        public int UnkOne;
         public byte[] Unknown6;
       }
       public struct VOCAL_NOTE
@@ -165,8 +165,8 @@ namespace LibForge.Midi
         public int MidiNote2;
         public float StartMillis;
         public uint StartTick;
-        public float Length;
-        public short Unknown1;
+        public float LengthMillis;
+        public ushort LengthTicks;
         public string Lyric;
         // 9 Bytes are flags
         // 0 0 0 0 0 1 0 0 1 for normal notes
