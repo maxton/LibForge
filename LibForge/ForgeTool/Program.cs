@@ -67,7 +67,7 @@ namespace ForgeTool
             // TODO: Test RBMid -> Mid -> RBMid (currently only testing RBMid -> RBMid)
             var dir = args[1];
             int succ = 0, warn = 0, fail = 0;
-            foreach (var f in Directory.EnumerateFiles(dir, "*.rbmid_ps4"))
+            foreach (var f in Directory.EnumerateFiles(dir, "*.rbmid_*"))
             {
               var info = new FileInfo(f);
               var name = info.Name;

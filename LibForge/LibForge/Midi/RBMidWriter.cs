@@ -35,6 +35,10 @@ namespace LibForge.Midi
       Write(r.Unknown6);
       Write(r.NumPlayableTracks);
       Write(r.FinalTick);
+      if(r.Format == RBMid.FORMAT_RBVR)
+      {
+        Write(r.UnkVrTick);
+      }
       Write(r.UnknownZeroByte);
       Write(r.PreviewStartMillis);
       Write(r.PreviewEndMillis);
@@ -49,6 +53,10 @@ namespace LibForge.Midi
       Write(r.MarkupSoloNotes3, WriteSoloNotes);
       Write(r.TwoTicks2, WriteTwoTicks);
       // end weirdness
+      if(r.Format == RBMid.FORMAT_RBVR)
+      {
+        WriteVREvents(r.VREvents);
+      }
       Write(r.UnknownTwo);
       Write(r.LastMarkupEventTick);
       Write(r.MidiTracks, WriteMidiTrack);
@@ -388,6 +396,57 @@ namespace LibForge.Midi
     {
       Write(obj.Tick);
       Write(obj.Downbeat ? 1 : 0);
+    }
+    private void WriteVREvents(RBMid.RBVREVENTS obj)
+    {
+      Write(obj.BeatmatchSections, e =>
+      {
+        Write(e.unk_zero);
+        Write(e.beatmatch_section);
+        Write(e.StartTick);
+        Write(e.EndTick);
+      });
+      Write(obj.UnkStruct1, x =>
+      {
+        Write(x.Unk1);
+        Write(x.StartPercentage);
+        Write(x.EndPercentage);
+        Write(x.StartTick);
+        Write(x.EndTick);
+        Write(x.Unk2);
+      });
+      Write(obj.UnkStruct2, x =>
+      {
+        Write(x.Unk);
+        Write(x.Name);
+        Write(x.Tick);
+      });
+      Write(obj.UnkStruct3, x =>
+      {
+        Write(x.Unk1);
+        Write(x.exsandohs);
+        Write(x.StartTick);
+        Write(x.EndTick);
+        Array.ForEach(x.Flags, Write);
+        Write(x.Unk2);
+      });
+      Write(obj.UnkZero1);
+      Write(obj.UnkStruct4, x =>
+      {
+        Write(x.Unk1);
+        Write(x.Name);
+        Write(x.ExsOhs, Write);
+        Write(x.StartTick);
+        Write(x.EndTick);
+        Write(x.Unk2);
+      });
+      Write(obj.UnknownTicks, Write);
+      Write(obj.UnkZero2);
+      Write(obj.UnkStruct6, x =>
+      {
+        Write(x.Tick);
+        Write(x.Unk);
+      });
     }
   }
 }

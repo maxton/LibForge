@@ -269,6 +269,66 @@ namespace LibForge.Midi
       public uint Tick;
       public bool Downbeat;
     }
+    public class RBVREVENTS
+    {
+      public struct BEATMATCH_SECTION
+      { 
+        public int unk_zero;
+        public string beatmatch_section;
+        public uint StartTick;
+        public uint EndTick;
+      }
+      public struct UNKSTRUCT1
+      {
+        public int Unk1;
+        public float StartPercentage;
+        public float EndPercentage;
+        public uint StartTick;
+        public uint EndTick;
+        public int Unk2;
+      }
+      public struct UNKSTRUCT2
+      {
+        public int Unk;
+        public string Name;
+        public uint Tick;
+      }
+      public struct UNKSTRUCT3
+      {
+        public int Unk1;
+        public string exsandohs;
+        public uint StartTick;
+        public uint EndTick;
+        public byte[] Flags;
+        public int Unk2;
+      }
+      public struct UNKSTRUCT4
+      {
+        public int Unk1;
+        public string Name;
+        public string[] ExsOhs;
+        public uint StartTick;
+        public uint EndTick;
+        public byte Unk2;
+      }
+      public struct UNKSTRUCT6
+      {
+        public uint Tick;
+        public int Unk;
+      }
+      public BEATMATCH_SECTION[] BeatmatchSections;
+      public UNKSTRUCT1[] UnkStruct1;
+      public UNKSTRUCT2[] UnkStruct2;
+      public UNKSTRUCT3[] UnkStruct3;
+      public int UnkZero1;
+      public UNKSTRUCT4[] UnkStruct4;
+      public uint[] UnknownTicks;
+      public int UnkZero2;
+      public UNKSTRUCT6[] UnkStruct6;
+    }
+
+    public const int FORMAT_RB4 = 0x10;
+    public const int FORMAT_RBVR = 0x2F;
     public int Format;
     public LYRICS[] Lyrics;
     public DRUMFILLS[] DrumFills;
@@ -289,6 +349,7 @@ namespace LibForge.Midi
     public int Unknown6;
     public uint NumPlayableTracks;
     public uint FinalTick;
+    public uint UnkVrTick;
     public byte UnknownZeroByte;
     public float PreviewStartMillis;
     public float PreviewEndMillis;
@@ -303,6 +364,7 @@ namespace LibForge.Midi
     public MARKUP_SOLO_NOTES[] MarkupSoloNotes3;
     public TWOTICKS[] TwoTicks2;
 
+    public RBVREVENTS VREvents;
     public int UnknownTwo;
     public uint LastMarkupEventTick;
     public MidiTrack[] MidiTracks;

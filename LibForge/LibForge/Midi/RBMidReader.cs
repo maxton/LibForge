@@ -21,7 +21,11 @@ namespace LibForge.Midi
     private RBMid Read()
     {
       var r = new RBMid();
-      r.Format = Check(Int(), 16);
+      r.Format = Int();
+      if(r.Format != RBMid.FORMAT_RB4 && r.Format != RBMid.FORMAT_RBVR)
+      {
+        throw new Exception($"Invalid magic number (expected 10 or 2f, got {r.Format:X}");
+      }
       r.Lyrics = Arr(ReadLyrics, MaxInstTracks);
       var numTracks = (uint)r.Lyrics.Length;
       r.DrumFills = Arr(ReadDrumFills, numTracks);
@@ -41,6 +45,10 @@ namespace LibForge.Midi
       r.Unknown6 = Int();
       r.NumPlayableTracks = Check(UInt(), numTracks);
       r.FinalTick = UInt();
+      if(r.Format == RBMid.FORMAT_RBVR)
+      {
+        r.UnkVrTick = UInt();
+      }
       r.UnknownZeroByte = Check(Byte(), (byte)0);
       r.PreviewStartMillis = Float();
       r.PreviewEndMillis = Float();
@@ -55,6 +63,10 @@ namespace LibForge.Midi
       r.MarkupSoloNotes3 = Arr(ReadMarkupSoloNotes);
       r.TwoTicks2 = Arr(ReadTwoTicks);
 
+      if(r.Format == RBMid.FORMAT_RBVR)
+      {
+        r.VREvents = ReadVREvents();
+      }
       r.UnknownTwo = Check(Int(), 2);
       r.LastMarkupEventTick = UInt();
       r.MidiTracks = Arr(ReadMidiTrack);
@@ -367,6 +379,57 @@ namespace LibForge.Midi
     {
       Tick = UInt(),
       Downbeat = Int() != 0
+    };
+    private RBMid.RBVREVENTS ReadVREvents() => new RBMid.RBVREVENTS
+    {
+      BeatmatchSections = Arr(() => new RBMid.RBVREVENTS.BEATMATCH_SECTION
+      {
+        unk_zero = Check(Int(), 0),
+        beatmatch_section = String(),
+        StartTick = UInt(),
+        EndTick = UInt()
+      }),
+      UnkStruct1 = Arr(() => new RBMid.RBVREVENTS.UNKSTRUCT1
+      {
+        Unk1 = Int(),
+        StartPercentage = Float(),
+        EndPercentage = Float(),
+        StartTick = UInt(),
+        EndTick = UInt(),
+        Unk2 = Int()
+      }),
+      UnkStruct2 = Arr(() => new RBMid.RBVREVENTS.UNKSTRUCT2
+      {
+        Unk = Int(),
+        Name = String(),
+        Tick = UInt()
+      }),
+      UnkStruct3 = Arr(() => new RBMid.RBVREVENTS.UNKSTRUCT3
+      {
+        Unk1 = Int(),
+        exsandohs = String(),
+        StartTick = UInt(),
+        EndTick = UInt(),
+        Flags = FixedArr(Byte, 7),
+        Unk2 = Int()
+      }),
+      UnkZero1 = Check(Int(), 0),
+      UnkStruct4 = Arr(() => new RBMid.RBVREVENTS.UNKSTRUCT4
+      {
+        Unk1 = Int(),
+        Name = String(),
+        ExsOhs = Arr(String),
+        StartTick = UInt(),
+        EndTick = UInt(),
+        Unk2 = Byte()
+      }),
+      UnknownTicks = Arr(UInt),
+      UnkZero2 = Check(Int(), 0),
+      UnkStruct6 = Arr(() => new RBMid.RBVREVENTS.UNKSTRUCT6
+      {
+        Tick = UInt(),
+        Unk = Int()
+      })
     };
   }
 }
