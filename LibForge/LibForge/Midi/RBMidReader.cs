@@ -350,6 +350,8 @@ namespace LibForge.Midi
           {
             case 1:
               return new TextEvent(deltaTime, txt);
+            case 2:
+              return new CopyrightNotice(deltaTime, txt);
             case 3:
               trackName = txt;
               return new TrackName(deltaTime, txt);
@@ -413,8 +415,14 @@ namespace LibForge.Midi
         Flags = FixedArr(Byte, 7),
         Unk2 = Int()
       }),
-      UnkZero1 = Check(Int(), 0),
       UnkStruct4 = Arr(() => new RBMid.RBVREVENTS.UNKSTRUCT4
+      {
+        Unk = Int(),
+        Name = String(),
+        StartTick = UInt(),
+        EndTick = UInt()
+      }),
+      UnkStruct5 = Arr(() => new RBMid.RBVREVENTS.UNKSTRUCT5
       {
         Unk1 = Int(),
         Name = String(),

@@ -304,6 +304,13 @@ namespace LibForge.Midi
       }
       public struct UNKSTRUCT4
       {
+        public int Unk;
+        public string Name;
+        public uint StartTick;
+        public uint EndTick;
+      }
+      public struct UNKSTRUCT5
+      {
         public int Unk1;
         public string Name;
         public string[] ExsOhs;
@@ -320,8 +327,8 @@ namespace LibForge.Midi
       public UNKSTRUCT1[] UnkStruct1;
       public UNKSTRUCT2[] UnkStruct2;
       public UNKSTRUCT3[] UnkStruct3;
-      public int UnkZero1;
       public UNKSTRUCT4[] UnkStruct4;
+      public UNKSTRUCT5[] UnkStruct5;
       public uint[] UnknownTicks;
       public int UnkZero2;
       public UNKSTRUCT6[] UnkStruct6;

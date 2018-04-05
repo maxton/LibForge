@@ -430,8 +430,14 @@ namespace LibForge.Midi
         Array.ForEach(x.Flags, Write);
         Write(x.Unk2);
       });
-      Write(obj.UnkZero1);
       Write(obj.UnkStruct4, x =>
+      {
+        Write(x.Unk);
+        Write(x.Name);
+        Write(x.StartTick);
+        Write(x.EndTick);
+      });
+      Write(obj.UnkStruct5, x =>
       {
         Write(x.Unk1);
         Write(x.Name);

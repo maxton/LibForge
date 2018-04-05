@@ -480,8 +480,14 @@ typedef struct {
         char flags[7];
         int neg_one;
     } unk_struct3[unk_vrevent_count3]<optimize=false>;
-    int zero;
     int unk_vrevent_count4;
+    struct {
+        int unk;
+        PSTR name;
+        tick_t StartTick;
+        tick_t EndTick;
+    } unk_struct4[unk_vrevent_count4]<optimize=false>;
+    int unk_vrevent_count5;
     struct {
         int unk;
         PSTR name;
@@ -490,7 +496,7 @@ typedef struct {
         tick_t tick_1;
         tick_t tick_2;
         char unk;
-    } unk_struct4[unk_vrevent_count4]<optimize=false>;
+    } unk_struct5[unk_vrevent_count5]<optimize=false>;
     int unk_vrevent_count5;
     tick_t unk_tick[unk_vrevent_count5];
     int unk_zero;
