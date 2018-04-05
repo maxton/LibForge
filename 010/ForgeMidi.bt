@@ -261,7 +261,8 @@ typedef struct {
     char no_tail;
     Assert(no_tail == 0 || no_tail == 1);
     int unknown;
-    Assert(unknown == 0 || unknown == 1);
+// Probably more flags for rbmid_pc
+//    Assert(unknown == 0 || unknown == 1);
 } GEM<read=GEM_read>;
 string GEM_read(GEM& gem){
     string ret;
@@ -447,6 +448,59 @@ typedef struct {
 } BEAT;
 // File starts here!
 
+typedef struct {
+    int num_beatmatch_sections;
+    struct { 
+        int unk_zero;
+        PSTR beatmatch_section;
+        tick_t unk;
+        tick_t unk;
+    } beatmatch_section[num_beatmatch_sections]<optimize=false>;
+    int unk_vrevent_count;
+    struct {
+        int unk;
+        float unk;
+        float unk;
+        tick_t unk;
+        tick_t unk;
+        int unk;
+    } unk_struct[unk_vrevent_count];
+    int unk_vrevent_count2;
+    struct {
+        int unk;
+        PSTR name;
+        tick_t when;
+    } unk_struct2[unk_vrevent_count2]<optimize=false>;
+    int unk_vrevent_count3;
+    struct {
+        int unk;
+        PSTR exsandohs;
+        tick_t tick_1;
+        tick_t tick_2;
+        char flags[7];
+        int neg_one;
+    } unk_struct3[unk_vrevent_count3]<optimize=false>;
+    int zero;
+    int unk_vrevent_count4;
+    struct {
+        int unk;
+        PSTR name;
+        int num_exsohs;
+        PSTR exsohs[num_exsohs]<optimize=false>;
+        tick_t tick_1;
+        tick_t tick_2;
+        char unk;
+    } unk_struct4[unk_vrevent_count4]<optimize=false>;
+    int unk_vrevent_count5;
+    tick_t unk_tick[unk_vrevent_count5];
+    int unk_zero;
+    int unk_vrevent_count6;
+    struct {
+        tick_t tick;
+        int unk;
+    } unk_struct6[unk_vrevent_count6];
+} RBVREVENTS;
+
 int format;
 if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int num_lyric_tracks;
@@ -495,6 +549,9 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int num_tracks_repeat;
     Assert(num_tracks_repeat == num_lyric_tracks);
     tick_t FinalTick;
+    if(format == 0x2f){
+        tick_t UnknownTick;
+    }
     char what;
     float preview_start_ms;
     float preview_end_ms;
@@ -532,6 +589,9 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     // End confusing section
     // =============================================
 
+    if(format == 0x2f) { // RBVR Specific section
+        RBVREVENTS vr_events;
+    }
     int two;
     Assert(two == 2, "This has always been 2");
     tick_t LastMarkupEventTick;
