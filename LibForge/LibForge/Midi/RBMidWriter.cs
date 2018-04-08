@@ -213,8 +213,7 @@ namespace LibForge.Midi
       Write(obj.EndNoteIdx);
       Write(obj.IsPhrase);
       Write(obj.IsOverdrive);
-      Write(obj.UnkFlag1);
-      Write(obj.UnkFlag2);
+      Write(obj.Unused);
       Array.ForEach(obj.Unknown6, Write);
     }
     private void WriteUnkstruct1(RBMid.UNKSTRUCT1 obj)

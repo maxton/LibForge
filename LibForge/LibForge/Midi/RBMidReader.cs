@@ -198,7 +198,7 @@ namespace LibForge.Midi
           UnknownFalse = Check(Bool(), false),
           Unpitched = Bool(),
           UnknownFalse2 = Bool(),
-          UnkFlag1 = Check(Bool(), false),
+          UnkFlag1 = Bool(),
           Unknown = Byte(),
           Portamento = Bool(),
           Flag8 = Bool(),
@@ -222,8 +222,7 @@ namespace LibForge.Midi
         EndNoteIdx = Int(),
         IsPhrase = Byte(),
         IsOverdrive = Byte(),
-        UnkFlag1 = Byte(),
-        UnkFlag2 = Byte(),
+        Unused = Check(UShort(), (ushort)0),
         Unknown6 = FixedArr(Byte, 25)
       };
     private RBMid.UNKSTRUCT1 ReadUnkstruct1() => new RBMid.UNKSTRUCT1

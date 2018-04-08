@@ -897,8 +897,7 @@ namespace LibForge.Midi
                     EndNoteIdx = -1,
                     IsPhrase = 0,
                     IsOverdrive = 0,
-                    UnkFlag1 = 0,
-                    UnkFlag2 = 0,
+                    Unused = 0,
                     Unknown6 = new byte[25]
                   });
                 } else if(last_phrase_1 != null)
@@ -914,8 +913,7 @@ namespace LibForge.Midi
                   StartNoteIdx = notes.Count,
                   IsPhrase = 1,
                   IsOverdrive = 0,
-                  UnkFlag1 = 0,
-                  UnkFlag2 = 0,
+                  Unused = 0,
                   Unknown6 = new byte[25]
                 };
                 if(overdrive_markers.LastOrDefault().StartTicks == e.StartTicks)
@@ -932,8 +930,7 @@ namespace LibForge.Midi
                   StartNoteIdx = notes.Count,
                   IsPhrase = 0,
                   IsOverdrive = 0,
-                  UnkFlag1 = 0,
-                  UnkFlag2 = 0,
+                  Unused = 0,
                   Unknown6 = new byte[25]
                 };
                 phrase_markers_2.Add(last_phrase_2);
