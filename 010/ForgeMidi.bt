@@ -305,7 +305,10 @@ typedef struct {
         tick_t length_ticks;
         int unk_start_note;
         int unk_end_note;
-        int unk_usually_one;
+        char is_phrase;
+        char is_overdrive;
+        char unk_flag;
+        char unk_flag;
         char unk;
         int unk;
         int unk;
@@ -322,7 +325,10 @@ typedef struct {
         tick_t length_ticks;
         int unk_start_note;
         int unk_end_note;
-        int unk;
+        char is_phrase;
+        char is_overdrive;
+        char unk_flag;
+        char unk_flag;
         char unknown[25];
     } phrase_markers_2[num_phrase_markers_2] <optimize=false>;
     int num_notes;
@@ -347,11 +353,11 @@ typedef struct {
     } vocal_notes[num_notes]<optimize=false>;
     int num_percussions;
     tick_t percussions[num_percussions];
-    int num_unk2;
+    int num_tacets;
     struct {
         float StartMillis;
         float EndMillis;
-    }unk2[num_unk2];
+    }tacets[num_tacets];
 } VOCALTRACK;
 
 typedef struct {

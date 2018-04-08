@@ -856,10 +856,11 @@ namespace LibForge.Midi
         var notes = new List<RBMid.VOCALTRACK.VOCAL_NOTE>();
         var phrase_markers_1 = new List<RBMid.VOCALTRACK.PHRASE_MARKER>();
         var phrase_markers_2 = new List<RBMid.VOCALTRACK.PHRASE_MARKER>();
-        var unknown_pairs = new List<RBMid.VOCALTRACK.UNKNOWN>();
+        var tacets = new List<RBMid.VOCALTRACK.VOCAL_TACET>();
 
         int phrase_index = 0;
         RBMid.VOCALTRACK.PHRASE_MARKER last_phrase_1 = null;
+        RBMid.VOCALTRACK.PHRASE_MARKER last_phrase_2 = null;
         foreach (var item in track.Items)
         {
           switch (item)
@@ -872,6 +873,10 @@ namespace LibForge.Midi
                   StartTicks = e.StartTicks,
                   LengthTicks = e.LengthTicks
                 });
+                if(last_phrase_1?.StartTicks == e.StartTicks)
+                {
+                  last_phrase_1.IsOverdrive = 1;
+                }
               }
               else if (e.Key == Percussion)
               {
@@ -890,7 +895,10 @@ namespace LibForge.Midi
                     LengthTicks = e.StartTicks,
                     StartNoteIdx = -1,
                     EndNoteIdx = -1,
-                    UnkOne = 0,
+                    IsPhrase = 0,
+                    IsOverdrive = 0,
+                    UnkFlag1 = 0,
+                    UnkFlag2 = 0,
                     Unknown6 = new byte[25]
                   });
                 } else if(last_phrase_1 != null)
@@ -904,10 +912,31 @@ namespace LibForge.Midi
                   Length = (float)e.Length * 1000,
                   LengthTicks = e.LengthTicks,
                   StartNoteIdx = notes.Count,
-                  UnkOne = 1,
+                  IsPhrase = 1,
+                  IsOverdrive = 0,
+                  UnkFlag1 = 0,
+                  UnkFlag2 = 0,
                   Unknown6 = new byte[25]
                 };
+                if(overdrive_markers.LastOrDefault().StartTicks == e.StartTicks)
+                {
+                  last_phrase_1.IsOverdrive = 1;
+                }
                 phrase_markers_1.Add(last_phrase_1);
+                last_phrase_2 = new RBMid.VOCALTRACK.PHRASE_MARKER
+                {
+                  StartMillis = 0f,
+                  Length = 0f,
+                  StartTicks = e.StartTicks,
+                  LengthTicks = e.LengthTicks,
+                  StartNoteIdx = notes.Count,
+                  IsPhrase = 0,
+                  IsOverdrive = 0,
+                  UnkFlag1 = 0,
+                  UnkFlag2 = 0,
+                  Unknown6 = new byte[25]
+                };
+                phrase_markers_2.Add(last_phrase_2);
               }
               else if (e.Key >= VocalsStart && e.Key <= VocalsEnd)
               {
@@ -930,6 +959,18 @@ namespace LibForge.Midi
                     Unknown = 1,
                     Portamento = true,
                     Flag9 = true
+                  });
+                }
+                var last = notes.LastOrDefault();
+                var lastNoteEnd = last.StartMillis + last.LengthMillis;
+                var tacet = ((float)e.StartTime * 1000) - lastNoteEnd;
+                if(tacet > 600f)
+                {
+                  float transition = (tacet > 800f ? 100f : 50f);
+                  tacets.Add(new RBMid.VOCALTRACK.VOCAL_TACET
+                  {
+                    StartMillis = lastNoteEnd + transition,
+                    EndMillis = (float)e.StartTime * 1000 - transition
                   });
                 }
                 notes.Add(new RBMid.VOCALTRACK.VOCAL_NOTE
@@ -963,6 +1004,12 @@ namespace LibForge.Midi
               break;
           }
         }
+        var lastNote = notes.Last();
+        tacets.Add(new RBMid.VOCALTRACK.VOCAL_TACET
+        {
+          StartMillis = lastNote.StartMillis + lastNote.LengthMillis + 100f,
+          EndMillis = (float)mf.Duration * 1000
+        });
 
 
         Lyrics.Add(new RBMid.LYRICS
@@ -1013,7 +1060,7 @@ namespace LibForge.Midi
           PhraseMarkers2 = phrase_markers_2.ToArray(),
           Notes = notes.ToArray(),
           Percussion = percussions.ToArray(),
-          Unknown2 = unknown_pairs.ToArray()
+          Tacets = tacets.ToArray()
         });
         HandMap.Add(new RBMid.HANDMAP());
         HandPos.Add(new RBMid.HANDPOS());

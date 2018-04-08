@@ -197,7 +197,7 @@ namespace LibForge.Midi
         Write(x.Flag9);
       });
       Write(obj.Percussion, Write);
-      Write(obj.Unknown2, x =>
+      Write(obj.Tacets, x =>
       {
         Write(x.StartMillis);
         Write(x.EndMillis);
@@ -211,7 +211,10 @@ namespace LibForge.Midi
       Write(obj.LengthTicks);
       Write(obj.StartNoteIdx);
       Write(obj.EndNoteIdx);
-      Write(obj.UnkOne);
+      Write(obj.IsPhrase);
+      Write(obj.IsOverdrive);
+      Write(obj.UnkFlag1);
+      Write(obj.UnkFlag2);
       Array.ForEach(obj.Unknown6, Write);
     }
     private void WriteUnkstruct1(RBMid.UNKSTRUCT1 obj)

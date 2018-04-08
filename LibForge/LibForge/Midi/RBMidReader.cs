@@ -205,7 +205,7 @@ namespace LibForge.Midi
           Flag9 = Bool(),
         }; return note; }),
       Percussion = Arr(UInt),
-      Unknown2 = Arr(() => new RBMid.VOCALTRACK.UNKNOWN
+      Tacets = Arr(() => new RBMid.VOCALTRACK.VOCAL_TACET
       {
         StartMillis = Float(),
         EndMillis = Float()
@@ -220,7 +220,10 @@ namespace LibForge.Midi
         LengthTicks = UInt(),
         StartNoteIdx = Int(),
         EndNoteIdx = Int(),
-        UnkOne = Int(),
+        IsPhrase = Byte(),
+        IsOverdrive = Byte(),
+        UnkFlag1 = Byte(),
+        UnkFlag2 = Byte(),
         Unknown6 = FixedArr(Byte, 25)
       };
     private RBMid.UNKSTRUCT1 ReadUnkstruct1() => new RBMid.UNKSTRUCT1

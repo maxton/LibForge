@@ -155,7 +155,10 @@ namespace LibForge.Midi
         public uint LengthTicks;
         public int StartNoteIdx;
         public int EndNoteIdx;
-        public int UnkOne;
+        public byte IsPhrase;
+        public byte IsOverdrive;
+        public byte UnkFlag1;
+        public byte UnkFlag2;
         public byte[] Unknown6;
       }
       public struct VOCAL_NOTE
@@ -182,7 +185,7 @@ namespace LibForge.Midi
         public bool Flag8;
         public bool Flag9;
       }
-      public struct UNKNOWN
+      public struct VOCAL_TACET
       {
         public float StartMillis;
         public float EndMillis;
@@ -191,7 +194,7 @@ namespace LibForge.Midi
       public PHRASE_MARKER[] PhraseMarkers2;
       public VOCAL_NOTE[] Notes;
       public uint[] Percussion;
-      public UNKNOWN[] Unknown2;
+      public VOCAL_TACET[] Tacets;
     }
     public struct UNKSTRUCT1
     {
