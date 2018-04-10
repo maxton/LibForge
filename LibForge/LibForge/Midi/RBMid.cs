@@ -245,10 +245,10 @@ namespace LibForge.Midi
     }
     public struct TWOTICKS
     {
-      public uint Tick1;
-      public uint Tick2;
+      public uint StartTick;
+      public uint EndTick;
     }
-    public struct MARKUPCHORD
+    public class MARKUPCHORD
     {
       public uint StartTick;
       public uint EndTick;
@@ -358,7 +358,7 @@ namespace LibForge.Midi
     // Takes values 90, 92, 125, 130, 170, 250
     public int Unknown6;
     public uint NumPlayableTracks;
-    public uint FinalTick;
+    public uint FinalEventTick;
     public uint UnkVrTick;
     public byte UnknownZeroByte;
     public float PreviewStartMillis;
@@ -368,17 +368,17 @@ namespace LibForge.Midi
     public UNKTRACK[] Unktrack;
 
     public MARKUP_SOLO_NOTES[] MarkupSoloNotes1;
-    public TWOTICKS[] TwoTicks1;
+    public TWOTICKS[] MarkupLoop1;
     public MARKUPCHORD[] MarkupChords1;
     public MARKUP_SOLO_NOTES[] MarkupSoloNotes2;
     public MARKUP_SOLO_NOTES[] MarkupSoloNotes3;
-    public TWOTICKS[] TwoTicks2;
+    public TWOTICKS[] MarkupLoop2;
 
     public RBVREVENTS VREvents;
     public int UnknownTwo;
     public uint LastMarkupEventTick;
     public MidiTrack[] MidiTracks;
-    public int[] UnknownInts;
+    public uint[] UnknownTicks;
     public float[] UnknownFloats;
     public TEMPO[] Tempos;
     public TIMESIG[] TimeSigs;
@@ -393,7 +393,7 @@ namespace LibForge.Midi
         return null;
 
       if (a.Length != b.Length)
-        return $"{n}.Length";
+        return $"{n}.Length: a={a.Length}, b={b.Length}";
       for (var i = 0; i < a.Length; i++)
       {
         var r = f(a[i], b[i]);
@@ -410,6 +410,9 @@ namespace LibForge.Midi
     private string CheckTickText(TICKTEXT a, TICKTEXT b)
       => Check(a.Tick, b.Tick, nameof(TICKTEXT.Tick))
       ?? Check(a.Text, b.Text, nameof(TICKTEXT.Text));
+    private string CheckTwoTick(TWOTICKS a, TWOTICKS b)
+      => Check(a.StartTick, b.StartTick, nameof(TWOTICKS.StartTick))
+      ?? Check(a.EndTick, b.EndTick, nameof(TWOTICKS.EndTick));
     /// <summary>
     /// Compares this RBMid with another RBMid.
     /// 
@@ -451,7 +454,7 @@ namespace LibForge.Midi
       ?? Check(other.Unknown5, Unknown5, nameof(Unknown5), (their, my) => null)
       ?? Check(other.Unknown6, Unknown6, nameof(Unknown6))
       ?? Check(other.NumPlayableTracks, NumPlayableTracks, nameof(NumPlayableTracks))
-      ?? Check(other.FinalTick, FinalTick, nameof(FinalTick))
+      ?? Check(other.FinalEventTick, FinalEventTick, nameof(FinalEventTick))
       ?? Check(other.UnknownZeroByte, UnknownZeroByte, nameof(UnknownZeroByte))
       ?? CheckFloats(other.PreviewStartMillis, PreviewStartMillis, nameof(PreviewStartMillis))
       ?? CheckFloats(other.PreviewEndMillis, PreviewEndMillis, nameof(PreviewEndMillis))
@@ -459,15 +462,18 @@ namespace LibForge.Midi
       ?? Check(other.GuitarLeftHandPos, GuitarLeftHandPos, nameof(GuitarLeftHandPos), (their, my) => null)
       ?? Check(other.Unktrack, Unktrack, nameof(Unktrack), (their, my) => null)
       ?? Check(other.MarkupSoloNotes1, MarkupSoloNotes1, nameof(MarkupSoloNotes1), (their, my) => null)
-      ?? Check(other.TwoTicks1, TwoTicks1, nameof(TwoTicks1), (their, my) => null)
-      ?? Check(other.MarkupChords1, MarkupChords1, nameof(MarkupChords1), (their, my) => null)
+      ?? Check(other.MarkupLoop1, MarkupLoop1, nameof(MarkupLoop1), CheckTwoTick)
+      ?? Check(other.MarkupChords1, MarkupChords1, nameof(MarkupChords1), (their, my) 
+           => Check(their.StartTick, my.StartTick, nameof(my.StartTick))
+           ?? Check(their.EndTick, my.EndTick, nameof(my.EndTick))
+           ?? Check(their.Pitches, my.Pitches, nameof(my.Pitches), Check))
       ?? Check(other.MarkupSoloNotes2, MarkupSoloNotes2, nameof(MarkupSoloNotes2), (their, my) => null)
       ?? Check(other.MarkupSoloNotes3, MarkupSoloNotes3, nameof(MarkupSoloNotes3), (their, my) => null)
-      ?? Check(other.TwoTicks2, TwoTicks2, nameof(TwoTicks2), (their, my) => null)
+      ?? Check(other.MarkupLoop2, MarkupLoop2, nameof(MarkupLoop2), CheckTwoTick)
       ?? Check(other.UnknownTwo, UnknownTwo, nameof(UnknownTwo))
       ?? Check(other.LastMarkupEventTick, LastMarkupEventTick, nameof(LastMarkupEventTick))
       ?? Check(other.MidiTracks, MidiTracks, nameof(MidiTracks), (their, my) => null)
-      ?? Check(other.UnknownInts, UnknownInts, nameof(UnknownInts), Check)
+      ?? Check(other.UnknownTicks, UnknownTicks, nameof(UnknownTicks), Check)
       ?? Check(other.UnknownFloats, UnknownFloats, nameof(UnknownFloats), Check)
       ?? Check(other.Tempos, Tempos, nameof(Tempos), (their, my) => null)
       ?? Check(other.TimeSigs, TimeSigs, nameof(TimeSigs), (their, my) => null)

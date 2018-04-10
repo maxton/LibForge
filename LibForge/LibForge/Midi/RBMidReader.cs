@@ -44,7 +44,7 @@ namespace LibForge.Midi
       r.Unknown5 = Arr(ReadUnkstruct2);
       r.Unknown6 = Int();
       r.NumPlayableTracks = Check(UInt(), numTracks);
-      r.FinalTick = UInt();
+      r.FinalEventTick = UInt();
       if(r.Format == RBMid.FORMAT_RBVR)
       {
         r.UnkVrTick = UInt();
@@ -57,11 +57,11 @@ namespace LibForge.Midi
       r.Unktrack = Arr(ReadUnkTrack, numTracks);
 
       r.MarkupSoloNotes1 = Arr(ReadMarkupSoloNotes);
-      r.TwoTicks1 = Arr(ReadTwoTicks);
+      r.MarkupLoop1 = Arr(ReadTwoTicks);
       r.MarkupChords1 = Arr(ReadMarkupChord);
       r.MarkupSoloNotes2 = Arr(ReadMarkupSoloNotes);
       r.MarkupSoloNotes3 = Arr(ReadMarkupSoloNotes);
-      r.TwoTicks2 = Arr(ReadTwoTicks);
+      r.MarkupLoop2 = Arr(ReadTwoTicks);
 
       if(r.Format == RBMid.FORMAT_RBVR)
       {
@@ -70,7 +70,7 @@ namespace LibForge.Midi
       r.UnknownTwo = Check(Int(), 2);
       r.LastMarkupEventTick = UInt();
       r.MidiTracks = Arr(ReadMidiTrack);
-      r.UnknownInts = FixedArr(Int, 9);
+      r.UnknownTicks = FixedArr(UInt, 9);
       r.UnknownFloats = FixedArr(Float, 4);
       r.Tempos = Arr(ReadTempo);
       r.TimeSigs = Arr(ReadTimesig);
@@ -271,8 +271,8 @@ namespace LibForge.Midi
     };
     private RBMid.TWOTICKS ReadTwoTicks() => new RBMid.TWOTICKS
     {
-      Tick1 = UInt(),
-      Tick2 = UInt()
+      StartTick = UInt(),
+      EndTick = UInt()
     };
     private RBMid.MARKUPCHORD ReadMarkupChord() => new RBMid.MARKUPCHORD
     {

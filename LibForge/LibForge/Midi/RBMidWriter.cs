@@ -34,7 +34,7 @@ namespace LibForge.Midi
       Write(r.Unknown5, WriteUnkstruct2);
       Write(r.Unknown6);
       Write(r.NumPlayableTracks);
-      Write(r.FinalTick);
+      Write(r.FinalEventTick);
       if(r.Format == RBMid.FORMAT_RBVR)
       {
         Write(r.UnkVrTick);
@@ -47,11 +47,11 @@ namespace LibForge.Midi
       Write(r.Unktrack, WriteUnktrack);
       // begin weirdness
       Write(r.MarkupSoloNotes1, WriteSoloNotes);
-      Write(r.TwoTicks1, WriteTwoTicks);
+      Write(r.MarkupLoop1, WriteTwoTicks);
       Write(r.MarkupChords1, WriteMarkupChord);
       Write(r.MarkupSoloNotes2, WriteSoloNotes);
       Write(r.MarkupSoloNotes3, WriteSoloNotes);
-      Write(r.TwoTicks2, WriteTwoTicks);
+      Write(r.MarkupLoop2, WriteTwoTicks);
       // end weirdness
       if(r.Format == RBMid.FORMAT_RBVR)
       {
@@ -60,7 +60,7 @@ namespace LibForge.Midi
       Write(r.UnknownTwo);
       Write(r.LastMarkupEventTick);
       Write(r.MidiTracks, WriteMidiTrack);
-      Array.ForEach(r.UnknownInts, Write);
+      Array.ForEach(r.UnknownTicks, Write);
       Array.ForEach(r.UnknownFloats, Write);
       Write(r.Tempos, WriteTempo);
       Write(r.TimeSigs, WriteTimesig);
@@ -262,8 +262,8 @@ namespace LibForge.Midi
     }
     private void WriteTwoTicks(RBMid.TWOTICKS obj)
     {
-      Write(obj.Tick1);
-      Write(obj.Tick2);
+      Write(obj.StartTick);
+      Write(obj.EndTick);
     }
     private void WriteMarkupChord(RBMid.MARKUPCHORD obj)
     {

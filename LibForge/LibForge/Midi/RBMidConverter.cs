@@ -127,6 +127,14 @@ namespace LibForge.Midi
             lastTimeSig = tempo;
           }
         }
+        uint LastMeasure = (uint)measure + (uint)((FinalTick - lastTimeSig.Tick) / ((480 * 4) / lastTimeSig.Denominator) / lastTimeSig.Numerator);
+        Unknown5.Add(new RBMid.UNKSTRUCT2
+        {
+          Unknown1 = 0,
+          Unknown2 = 0,
+          Unknown3 = 40f,
+          Unknown4 = 76f
+        });
         rb = new RBMid
         {
           Format = 0x10,
@@ -146,24 +154,24 @@ namespace LibForge.Midi
           GuitarLeftHandPos = HandPos.ToArray(),
           Unktrack = Unktrack.ToArray(),
           MarkupSoloNotes1 = MarkupSoloNotes1.ToArray(),
-          TwoTicks1 = TwoTicks1.ToArray(),
+          MarkupLoop1 = TwoTicks1.ToArray(),
           MarkupChords1 = MarkupChords1.ToArray(),
           MarkupSoloNotes2 = MarkupSoloNotes2.ToArray(),
           MarkupSoloNotes3 = MarkupSoloNotes3.ToArray(),
-          TwoTicks2 = TwoTicks2.ToArray(),
+          MarkupLoop2 = TwoTicks2.ToArray(),
           MidiTracks = mf.Tracks.ToArray(),
           Tempos = Tempos.ToArray(),
           TimeSigs = TimeSigs.ToArray(),
           Beats = Beats.ToArray(),
-          UnknownInts = new int[9],
-          UnknownFloats = new float[4],
+          UnknownTicks = new uint[9] { FinalTick + 1, LastMeasure + 1, 0, 0, 0, 0, 0, 0, FinalTick },
+          UnknownFloats = new float[4] { -1, -1, -1, -1 },
           MidiTrackNames = MidiTrackNames.ToArray(),
           PreviewStartMillis = PreviewStart,
           PreviewEndMillis = PreviewEnd,
           UnknownTwo = 2,
           LastMarkupEventTick = LastMarkupTick,
           NumPlayableTracks = (uint)Lyrics.Count,
-          FinalTick = FinalTick,
+          FinalEventTick = (uint)mf.GetTrackByName("EVENTS").TotalTicks,
           UnknownHundred = 100f,
           UnknownNegOne = -1,
           UnknownOne = 1,
@@ -180,12 +188,12 @@ namespace LibForge.Midi
       private void ProcessTrack(MidiTrackProcessed track)
       {
         currentTrack = track;
+        if (track.LastTick > FinalTick) FinalTick = track.LastTick;
         MidiTrackNames.Add(track.Name);
         if (MidiTrackNames.Count == 1)
           return;
         else if (trackHandlers.ContainsKey(track.Name))
           trackHandlers[track.Name](track);
-        if (track.LastTick > FinalTick) FinalTick = track.LastTick;
       }
 
       const byte Roll2 = 127;
@@ -1122,19 +1130,48 @@ namespace LibForge.Midi
         }
       }
 
-      const byte MarkupNotes1End = 11;
-      const byte MarkupNotes1Start = 0;
+      const byte MarkupNotes2 = 127;
+      const byte MarkupChordsEnd = 64;
+      const byte MarkupChordsStart = 36;
       const byte MarkupNotes3End = 23;
       const byte MarkupNotes3Start = 12;
+      const byte MarkupNotes1End = 11;
+      const byte MarkupNotes1Start = 0;
       private void HandleMarkupTrk(MidiTrackProcessed track)
       {
         LastMarkupTick = track.LastTick;
+        RBMid.MARKUPCHORD last_chord = null;
+        var pitches = new SortedSet<int>();
         foreach(var item in track.Items)
         {
           switch (item)
           {
             case MidiNote e:
-              if(e.Key >= MarkupNotes1Start && e.Key <= MarkupNotes1End)
+              if(e.Key >= MarkupChordsStart && e.Key <= MarkupChordsEnd)
+              {
+                if(last_chord?.StartTick == e.StartTicks)
+                {
+                  pitches.Add(e.Key % 12);
+                  last_chord.Pitches = pitches.ToArray();
+                }
+                else
+                {
+                  if(last_chord != null)
+                  {
+                    last_chord.EndTick = e.StartTicks;
+                  }
+                  last_chord = new RBMid.MARKUPCHORD
+                  {
+                    StartTick = e.StartTicks,
+                    EndTick = 2147483647,
+                    Pitches = new[] { e.Key % 12 }
+                  };
+                  MarkupChords1.Add(last_chord);
+                  pitches.Clear();
+                  pitches.Add(e.Key % 12);
+                }
+              }
+              else if(e.Key >= MarkupNotes1Start && e.Key <= MarkupNotes1End)
               {
                 MarkupSoloNotes1.Add(new RBMid.MARKUP_SOLO_NOTES
                 {
@@ -1150,6 +1187,34 @@ namespace LibForge.Midi
                   StartTick = e.StartTicks,
                   EndTick = e.StartTicks + e.LengthTicks,
                   NoteOffset = e.Key - MarkupNotes3Start
+                });
+              }
+              else if(e.Key == MarkupNotes2)
+              {
+                MarkupSoloNotes2.Add(new RBMid.MARKUP_SOLO_NOTES
+                {
+                  StartTick = e.StartTicks,
+                  EndTick = e.StartTicks + e.LengthTicks,
+                  NoteOffset = 4
+                });
+              }
+              break;
+            case MidiText e:
+              var regex = new System.Text.RegularExpressions.Regex("\\[sololoop ([0-9]+)\\]");
+              var match = regex.Match(e.Text);
+              if (match.Success)
+              {
+                var loop_measures =int.Parse(match.Groups[1].Value);
+                var loop_end = (uint)(loop_measures * e.CurrentTimeSig.Numerator * (1920 / e.CurrentTimeSig.Denominator));
+                TwoTicks1.Add(new RBMid.TWOTICKS
+                {
+                  StartTick = e.StartTicks,
+                  EndTick = loop_end
+                });
+                TwoTicks2.Add(new RBMid.TWOTICKS
+                {
+                  StartTick = e.StartTicks,
+                  EndTick = loop_end
                 });
               }
               break;

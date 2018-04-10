@@ -101,6 +101,7 @@ namespace LibForge.Midi
   {
     public double StartTime;
     public uint StartTicks;
+    public uint Measure;
     public MidiCS.TimeSigTempoEvent CurrentTimeSig;
   }
 
