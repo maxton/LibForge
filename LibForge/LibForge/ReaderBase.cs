@@ -85,6 +85,7 @@ namespace LibForge.Util
     protected ushort UShort() => s.ReadUInt16LE();
     protected byte Byte() => (byte)s.ReadByte();
     protected string String() => s.ReadLengthPrefixedString(Encoding.ASCII);
+    protected string String(int length) => s.ReadFixedLengthNullTerminatedString(length);
     protected uint UInt24() => s.ReadUInt24LE();
     protected bool Bool() => CheckRange(Byte(), 0, 1) != 0;
   }

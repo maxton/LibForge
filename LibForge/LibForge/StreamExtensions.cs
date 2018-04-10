@@ -362,6 +362,24 @@ namespace LibForge.Extensions
     }
 
     /// <summary>
+    /// Read a null-terminated ASCII string from the given stream.
+    /// </summary>
+    /// <param name="s"></param>
+    /// <returns></returns>
+    public static string ReadFixedLengthNullTerminatedString(this Stream s, int length)
+    {
+      StringBuilder sb = new StringBuilder(length);
+      char cur;
+      while (length > 0 && (cur = (char)s.ReadByte()) != 0)
+      {
+        sb.Append(cur);
+        length--;
+      }
+      s.Position += length;
+      return sb.ToString();
+    }
+
+    /// <summary>
     /// Read a length-prefixed string of the specified encoding type from the file.
     /// The length is a 32-bit little endian integer.
     /// </summary>

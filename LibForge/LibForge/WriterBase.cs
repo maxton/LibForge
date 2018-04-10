@@ -25,6 +25,12 @@ namespace LibForge.Util
       s.WriteInt32LE(v.Length);
       s.Write(Encoding.ASCII.GetBytes(v), 0, v.Length);
     }
+    protected void Write(string v, int length)
+    {
+      s.Write(Encoding.ASCII.GetBytes(v), 0, v.Length);
+      s.WriteByte(0);
+      s.Position += length - v.Length - 1;
+    }
     protected void Write<T>(T[] arr, Action<T> writer)
     {
       // Treat uninitialized arrays as empty ones
