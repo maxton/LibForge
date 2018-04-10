@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using MidiCS;
 
 
@@ -130,7 +131,7 @@ namespace LibForge.Midi
       public int Unknown;
     }
     public struct SECTIONS
-    { 
+    {
       public struct SECTION
       {
         public uint StartTicks;
@@ -274,7 +275,7 @@ namespace LibForge.Midi
     public class RBVREVENTS
     {
       public struct BEATMATCH_SECTION
-      { 
+      {
         public int unk_zero;
         public string beatmatch_section;
         public uint StartTick;
@@ -384,6 +385,94 @@ namespace LibForge.Midi
     public BEAT[] Beats;
     public int UnknownZero;
     public string[] MidiTrackNames;
-  }
 
+
+    private string Check<T>(T[] a, T[] b, string n, Func<T, T, string> f)
+    {
+      if ((b == null || b.Length == 0) && (a == null || a.Length == 0))
+        return null;
+
+      if (a.Length != b.Length)
+        return $"{n}.Length";
+      for (var i = 0; i < a.Length; i++)
+      {
+        var r = f(a[i], b[i]);
+        if (r != null) return $"{n}[{i}].{r}";
+      }
+      return null;
+    }
+    private string Check<T>(T a, T b, string n)
+      => a.Equals(b) ? null : $"{n}: a={a}, b={b}";
+    private string Check<T>(T a, T b)
+      => a.Equals(b) ? null : $": a={a}, b={b}";
+    private string CheckFloats(float a, float b, string n, float tolerance = 0.1f)
+      => Math.Abs(a - b) < tolerance ? null : $"{n}: a={a}, b={b}";
+    private string CheckTickText(TICKTEXT a, TICKTEXT b)
+      => Check(a.Tick, b.Tick, nameof(TICKTEXT.Tick))
+      ?? Check(a.Text, b.Text, nameof(TICKTEXT.Text));
+    /// <summary>
+    /// Compares this RBMid with another RBMid.
+    /// 
+    /// Returns null if they are equivalent.
+    /// If they are not equivalent, this returns the first field name in which they differ.
+    /// For multi-dimensional fields, the return value will look like this:
+    /// "Lyrics[0].Lyrics[0].Text"
+    /// </summary>
+    /// <param name="other">The RBMid to compare to</param>
+    /// <returns>null if the files are equivalent, or else a string describing the first differing field</returns>
+    public string Compare(RBMid other)
+      => Check(other.Format, Format, nameof(Format))
+      ?? Check(other.Lyrics, Lyrics, nameof(Lyrics), (their, my)
+           => Check(their.TrackName, my.TrackName, nameof(my.TrackName))
+           ?? Check(their.Lyrics, my.Lyrics, nameof(my.Lyrics), CheckTickText)
+           ?? Check(their.Unknown1, my.Unknown1, nameof(my.Unknown1))
+           ?? Check(their.Unknown2, my.Unknown2, nameof(my.Unknown2))
+           ?? Check(their.Unknown3, my.Unknown3, nameof(my.Unknown3)))
+      ?? Check(other.DrumFills, DrumFills, nameof(DrumFills), (their, my)
+           => Check(their.Lanes, my.Lanes, nameof(my.Lanes), (their2, my2)
+                => Check(their2.Tick, my2.Tick, nameof(my2.Tick))
+                ?? Check(their2.Lanes, my2.Lanes, nameof(my2.Lanes)))
+           ?? Check(their.Fills, my.Fills, nameof(my.Fills), (their2, my2)
+                => Check(their2.StartTick, my2.StartTick, nameof(my2.StartTick))
+                ?? Check(their2.EndTick, my2.EndTick, nameof(my2.EndTick))
+                ?? Check(their2.IsBRE, my2.IsBRE, nameof(my2.IsBRE))))
+      ?? Check(other.Anims, Anims, nameof(Anims), (their,my) => null)
+      ?? Check(other.ProMarkers, ProMarkers, nameof(ProMarkers), (their,my) => null)
+      ?? Check(other.LaneMarkers, LaneMarkers, nameof(LaneMarkers), (their,my) => null)
+      ?? Check(other.TrillMarkers, TrillMarkers, nameof(TrillMarkers), (their,my) => null)
+      ?? Check(other.DrumMixes, DrumMixes, nameof(DrumMixes), (their,my) => null)
+      ?? Check(other.GemTracks, GemTracks, nameof(GemTracks), (their,my) => null)
+      ?? Check(other.OverdriveSoloSections, OverdriveSoloSections, nameof(OverdriveSoloSections), (their,my) => null)
+      ?? Check(other.VocalTracks, VocalTracks, nameof(VocalTracks), (their,my) => null)
+      ?? Check(other.UnknownOne, UnknownOne, nameof(UnknownOne))
+      ?? Check(other.UnknownNegOne, UnknownNegOne, nameof(UnknownNegOne))
+      ?? Check(other.UnknownHundred, UnknownHundred, nameof(UnknownHundred))
+      ?? Check(other.Unknown4, Unknown4, nameof(Unknown4), (their, my) => null)
+      ?? Check(other.Unknown5, Unknown5, nameof(Unknown5), (their, my) => null)
+      ?? Check(other.Unknown6, Unknown6, nameof(Unknown6))
+      ?? Check(other.NumPlayableTracks, NumPlayableTracks, nameof(NumPlayableTracks))
+      ?? Check(other.FinalTick, FinalTick, nameof(FinalTick))
+      ?? Check(other.UnknownZeroByte, UnknownZeroByte, nameof(UnknownZeroByte))
+      ?? CheckFloats(other.PreviewStartMillis, PreviewStartMillis, nameof(PreviewStartMillis))
+      ?? CheckFloats(other.PreviewEndMillis, PreviewEndMillis, nameof(PreviewEndMillis))
+      ?? Check(other.GuitarHandmap, GuitarHandmap, nameof(GuitarHandmap), (their, my) => null)
+      ?? Check(other.GuitarLeftHandPos, GuitarLeftHandPos, nameof(GuitarLeftHandPos), (their, my) => null)
+      ?? Check(other.Unktrack, Unktrack, nameof(Unktrack), (their, my) => null)
+      ?? Check(other.MarkupSoloNotes1, MarkupSoloNotes1, nameof(MarkupSoloNotes1), (their, my) => null)
+      ?? Check(other.TwoTicks1, TwoTicks1, nameof(TwoTicks1), (their, my) => null)
+      ?? Check(other.MarkupChords1, MarkupChords1, nameof(MarkupChords1), (their, my) => null)
+      ?? Check(other.MarkupSoloNotes2, MarkupSoloNotes2, nameof(MarkupSoloNotes2), (their, my) => null)
+      ?? Check(other.MarkupSoloNotes3, MarkupSoloNotes3, nameof(MarkupSoloNotes3), (their, my) => null)
+      ?? Check(other.TwoTicks2, TwoTicks2, nameof(TwoTicks2), (their, my) => null)
+      ?? Check(other.UnknownTwo, UnknownTwo, nameof(UnknownTwo))
+      ?? Check(other.LastMarkupEventTick, LastMarkupEventTick, nameof(LastMarkupEventTick))
+      ?? Check(other.MidiTracks, MidiTracks, nameof(MidiTracks), (their, my) => null)
+      ?? Check(other.UnknownInts, UnknownInts, nameof(UnknownInts), Check)
+      ?? Check(other.UnknownFloats, UnknownFloats, nameof(UnknownFloats), Check)
+      ?? Check(other.Tempos, Tempos, nameof(Tempos), (their, my) => null)
+      ?? Check(other.TimeSigs, TimeSigs, nameof(TimeSigs), (their, my) => null)
+      ?? Check(other.Beats, Beats, nameof(Beats), (their, my) => null)
+      ?? Check(other.UnknownZero, UnknownZero, nameof(UnknownZero))
+      ?? Check(other.MidiTrackNames, MidiTrackNames, nameof(MidiTrackNames), Check);
+  }
 }

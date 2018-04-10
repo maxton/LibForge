@@ -76,12 +76,19 @@ namespace ForgeTool
                 try
                 {
                   var rbmid = RBMidReader.ReadStream(fi);
+                  var midi = RBMidConverter.ToMid(rbmid);
+                  var rbmid2 = RBMidConverter.ToRBMid(midi);
                   using (var ms = new MemoryStream((int)fi.Length))
                   {
                     RBMidWriter.WriteStream(rbmid, ms);
                     ms.Position = 0;
                     if (ms.Length == fi.Length)
                     {
+                      var comparison = rbmid.Compare(rbmid2);
+                      if(comparison != null)
+                      {
+                        throw new Exception("File comparison failed at field: " + comparison);
+                      }
                       succ++;
                     }
                     else

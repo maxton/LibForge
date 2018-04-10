@@ -185,6 +185,7 @@ namespace LibForge.Midi
           return;
         else if (trackHandlers.ContainsKey(track.Name))
           trackHandlers[track.Name](track);
+        if (track.LastTick > FinalTick) FinalTick = track.LastTick;
       }
 
       const byte Roll2 = 127;
