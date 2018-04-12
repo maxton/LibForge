@@ -370,10 +370,9 @@ namespace LibForge.Extensions
     {
       StringBuilder sb = new StringBuilder(length);
       char cur;
-      while (length > 0 && (cur = (char)s.ReadByte()) != 0)
+      while (length-- > 0 && (cur = (char)s.ReadByte()) != 0)
       {
         sb.Append(cur);
-        length--;
       }
       s.Position += length;
       return sb.ToString();
