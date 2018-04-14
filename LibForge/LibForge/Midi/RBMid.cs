@@ -416,7 +416,7 @@ namespace LibForge.Midi
     private string CheckSoloNotes(MARKUP_SOLO_NOTES their, MARKUP_SOLO_NOTES my)
       => Check(their.StartTick, my.StartTick, nameof(my.StartTick))
       ?? Check(their.EndTick, my.EndTick, nameof(my.EndTick))
-      ?? Check(their.NoteOffset, my.NoteOffset, nameof(my.NoteOffset)));
+      ?? Check(their.NoteOffset, my.NoteOffset, nameof(my.NoteOffset));
     /// <summary>
     /// Compares this RBMid with another RBMid.
     /// 

@@ -1208,7 +1208,7 @@ namespace LibForge.Midi
                 {
                   StartTick = e.StartTicks,
                   EndTick = e.StartTicks + e.LengthTicks,
-                  NoteOffset = 4
+                  NoteOffset = e.Velocity
                 });
               }
               break;
