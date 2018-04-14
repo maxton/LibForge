@@ -413,6 +413,10 @@ namespace LibForge.Midi
     private string CheckTwoTick(TWOTICKS a, TWOTICKS b)
       => Check(a.StartTick, b.StartTick, nameof(TWOTICKS.StartTick))
       ?? Check(a.EndTick, b.EndTick, nameof(TWOTICKS.EndTick));
+    private string CheckSoloNotes(MARKUP_SOLO_NOTES their, MARKUP_SOLO_NOTES my)
+      => Check(their.StartTick, my.StartTick, nameof(my.StartTick))
+      ?? Check(their.EndTick, my.EndTick, nameof(my.EndTick))
+      ?? Check(their.NoteOffset, my.NoteOffset, nameof(my.NoteOffset)));
     /// <summary>
     /// Compares this RBMid with another RBMid.
     /// 
@@ -461,14 +465,14 @@ namespace LibForge.Midi
       ?? Check(other.GuitarHandmap, GuitarHandmap, nameof(GuitarHandmap), (their, my) => null)
       ?? Check(other.GuitarLeftHandPos, GuitarLeftHandPos, nameof(GuitarLeftHandPos), (their, my) => null)
       ?? Check(other.Unktrack, Unktrack, nameof(Unktrack), (their, my) => null)
-      ?? Check(other.MarkupSoloNotes1, MarkupSoloNotes1, nameof(MarkupSoloNotes1), (their, my) => null)
+      ?? Check(other.MarkupSoloNotes1, MarkupSoloNotes1, nameof(MarkupSoloNotes1), CheckSoloNotes)
       ?? Check(other.MarkupLoop1, MarkupLoop1, nameof(MarkupLoop1), CheckTwoTick)
       ?? Check(other.MarkupChords1, MarkupChords1, nameof(MarkupChords1), (their, my) 
            => Check(their.StartTick, my.StartTick, nameof(my.StartTick))
            ?? Check(their.EndTick, my.EndTick, nameof(my.EndTick))
            ?? Check(their.Pitches, my.Pitches, nameof(my.Pitches), Check))
-      ?? Check(other.MarkupSoloNotes2, MarkupSoloNotes2, nameof(MarkupSoloNotes2), (their, my) => null)
-      ?? Check(other.MarkupSoloNotes3, MarkupSoloNotes3, nameof(MarkupSoloNotes3), (their, my) => null)
+      ?? Check(other.MarkupSoloNotes2, MarkupSoloNotes2, nameof(MarkupSoloNotes2), CheckSoloNotes)
+      ?? Check(other.MarkupSoloNotes3, MarkupSoloNotes3, nameof(MarkupSoloNotes3), CheckSoloNotes)
       ?? Check(other.MarkupLoop2, MarkupLoop2, nameof(MarkupLoop2), CheckTwoTick)
       ?? Check(other.UnknownTwo, UnknownTwo, nameof(UnknownTwo))
       ?? Check(other.LastMarkupEventTick, LastMarkupEventTick, nameof(LastMarkupEventTick))

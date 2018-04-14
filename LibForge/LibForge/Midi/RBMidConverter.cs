@@ -46,7 +46,8 @@ namespace LibForge.Midi
       private float PreviewStart;
       private float PreviewEnd;
       private uint LastMarkupTick;
-      private uint FinalTick = 0;
+      private uint FinalTick;
+      private List<uint> MeasureTicks = new List<uint>() { 0U };
 
       public MidiConverter(MidiFile mf)
       {
@@ -97,8 +98,6 @@ namespace LibForge.Midi
         TimeSigs = new List<RBMid.TIMESIG>();
         Beats = new List<RBMid.BEAT>();
         MidiTrackNames = new List<string>();
-        var processedTracks = new MidiHelper().ProcessTracks(mf);
-        processedTracks.ForEach(ProcessTrack);
         var lastTimeSig = mf.TempoTimeSigMap[0];
         var measure = 0;
         foreach (var tempo in mf.TempoTimeSigMap)
@@ -116,6 +115,12 @@ namespace LibForge.Midi
               var elapsed = tempo.Tick - lastTimeSig.Tick;
               var ticksPerBeat = (480 * 4) / lastTimeSig.Denominator;
               measure += (int)(elapsed / ticksPerBeat / lastTimeSig.Numerator);
+              var lastMeasureTick = MeasureTicks.LastOrDefault();
+              for (var i = MeasureTicks.Count; i < measure; i++)
+              {
+                lastMeasureTick += 480U * lastTimeSig.Numerator * 4 / lastTimeSig.Denominator;
+                MeasureTicks.Add(lastMeasureTick);
+              }
             }
             TimeSigs.Add(new RBMid.TIMESIG
             {
@@ -127,7 +132,13 @@ namespace LibForge.Midi
             lastTimeSig = tempo;
           }
         }
-        uint LastMeasure = (uint)measure + (uint)((FinalTick - lastTimeSig.Tick) / ((480 * 4) / lastTimeSig.Denominator) / lastTimeSig.Numerator);
+        uint lastMeasureTick2 = MeasureTicks.LastOrDefault();
+        FinalTick = (uint)mf.Tracks.Select(t => t.TotalTicks).Max();
+        for (var i = MeasureTicks.Count; lastMeasureTick2 < FinalTick; i++)
+        {
+          lastMeasureTick2 += 480U * lastTimeSig.Numerator * 4 / lastTimeSig.Denominator;
+          MeasureTicks.Add(lastMeasureTick2);
+        }
         Unknown5.Add(new RBMid.UNKSTRUCT2
         {
           Unknown1 = 0,
@@ -135,6 +146,8 @@ namespace LibForge.Midi
           Unknown3 = 40f,
           Unknown4 = 76f
         });
+        var processedTracks = new MidiHelper().ProcessTracks(mf);
+        processedTracks.ForEach(ProcessTrack);
         rb = new RBMid
         {
           Format = 0x10,
@@ -163,7 +176,7 @@ namespace LibForge.Midi
           Tempos = Tempos.ToArray(),
           TimeSigs = TimeSigs.ToArray(),
           Beats = Beats.ToArray(),
-          UnknownTicks = new uint[9] { FinalTick + 1, LastMeasure + 1, 0, 0, 0, 0, 0, 0, FinalTick },
+          UnknownTicks = new uint[9] { FinalTick + 1, (uint)MeasureTicks.Count() - 1, 0, 0, 0, 0, 0, 0, FinalTick },
           UnknownFloats = new float[4] { -1, -1, -1, -1 },
           MidiTrackNames = MidiTrackNames.ToArray(),
           PreviewStartMillis = PreviewStart,
@@ -1205,7 +1218,7 @@ namespace LibForge.Midi
               if (match.Success)
               {
                 var loop_measures =int.Parse(match.Groups[1].Value);
-                var loop_end = (uint)(loop_measures * e.CurrentTimeSig.Numerator * (1920 / e.CurrentTimeSig.Denominator));
+                var loop_end = MeasureTicks[loop_measures - 1];
                 TwoTicks1.Add(new RBMid.TWOTICKS
                 {
                   StartTick = e.StartTicks,
