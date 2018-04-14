@@ -80,6 +80,8 @@ namespace ForgeTool
                   var rbmid2 = RBMidConverter.ToRBMid(midi);
                   using (var ms = new MemoryStream((int)fi.Length))
                   {
+                    // TODO: Switch this to rbmid2 once we are generating all events
+                    //       (regardless of whether the event data are all correct)
                     RBMidWriter.WriteStream(rbmid, ms);
                     ms.Position = 0;
                     if (ms.Length == fi.Length)

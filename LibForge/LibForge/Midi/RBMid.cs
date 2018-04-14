@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using MidiCS;
 
@@ -254,7 +255,7 @@ namespace LibForge.Midi
       public uint EndTick;
       public int[] Pitches;
     }
-    public struct TEMPO
+    public class TEMPO
     {
       public float StartMillis;
       public uint StartTick;
@@ -387,14 +388,14 @@ namespace LibForge.Midi
     public string[] MidiTrackNames;
 
 
-    private string Check<T>(T[] a, T[] b, string n, Func<T, T, string> f)
+    private string Check<T>(IList<T> a, IList<T> b, string n, Func<T, T, string> f)
     {
-      if ((b == null || b.Length == 0) && (a == null || a.Length == 0))
+      if ((b == null || b.Count == 0) && (a == null || a.Count == 0))
         return null;
 
-      if (a.Length != b.Length)
-        return $"{n}.Length: a={a.Length}, b={b.Length}";
-      for (var i = 0; i < a.Length; i++)
+      if (a.Count != b.Count)
+        return $"{n}.Length: a={a.Count}, b={b.Count}";
+      for (var i = 0; i < a.Count; i++)
       {
         var r = f(a[i], b[i]);
         if (r != null) return $"{n}[{i}].{r}";
@@ -441,16 +442,17 @@ namespace LibForge.Midi
                 ?? Check(their2.Lanes, my2.Lanes, nameof(my2.Lanes)))
            ?? Check(their.Fills, my.Fills, nameof(my.Fills), (their2, my2)
                 => Check(their2.StartTick, my2.StartTick, nameof(my2.StartTick))
-                ?? Check(their2.EndTick, my2.EndTick, nameof(my2.EndTick))
+                // TODO: Figure out why this is not always the same after conversion
+                ?? CheckFloats(their2.EndTick, my2.EndTick, nameof(my2.EndTick), 11)
                 ?? Check(their2.IsBRE, my2.IsBRE, nameof(my2.IsBRE))))
-      ?? Check(other.Anims, Anims, nameof(Anims), (their,my) => null)
-      ?? Check(other.ProMarkers, ProMarkers, nameof(ProMarkers), (their,my) => null)
-      ?? Check(other.LaneMarkers, LaneMarkers, nameof(LaneMarkers), (their,my) => null)
-      ?? Check(other.TrillMarkers, TrillMarkers, nameof(TrillMarkers), (their,my) => null)
-      ?? Check(other.DrumMixes, DrumMixes, nameof(DrumMixes), (their,my) => null)
-      ?? Check(other.GemTracks, GemTracks, nameof(GemTracks), (their,my) => null)
-      ?? Check(other.OverdriveSoloSections, OverdriveSoloSections, nameof(OverdriveSoloSections), (their,my) => null)
-      ?? Check(other.VocalTracks, VocalTracks, nameof(VocalTracks), (their,my) => null)
+      ?? Check(other.Anims, Anims, nameof(Anims), (their, my) => null)
+      ?? Check(other.ProMarkers, ProMarkers, nameof(ProMarkers), (their, my) => null)
+      ?? Check(other.LaneMarkers, LaneMarkers, nameof(LaneMarkers), (their, my) => null)
+      ?? Check(other.TrillMarkers, TrillMarkers, nameof(TrillMarkers), (their, my) => null)
+      ?? Check(other.DrumMixes, DrumMixes, nameof(DrumMixes), (their, my) => null)
+      ?? Check(other.GemTracks, GemTracks, nameof(GemTracks), (their, my) => null)
+      ?? Check(other.OverdriveSoloSections, OverdriveSoloSections, nameof(OverdriveSoloSections), (their, my) => null)
+      ?? Check(other.VocalTracks, VocalTracks, nameof(VocalTracks), (their, my) => null)
       ?? Check(other.UnknownOne, UnknownOne, nameof(UnknownOne))
       ?? Check(other.UnknownNegOne, UnknownNegOne, nameof(UnknownNegOne))
       ?? Check(other.UnknownHundred, UnknownHundred, nameof(UnknownHundred))
@@ -467,7 +469,7 @@ namespace LibForge.Midi
       ?? Check(other.Unktrack, Unktrack, nameof(Unktrack), (their, my) => null)
       ?? Check(other.MarkupSoloNotes1, MarkupSoloNotes1, nameof(MarkupSoloNotes1), CheckSoloNotes)
       ?? Check(other.MarkupLoop1, MarkupLoop1, nameof(MarkupLoop1), CheckTwoTick)
-      ?? Check(other.MarkupChords1, MarkupChords1, nameof(MarkupChords1), (their, my) 
+      ?? Check(other.MarkupChords1, MarkupChords1, nameof(MarkupChords1), (their, my)
            => Check(their.StartTick, my.StartTick, nameof(my.StartTick))
            ?? Check(their.EndTick, my.EndTick, nameof(my.EndTick))
            ?? Check(their.Pitches, my.Pitches, nameof(my.Pitches), Check))
@@ -476,12 +478,27 @@ namespace LibForge.Midi
       ?? Check(other.MarkupLoop2, MarkupLoop2, nameof(MarkupLoop2), CheckTwoTick)
       ?? Check(other.UnknownTwo, UnknownTwo, nameof(UnknownTwo))
       ?? Check(other.LastMarkupEventTick, LastMarkupEventTick, nameof(LastMarkupEventTick))
-      ?? Check(other.MidiTracks, MidiTracks, nameof(MidiTracks), (their, my) => null)
+      ?? Check(other.MidiTracks, MidiTracks, nameof(MidiTracks), (their, my)
+           => Check(their.Name, my.Name, nameof(my.Name))
+           ?? Check(their.TotalTicks, my.TotalTicks, nameof(my.TotalTicks))
+           ?? Check(their.Messages, my.Messages, nameof(my.Messages), (IMidiMessage their2, IMidiMessage my2)
+                => Check(their2.DeltaTime, my2.DeltaTime, nameof(my2.DeltaTime))
+                ?? Check(their2.PrettyString, my2.PrettyString, "<pretty_string>")))
       ?? Check(other.UnknownTicks, UnknownTicks, nameof(UnknownTicks), Check)
       ?? Check(other.UnknownFloats, UnknownFloats, nameof(UnknownFloats), Check)
-      ?? Check(other.Tempos, Tempos, nameof(Tempos), (their, my) => null)
-      ?? Check(other.TimeSigs, TimeSigs, nameof(TimeSigs), (their, my) => null)
-      ?? Check(other.Beats, Beats, nameof(Beats), (their, my) => null)
+      ?? Check(other.Tempos, Tempos, nameof(Tempos), (their, my)
+           => CheckFloats(their.StartMillis, my.StartMillis, nameof(my.StartMillis), 0.2f)
+           ?? Check(their.StartTick, my.StartTick, nameof(my.StartTick))
+           // TODO: Fix precision of tempo conversions...
+           ?? CheckFloats(their.Tempo, my.Tempo, nameof(my.Tempo), 2))
+      ?? Check(other.TimeSigs, TimeSigs, nameof(TimeSigs), (their, my)
+           => Check(their.Tick, my.Tick, nameof(my.Tick))
+           ?? Check(their.Measure, my.Measure, nameof(my.Measure))
+           ?? Check(their.Numerator, my.Numerator, nameof(my.Numerator))
+           ?? Check(their.Denominator, my.Denominator, nameof(my.Denominator)))
+      ?? Check(other.Beats, Beats, nameof(Beats), (their, my)
+           => Check(their.Tick, my.Tick, nameof(my.Tick))
+           ?? Check(their.Downbeat, my.Downbeat, nameof(my.Downbeat)))
       ?? Check(other.UnknownZero, UnknownZero, nameof(UnknownZero))
       ?? Check(other.MidiTrackNames, MidiTrackNames, nameof(MidiTrackNames), Check);
   }

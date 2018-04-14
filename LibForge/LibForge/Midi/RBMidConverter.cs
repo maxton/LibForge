@@ -102,12 +102,13 @@ namespace LibForge.Midi
         var measure = 0;
         foreach (var tempo in mf.TempoTimeSigMap)
         {
-          Tempos.Add(new RBMid.TEMPO
-          {
-            StartTick = (uint)tempo.Tick,
-            StartMillis = (float)(tempo.Time * 1000.0),
-            Tempo = (int)(60_000_000 / tempo.BPM)
-          });
+          if (tempo.NewTempo)
+            Tempos.Add(new RBMid.TEMPO
+            {
+              StartTick = (uint)tempo.Tick,
+              StartMillis = (float)(tempo.Time * 1000.0),
+              Tempo = (int)(60_000_000 / (float)tempo.BPM)
+            });
           if(tempo.NewTimeSig)
           {
             if (tempo.Tick > 0)
