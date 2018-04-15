@@ -18,8 +18,11 @@ int Unk[12];
 int UnknownSix;
 int UnknownSixteen2;
 int Unknown;
-int UnknownDimension1;
-int UnknownDimension2;
+// these MIGHT be related to texture compression
+// 1 = DXT1 ??
+// 3 = DXT3 ??
+int UnknownCompressionFormat;
+int UnknownCompressionFormat;
 int Unknown;
 int Negative;
 int Negative;
