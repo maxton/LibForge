@@ -1,0 +1,17 @@
+#include "common.bt"
+LittleEndian();
+
+int unk;
+int unk;
+int unk;
+struct {
+    int num_strings;
+    PSTR strings[num_strings]<optimize=false>;
+} strings;
+struct {
+    int num_strings;
+    PSTR strings[num_strings]<optimize=false>;
+} instruments;
+int count_unk;
+int unknown_data[count_unk];
+byte unknown_data2[count_unk];

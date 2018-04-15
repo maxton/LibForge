@@ -609,7 +609,10 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     tick_t LastMarkupEventTick;
     int num_midi_tracks;
     MIDITRACK tracks[num_midi_tracks]<optimize=false>;
-    tick_t unknown[9];
+    tick_t SomeLastTick;
+    uint NumMeasures;
+    uint unknown[6];
+    tick_t SomeLastTickMinus1;
     float unk_floats[4];
     int num_tempos;
     TEMPO tempos[num_tempos];

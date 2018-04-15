@@ -1,0 +1,53 @@
+// HMX Forge Texture format (.png_platform, .bmp_platform)
+LittleEndian();
+
+int Magic;
+Assert(Magic == 6, "Magic number == 6");
+int UnknownNine;
+int Unknown;
+int Unknown;
+int UnknownSixteen;
+int Unknown;
+int Unknown;
+int UnknownFlag;
+int Unknown;
+int UnknownFour;
+int Unknown;
+int UnknownThirtyTwo;
+int Unk[12];
+int UnknownSix;
+int UnknownSixteen2;
+int Unknown;
+int UnknownDimension1;
+int UnknownDimension2;
+int Unknown;
+int Negative;
+int Negative;
+int Unknown; // Seen: 4 and 8
+int UnknownTwo;
+int UnknownOne;
+int UnknownTwo;
+int UnknownTwo;
+int Unknown;
+int UnknownTwo;
+int UnknownThree;
+int Unk2[5];
+int MipmapLevels;
+struct {
+    int Width;
+    int Height;
+    int Flag;
+} MipmapInfo[MipmapLevels];
+int Unknown6;
+// Image Data for each mipmap level
+struct {
+    int Size;
+    byte Data[Size];
+} ImageData[MipmapLevels]<optimize=false>;
+int Unknown;
+int Unknown;
+float Unknown;
+float Unknown;
+float Unknown;
+float Unknown;
+int Unknown;
