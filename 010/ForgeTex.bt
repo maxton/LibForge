@@ -20,7 +20,7 @@ int UnknownSixteen2;
 int Unknown;
 // these MIGHT be related to texture compression
 // 1 = DXT1 ??
-// 3 = DXT3 ??
+// 3 = DXT5 ??
 int UnknownCompressionFormat;
 int UnknownCompressionFormat;
 int Unknown;
