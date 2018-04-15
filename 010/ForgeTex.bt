@@ -26,7 +26,7 @@ int UnknownCompressionFormat;
 int Unknown;
 int Negative;
 int Negative;
-int Unknown; // Seen: 4 and 8
+int BitsPerPixel; // Seen: 4 and 8
 int UnknownTwo;
 int UnknownOne;
 int UnknownTwo;
