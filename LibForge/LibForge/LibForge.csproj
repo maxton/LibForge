@@ -40,6 +40,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -58,6 +59,10 @@
     <Compile Include="SongData\SongDataReader.cs" />
     <Compile Include="SongData\SongDataWriter.cs" />
     <Compile Include="StreamExtensions.cs" />
+    <Compile Include="Texture\Texture.cs" />
+    <Compile Include="Texture\TextureConverter.cs" />
+    <Compile Include="Texture\TextureReader.cs" />
+    <Compile Include="Texture\TextureWriter.cs" />
     <Compile Include="WriterBase.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

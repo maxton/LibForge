@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using LibForge.Midi;
+using LibForge.Texture;
 
 namespace ForgeTool
 {
@@ -50,7 +51,21 @@ namespace ForgeTool
             using (var fo = File.OpenWrite(output))
             {
               var rbmid = RBMidReader.ReadStream(fi);
-              RBMidWriter.WriteStream(rbmid, fo);
+              var processed = RBMidConverter.ToRBMid(RBMidConverter.ToMid(rbmid));
+              RBMidWriter.WriteStream(processed, fo);
+            }
+          }
+          break;
+        case "tex2png":
+          {
+            var input = args[1];
+            var output = args[2];
+            using (var fi = File.OpenRead(input))
+            using (var fo = File.OpenWrite(output))
+            {
+              var tex = TextureReader.ReadStream(fi);
+              var bitmap = TextureConverter.ToBitmap(tex, 0);
+              bitmap.Save(fo, System.Drawing.Imaging.ImageFormat.Png);
             }
           }
           break;
