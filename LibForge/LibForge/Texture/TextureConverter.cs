@@ -24,17 +24,21 @@ namespace LibForge.Texture
       var m = t.Mipmaps[mipmap];
       var output = new Bitmap(m.Width, m.Height, PixelFormat.Format32bppArgb);
       int[] imageData = new int[m.Width * m.Height];
-      if(t.BitsPerPixel == 2 && m.Data.Length == (imageData.Length * 4))
+      if(m.Data.Length == (imageData.Length * 4))
       {
         Buffer.BlockCopy(m.Data, 0, imageData, 0, m.Data.Length);
       }
-      else if(t.BitsPerPixel == 4 || t.BitsPerPixel == 8)
+      else if(m.Data.Length == imageData.Length)
       {
-        DecodeDXT(m, imageData, t.BitsPerPixel > 4);
+        DecodeDXT(m, imageData, true);
+      }
+      else if (m.Data.Length == (imageData.Length / 2))
+      {
+        DecodeDXT(m, imageData, false);
       }
       else
       {
-        throw new Exception("Don't know what to do with this texture");
+        throw new Exception($"Don't know what to do with this texture (bpp={t.BitsPerPixel})");
       }
       // Copy data to bitmap
       {
