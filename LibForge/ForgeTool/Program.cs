@@ -61,11 +61,11 @@ namespace ForgeTool
             var input = args[1];
             var output = args[2];
             using (var fi = File.OpenRead(input))
-            using (var fo = File.OpenWrite(output))
             {
               var tex = TextureReader.ReadStream(fi);
               var bitmap = TextureConverter.ToBitmap(tex, 0);
-              bitmap.Save(fo, System.Drawing.Imaging.ImageFormat.Png);
+              using (var fo = File.OpenWrite(output))
+                bitmap.Save(fo, System.Drawing.Imaging.ImageFormat.Png);
             }
           }
           break;

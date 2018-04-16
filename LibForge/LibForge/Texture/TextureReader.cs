@@ -20,10 +20,6 @@ namespace LibForge.Texture
       Check(Int(), 6);
       s.Position = 0x80;
       var bpp = Int();
-      if(bpp != 4 && bpp != 8)
-      {
-        throw new Exception($"Sorry, don't understand BPP of {bpp}");
-      }
       s.Position = 0xB4;
       var MipmapLevels = UInt();
       var Mipmaps = FixedArr(() => new Texture.Mipmap

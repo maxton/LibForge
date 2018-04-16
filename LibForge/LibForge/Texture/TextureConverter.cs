@@ -23,10 +23,30 @@ namespace LibForge.Texture
     {
       var m = t.Mipmaps[mipmap];
       var output = new Bitmap(m.Width, m.Height, PixelFormat.Format32bppArgb);
-      var alpha = t.BitsPerPixel > 4;
-
       int[] imageData = new int[m.Width * m.Height];
+      if(t.BitsPerPixel == 2 && m.Data.Length == (imageData.Length * 4))
+      {
+        Buffer.BlockCopy(m.Data, 0, imageData, 0, m.Data.Length);
+      }
+      else if(t.BitsPerPixel == 4 || t.BitsPerPixel == 8)
+      {
+        DecodeDXT(m, imageData, t.BitsPerPixel > 4);
+      }
+      else
+      {
+        throw new Exception("Don't know what to do with this texture");
+      }
+      // Copy data to bitmap
+      {
+        var data = output.LockBits(new Rectangle(0, 0, m.Width, m.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+        System.Runtime.InteropServices.Marshal.Copy(imageData, 0, data.Scan0, imageData.Length);
+        output.UnlockBits(data);
+      }
+      return output;
+    }
 
+    private static void DecodeDXT(Texture.Mipmap m, int[] imageData, bool DXT5)
+    {
       int[] colors = new int[4];
       using (var s = new MemoryStream(m.Data))
       {
@@ -35,7 +55,7 @@ namespace LibForge.Texture
         for (var y = 0; y < m.Height; y += 4)
           for (var x = 0; x < m.Width; x += 4)
           {
-            if (alpha) s.Seek(8, SeekOrigin.Current);
+            if (DXT5) s.Seek(8, SeekOrigin.Current);
             ushort c0 = s.ReadUInt16LE();
             ushort c1 = s.ReadUInt16LE();
             colors[0] = RGB565ToARGB(c0);
@@ -43,7 +63,7 @@ namespace LibForge.Texture
             var color0 = Color.FromArgb(colors[0]);
             var color1 = Color.FromArgb(colors[1]);
             s.Read(iData, 0, 4);
-            if(c0 > c1)
+            if (c0 > c1)
             {
               colors[2] = Color.FromArgb(0xFF,
                 (color0.R * 2 + color1.R) / 3,
@@ -65,7 +85,7 @@ namespace LibForge.Texture
             var offset = y * m.Width + x;
             for (var i = 0; i < 4; i++)
             {
-              for(var j = 0; j < 4; j++)
+              for (var j = 0; j < 4; j++)
               {
                 var idx = (iData[i] >> (2 * j)) & 0x3;
                 imageData[offset + i * m.Width + j] = colors[idx];
@@ -73,10 +93,6 @@ namespace LibForge.Texture
             }
           }
       }
-      var data = output.LockBits(new Rectangle(0, 0, m.Width, m.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-      System.Runtime.InteropServices.Marshal.Copy(imageData, 0, data.Scan0, imageData.Length);
-      output.UnlockBits(data);
-      return output;
     }
   }
 }
