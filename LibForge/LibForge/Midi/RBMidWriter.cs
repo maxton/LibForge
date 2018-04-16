@@ -60,7 +60,10 @@ namespace LibForge.Midi
       Write(r.UnknownTwo);
       Write(r.LastMarkupEventTick);
       Write(r.MidiTracks, WriteMidiTrack);
-      Array.ForEach(r.UnknownTicks, Write);
+      Write(r.FinalTick);
+      Write(r.Measures);
+      Array.ForEach(r.Unknown, Write);
+      Write(r.FinalTickMinusOne);
       Array.ForEach(r.UnknownFloats, Write);
       Write(r.Tempos, WriteTempo);
       Write(r.TimeSigs, WriteTimesig);

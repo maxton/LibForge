@@ -134,10 +134,12 @@ namespace LibForge.Midi
           }
         }
         uint lastMeasureTick2 = MeasureTicks.LastOrDefault();
-        FinalTick = (uint)mf.Tracks.Select(t => t.TotalTicks).Max();
+        var processedTracks = new MidiHelper().ProcessTracks(mf);
+        FinalTick = processedTracks.Select(t => t.LastTick).Max();
         for (var i = MeasureTicks.Count; lastMeasureTick2 < FinalTick; i++)
         {
           lastMeasureTick2 += 480U * lastTimeSig.Numerator * 4 / lastTimeSig.Denominator;
+          if (lastMeasureTick2 >= FinalTick) break;
           MeasureTicks.Add(lastMeasureTick2);
         }
         Unknown5.Add(new RBMid.UNKSTRUCT2
@@ -147,7 +149,6 @@ namespace LibForge.Midi
           Unknown3 = 40f,
           Unknown4 = 76f
         });
-        var processedTracks = new MidiHelper().ProcessTracks(mf);
         processedTracks.ForEach(ProcessTrack);
         rb = new RBMid
         {
@@ -177,7 +178,10 @@ namespace LibForge.Midi
           Tempos = Tempos.ToArray(),
           TimeSigs = TimeSigs.ToArray(),
           Beats = Beats.ToArray(),
-          UnknownTicks = new uint[9] { FinalTick + 1, (uint)MeasureTicks.Count() - 1, 0, 0, 0, 0, 0, 0, FinalTick },
+          FinalTick = FinalTick + 1,
+          Measures = (uint)MeasureTicks.Count(),
+          Unknown = new uint[6],
+          FinalTickMinusOne = FinalTick,
           UnknownFloats = new float[4] { -1, -1, -1, -1 },
           MidiTrackNames = MidiTrackNames.ToArray(),
           PreviewStartMillis = PreviewStart,
@@ -185,7 +189,7 @@ namespace LibForge.Midi
           UnknownTwo = 2,
           LastMarkupEventTick = LastMarkupTick,
           NumPlayableTracks = (uint)Lyrics.Count,
-          FinalEventTick = (uint)mf.GetTrackByName("EVENTS").TotalTicks,
+          FinalEventTick = processedTracks.Where(t=>t.Name == "EVENTS").Select(t=>t.LastTick).First(),
           UnknownHundred = 100f,
           UnknownNegOne = -1,
           UnknownOne = 1,
@@ -385,7 +389,7 @@ namespace LibForge.Midi
               else if (AddGem(e)) { }  // everything is handled in AddGem
               else if (e.Key >= DrumAnimStart && e.Key <= DrumAnimEnd)
               {
-
+                // TODO: Anims?
               }
               else if(e.Key == Roll1 || e.Key == Roll2)
               {
@@ -398,9 +402,13 @@ namespace LibForge.Midi
                     : RBMid.LANEMARKER.MARKER.Flag.Roll_2Lane
                 });
               }
+              else if(e.Key == 105 || e.Key == 106 || e.Key == 12 || e.Key == 13 || e.Key == 14 || e.Key == 15)
+              {
+                // TODO: What are these note?
+              }
               else
               {
-                throw new Exception("Unhandled gem type ?!");
+                throw new Exception($"Unhandled midi note {e.Key} in drum track at time {e.StartTime}");
               }
               break;
             case MidiText e:

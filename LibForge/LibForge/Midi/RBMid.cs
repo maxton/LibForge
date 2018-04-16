@@ -379,7 +379,10 @@ namespace LibForge.Midi
     public int UnknownTwo;
     public uint LastMarkupEventTick;
     public MidiTrack[] MidiTracks;
-    public uint[] UnknownTicks;
+    public uint FinalTick;
+    public uint Measures;
+    public uint[] Unknown;
+    public uint FinalTickMinusOne;
     public float[] UnknownFloats;
     public TEMPO[] Tempos;
     public TIMESIG[] TimeSigs;
@@ -446,10 +449,16 @@ namespace LibForge.Midi
                 ?? CheckFloats(their2.EndTick, my2.EndTick, nameof(my2.EndTick), 11)
                 ?? Check(their2.IsBRE, my2.IsBRE, nameof(my2.IsBRE))))
       ?? Check(other.Anims, Anims, nameof(Anims), (their, my) => null)
-      ?? Check(other.ProMarkers, ProMarkers, nameof(ProMarkers), (their, my) => null)
+      ?? Check(other.ProMarkers, ProMarkers, nameof(ProMarkers), (their, my)
+           => Check(their.Markers, my.Markers, nameof(my.Markers), (their2, my2)
+                => Check(their2.Tick, my2.Tick, nameof(my2.Tick))
+                ?? Check(their2.Flags, my2.Flags, nameof(my2.Flags)))
+           ?? Check(their.Unknown1, my.Unknown1, nameof(my.Unknown1))
+           ?? Check(their.Unknown2, my.Unknown2, nameof(my.Unknown2)))
       ?? Check(other.LaneMarkers, LaneMarkers, nameof(LaneMarkers), (their, my) => null)
       ?? Check(other.TrillMarkers, TrillMarkers, nameof(TrillMarkers), (their, my) => null)
-      ?? Check(other.DrumMixes, DrumMixes, nameof(DrumMixes), (their, my) => null)
+      ?? Check(other.DrumMixes, DrumMixes, nameof(DrumMixes), (their, my)
+           => Check(their.Mixes, my.Mixes, nameof(my.Mixes), (t,m)=>Check(t,m,"",CheckTickText)))
       ?? Check(other.GemTracks, GemTracks, nameof(GemTracks), (their, my) => null)
       ?? Check(other.OverdriveSoloSections, OverdriveSoloSections, nameof(OverdriveSoloSections), (their, my) => null)
       ?? Check(other.VocalTracks, VocalTracks, nameof(VocalTracks), (their, my) => null)
@@ -484,10 +493,13 @@ namespace LibForge.Midi
            ?? Check(their.Messages, my.Messages, nameof(my.Messages), (IMidiMessage their2, IMidiMessage my2)
                 => Check(their2.DeltaTime, my2.DeltaTime, nameof(my2.DeltaTime))
                 ?? Check(their2.PrettyString, my2.PrettyString, "<pretty_string>")))
-      ?? Check(other.UnknownTicks, UnknownTicks, nameof(UnknownTicks), Check)
+      ?? Check(other.FinalTick, FinalTick, nameof(FinalTick))
+      ?? Check(other.Measures, Measures, nameof(Measures))
+      ?? Check(other.Unknown, Unknown, nameof(Unknown), Check)
+      ?? Check(other.FinalTickMinusOne, FinalTickMinusOne, nameof(FinalTickMinusOne))
       ?? Check(other.UnknownFloats, UnknownFloats, nameof(UnknownFloats), Check)
       ?? Check(other.Tempos, Tempos, nameof(Tempos), (their, my)
-           => CheckFloats(their.StartMillis, my.StartMillis, nameof(my.StartMillis), 0.2f)
+           => CheckFloats(their.StartMillis, my.StartMillis, nameof(my.StartMillis), 0.3f)
            ?? Check(their.StartTick, my.StartTick, nameof(my.StartTick))
            // TODO: Fix precision of tempo conversions...
            ?? CheckFloats(their.Tempo, my.Tempo, nameof(my.Tempo), 2))

@@ -38,7 +38,6 @@ namespace LibForge.Midi
       foreach (var msg in track.Messages)
       {
         ticks += msg.DeltaTime;
-        if (ticks > finalTick) finalTick = ticks;
         var tempo = GetTempo(ticks);
         var time = tempo.Time + ((ticks - tempo.Tick) / 480.0) * (60 / tempo.BPM);
         switch (msg)
@@ -78,7 +77,11 @@ namespace LibForge.Midi
               CurrentTimeSig = tempo
             });
             break;
+          default:
+            continue;
         }
+
+        if (ticks > finalTick) finalTick = ticks;
       }
 
       return new MidiTrackProcessed

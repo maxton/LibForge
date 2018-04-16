@@ -70,7 +70,10 @@ namespace LibForge.Midi
       r.UnknownTwo = Check(Int(), 2);
       r.LastMarkupEventTick = UInt();
       r.MidiTracks = Arr(ReadMidiTrack);
-      r.UnknownTicks = FixedArr(UInt, 9);
+      r.FinalTick = UInt();
+      r.Measures = UInt();
+      r.Unknown = FixedArr(UInt, 6);
+      r.FinalTickMinusOne = UInt();
       r.UnknownFloats = FixedArr(Float, 4);
       r.Tempos = Arr(ReadTempo);
       r.TimeSigs = Arr(ReadTimesig);
