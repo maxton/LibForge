@@ -4,13 +4,14 @@ using LibForge.Extensions;
 
 namespace LibForge.Util
 {
-  public abstract class WriterBase
+  public abstract class WriterBase<D>
   {
     protected System.IO.Stream s;
-    protected WriterBase(System.IO.Stream s)
+    public WriterBase(System.IO.Stream s)
     {
       this.s = s;
     }
+    public abstract void WriteStream(D v);
     protected void Write(byte v) => s.WriteByte(v);
     protected void Write(short v) => s.WriteInt16LE(v);
     protected void Write(ushort v) => s.WriteUInt16LE(v);

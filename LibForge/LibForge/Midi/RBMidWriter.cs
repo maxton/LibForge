@@ -7,14 +7,14 @@ using MidiCS.Events;
 
 namespace LibForge.Midi
 {
-  public class RBMidWriter : WriterBase
+  public class RBMidWriter : WriterBase<RBMid>
   {
     public static void WriteStream(RBMid r, Stream s)
     {
       new RBMidWriter(s).WriteStream(r);
     }
     private RBMidWriter(Stream s) : base(s) { }
-    private void WriteStream(RBMid r)
+    public override void WriteStream(RBMid r)
     {
       Write(r.Format);
       Write(r.Lyrics, WriteLyrics);

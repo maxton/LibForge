@@ -3,7 +3,7 @@ using LibForge.Util;
 
 namespace LibForge.SongData
 {
-  public class SongDataReader : ReaderBase
+  public class SongDataReader : ReaderBase<SongData>
   {
     public static SongData ReadStream(Stream s)
     {
@@ -11,7 +11,7 @@ namespace LibForge.SongData
     }
     public SongDataReader(Stream s) : base(s) { }
 
-    private SongData Read()
+    public override SongData Read()
     {
       return new SongData
       {

@@ -7,7 +7,7 @@ using MidiCS.Events;
 
 namespace LibForge.Midi
 {
-  public class RBMidReader : ReaderBase
+  public class RBMidReader : ReaderBase<RBMid>
   {
     public static RBMid ReadStream(Stream s)
     {
@@ -18,7 +18,7 @@ namespace LibForge.Midi
     const uint MaxInstTracks = 10;
     const uint MaxKeysAnimTracks = 2;
     const uint MaxVocalTracks = 4;
-    private RBMid Read()
+    public override RBMid Read()
     {
       var r = new RBMid();
       r.Format = Int();

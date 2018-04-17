@@ -7,7 +7,7 @@ using LibForge.Util;
 
 namespace LibForge.Texture
 {
-  public class TextureReader : ReaderBase
+  public class TextureReader : ReaderBase<Texture>
   {
     public static Texture ReadStream(Stream s)
     {
@@ -15,7 +15,7 @@ namespace LibForge.Texture
     }
     public TextureReader(Stream s) : base(s) { }
 
-    private Texture Read()
+    public override Texture Read()
     {
       Check(Int(), 6);
       s.Position = 0x80;

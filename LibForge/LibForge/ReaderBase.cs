@@ -18,13 +18,14 @@ namespace LibForge.Util
       return v;
     }
   }
-  public abstract class ReaderBase
+  public abstract class ReaderBase<D>
   {
     protected System.IO.Stream s;
     protected ReaderBase(System.IO.Stream s)
     {
       this.s = s;
     }
+    public abstract D Read();
     protected static Func<T> Seq<T>(Action a, Func<T> v)
     {
       return () =>

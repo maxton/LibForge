@@ -3,14 +3,14 @@ using LibForge.Util;
 
 namespace LibForge.SongData
 {
-  public class SongDataWriter : WriterBase
+  public class SongDataWriter : WriterBase<SongData>
   {
     public static void WriteStream(SongData r, Stream s)
     {
       new SongDataWriter(s).WriteStream(r);
     }
     private SongDataWriter(Stream s) : base(s) { }
-    private void WriteStream(SongData r)
+    public override void WriteStream(SongData r)
     {
       Write(r.Type);
       Write(r.Type);
