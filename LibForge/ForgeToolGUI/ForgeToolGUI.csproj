@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DtxCS">
+      <HintPath>..\..\Dependencies\DtxCS.dll</HintPath>
+    </Reference>
     <Reference Include="GameArchives">
       <HintPath>..\..\Dependencies\GameArchives.dll</HintPath>
     </Reference>

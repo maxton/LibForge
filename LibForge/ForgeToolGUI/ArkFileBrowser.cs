@@ -85,7 +85,31 @@ namespace ForgeToolGUI
               var tex = TextureReader.ReadStream(s);
               pictureBox1.Width = tex.Mipmaps[0].Width;
               pictureBox1.Height = tex.Mipmaps[0].Height;
-              pictureBox1.Image = TextureConverter.ToBitmap(tex, 0);
+              tabControl1.SelectTab(0);
+              treeView1.Select();
+              try
+              {
+                pictureBox1.Image = TextureConverter.ToBitmap(tex, 0);
+              }
+              catch(Exception ex)
+              {
+                MessageBox.Show("Couldn't load texture: " + ex.Message);
+              }
+            }
+          }
+          else if(i.Name.Contains("_dta_"))
+          {
+            using (var s = i.GetStream())
+            {
+              var data = DtxCS.DTX.FromDtb(s);
+              tabControl1.SelectTab(1);
+              treeView1.Select();
+              var sb = new StringBuilder();
+              foreach (var x in data.Children)
+              {
+                sb.AppendLine(x.ToString(0));
+              }
+              dataTextBox.Text = sb.ToString();
             }
           }
           break;

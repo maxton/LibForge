@@ -38,10 +38,12 @@
       this.tabControl1 = new System.Windows.Forms.TabControl();
       this.tabPage1 = new System.Windows.Forms.TabPage();
       this.tabPage2 = new System.Windows.Forms.TabPage();
+      this.dataTextBox = new System.Windows.Forms.TextBox();
       this.menuStrip1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
       this.tabControl1.SuspendLayout();
       this.tabPage1.SuspendLayout();
+      this.tabPage2.SuspendLayout();
       this.SuspendLayout();
       // 
       // treeView1
@@ -132,13 +134,27 @@
       // 
       // tabPage2
       // 
+      this.tabPage2.Controls.Add(this.dataTextBox);
       this.tabPage2.Location = new System.Drawing.Point(4, 22);
       this.tabPage2.Name = "tabPage2";
       this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage2.Size = new System.Drawing.Size(192, 74);
+      this.tabPage2.Size = new System.Drawing.Size(396, 438);
       this.tabPage2.TabIndex = 1;
-      this.tabPage2.Text = "tabPage2";
+      this.tabPage2.Text = "Data";
       this.tabPage2.UseVisualStyleBackColor = true;
+      // 
+      // dataTextBox
+      // 
+      this.dataTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.dataTextBox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.dataTextBox.Location = new System.Drawing.Point(6, 4);
+      this.dataTextBox.Multiline = true;
+      this.dataTextBox.Name = "dataTextBox";
+      this.dataTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+      this.dataTextBox.Size = new System.Drawing.Size(384, 428);
+      this.dataTextBox.TabIndex = 0;
       // 
       // ArkFileBrowser
       // 
@@ -157,6 +173,8 @@
       ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
       this.tabControl1.ResumeLayout(false);
       this.tabPage1.ResumeLayout(false);
+      this.tabPage2.ResumeLayout(false);
+      this.tabPage2.PerformLayout();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -174,6 +192,7 @@
     private System.Windows.Forms.TabControl tabControl1;
     private System.Windows.Forms.TabPage tabPage1;
     private System.Windows.Forms.TabPage tabPage2;
+    private System.Windows.Forms.TextBox dataTextBox;
   }
 }
 
