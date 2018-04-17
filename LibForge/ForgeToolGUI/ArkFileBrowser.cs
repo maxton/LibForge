@@ -83,6 +83,8 @@ namespace ForgeToolGUI
             using (var s = i.GetStream())
             {
               var tex = TextureReader.ReadStream(s);
+              pictureBox1.Width = tex.Mipmaps[0].Width;
+              pictureBox1.Height = tex.Mipmaps[0].Height;
               pictureBox1.Image = TextureConverter.ToBitmap(tex, 0);
             }
           }
