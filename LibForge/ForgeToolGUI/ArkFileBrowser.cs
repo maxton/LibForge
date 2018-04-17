@@ -112,6 +112,16 @@ namespace ForgeToolGUI
               dataTextBox.Text = sb.ToString();
             }
           }
+          else if(i.Name.Contains(".songdta"))
+          {
+            using (var s = i.GetStream())
+            {
+              var songData = LibForge.SongData.SongDataReader.ReadStream(s);
+              songDataInspector1.UpdateValues(songData);
+              tabControl1.SelectTab(2);
+              treeView1.Select();
+            }
+          }
           break;
       }
     }

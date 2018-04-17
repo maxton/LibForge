@@ -60,6 +60,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SongDataInspector.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SongDataInspector.Designer.cs">
+      <DependentUpon>SongDataInspector.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="ArkFileBrowser.resx">
       <DependentUpon>ArkFileBrowser.cs</DependentUpon>
     </EmbeddedResource>
@@ -72,6 +78,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="SongDataInspector.resx">
+      <DependentUpon>SongDataInspector.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
