@@ -38,7 +38,7 @@ namespace LibForge.Texture
       }
       else
       {
-        throw new Exception($"Don't know what to do with this texture (bpp={t.BitsPerPixel})");
+        throw new Exception($"Don't know what to do with this texture (version={t.Version})");
       }
       // Copy data to bitmap
       {

@@ -14,8 +14,7 @@ namespace LibForge.Texture
       public int Flags;
       public byte[] Data;
     }
-
-    public int BitsPerPixel;
+    public int Version;
     public Mipmap[] Mipmaps;
   }
 }

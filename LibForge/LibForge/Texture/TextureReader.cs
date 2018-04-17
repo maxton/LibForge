@@ -17,10 +17,12 @@ namespace LibForge.Texture
 
     public override Texture Read()
     {
-      Check(Int(), 6);
-      s.Position = 0x80;
-      var bpp = Int();
-      s.Position = 0xB4;
+      var version = Int();
+      if(version != 6 && version != 4)
+      {
+        throw new Exception($"Unknown texture version {version}");
+      }
+      s.Position = version == 6 ? 0xB4 : 0xAC;
       var MipmapLevels = UInt();
       var Mipmaps = FixedArr(() => new Texture.Mipmap
       {
@@ -35,7 +37,7 @@ namespace LibForge.Texture
       }
       return new Texture
       {
-        BitsPerPixel = bpp,
+        Version = version,
         Mipmaps = Mipmaps
       };
     }
