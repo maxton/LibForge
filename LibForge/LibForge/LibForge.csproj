@@ -11,6 +11,8 @@
     <AssemblyName>LibForge</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -48,6 +50,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Mesh\HxMesh.cs" />
+    <Compile Include="Mesh\HxMeshConverter.cs" />
+    <Compile Include="Mesh\HxMeshReader.cs" />
+    <Compile Include="Mesh\HxMeshWriter.cs" />
     <Compile Include="Midi\MidiHelper.cs" />
     <Compile Include="Midi\RBMid.cs" />
     <Compile Include="Midi\RBMidConverter.cs" />

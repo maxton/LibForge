@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using LibForge.Mesh;
+using LibForge.SongData;
 using LibForge.Texture;
 
 namespace ForgeToolGUI
@@ -116,9 +118,19 @@ namespace ForgeToolGUI
           {
             using (var s = i.GetStream())
             {
-              var songData = LibForge.SongData.SongDataReader.ReadStream(s);
+              var songData = SongDataReader.ReadStream(s);
               songDataInspector1.UpdateValues(songData);
               tabControl1.SelectTab(2);
+              treeView1.Select();
+            }
+          }
+          else if(i.Name.Contains(".fbx"))
+          {
+            using (var s = i.GetStream())
+            {
+              var mesh = HxMeshReader.ReadStream(s);
+              meshTextBox.Text = HxMeshConverter.ToObj(mesh);
+              tabControl1.SelectTab(3);
               treeView1.Select();
             }
           }

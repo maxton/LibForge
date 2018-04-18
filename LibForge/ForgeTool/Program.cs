@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using LibForge.Mesh;
 using LibForge.Midi;
 using LibForge.Texture;
 
@@ -69,6 +70,18 @@ namespace ForgeTool
             }
           }
           break;
+        case "mesh2obj":
+          {
+            var input = args[1];
+            var output = args[2];
+            using (var fi = File.OpenRead(input))
+            {
+              var mesh = HxMeshReader.ReadStream(fi);
+              var obj = HxMeshConverter.ToObj(mesh);
+              File.WriteAllText(output, obj);  
+            }
+            break;
+          }
         case "version":
           var assembly = System.Reflection.Assembly.GetExecutingAssembly();
           var version = FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
@@ -144,6 +157,10 @@ namespace ForgeTool
       Console.WriteLine("   - converts a Forge midi to a Forge midi");
       Console.WriteLine("  mid2rbmid <input.mid> <output.rbmid>");
       Console.WriteLine("   - converts a Standard Midi File to a Forge midi");
+      Console.WriteLine("  tex2png <input.png/bmp_pc/ps4> <output.png>");
+      Console.WriteLine("   - converts a Forge texture to PNG");
+      Console.WriteLine("  mesh2obj <input.fbx...> <output.obj>");
+      Console.WriteLine("   - converts a Forge mesh to OBJ");
     }
   }
 }

@@ -1,0 +1,55 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+typedef struct {
+    float x;
+    float y;
+    float z;
+
+    int unk;
+    int unk;
+    int unk;
+    int unk;
+    int unk;
+    int unk;
+    int unk;
+    int unk;
+    int unk;
+    int unk;
+    short unk;
+    short unk;
+    int unk;
+    int unk;
+} Point;
+
+typedef struct {
+    int v1, v2, v3;
+} Triangle;
+
+char ID[8];
+int version;
+int unk;
+int unk;
+
+int num_verts;
+int num_tris;
+int unk;
+int unk;
+int unk;
+byte unk;
+int unk;
+float unk;
+float unk;
+float unk;
+float unk;
+Point vertices[num_verts];
+Triangle tris[num_tris];

@@ -21,7 +21,7 @@ namespace LibForge.Util
   public abstract class ReaderBase<D>
   {
     protected System.IO.Stream s;
-    protected ReaderBase(System.IO.Stream s)
+    public ReaderBase(System.IO.Stream s)
     {
       this.s = s;
     }
