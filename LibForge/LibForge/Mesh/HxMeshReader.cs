@@ -22,7 +22,7 @@ namespace LibForge.Mesh
       // Note: the string doesn't have a null terminator
       Check(String(9), "HXMESH\r\n");
       Check(Int(), 1);
-      Int();
+      var unk1 = Int();
       Int();
       var numVerts = UInt();
       var numTris = UInt();
@@ -37,7 +37,7 @@ namespace LibForge.Mesh
         {
           X = Float(),
           Y = Float(),
-          Z = Float().Then(Skip(52))
+          Z = Float().Then(Skip(unk1 == 15 ? 52 : 40))
         }, numVerts),
         Triangles = FixedArr(() => new HxMesh.Triangle
         {

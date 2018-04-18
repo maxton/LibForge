@@ -25,10 +25,12 @@ typedef struct {
     int unk;
     int unk;
     int unk;
-    short unk;
-    short unk;
-    int unk;
-    int unk;
+    if(points_size == 15){
+        short unk;
+        short unk;
+        int unk;
+        int unk;
+    }
 } Point;
 
 typedef struct {
@@ -37,8 +39,8 @@ typedef struct {
 
 char ID[8];
 int version;
-int unk;
-int unk;
+int points_size;
+int points_size2;
 
 int num_verts;
 int num_tris;
