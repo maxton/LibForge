@@ -27,7 +27,7 @@ after_build:
    %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\GameArchives.dll
    %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\DtxCS.dll
    %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\ForgeToolGUI.exe
-   %APPVEYOR_BUILD_FOLDER%\files-in-DLC-packages.md.md
+   %APPVEYOR_BUILD_FOLDER%\files-in-DLC-packages.md
    %APPVEYOR_BUILD_FOLDER%\README.md
    %APPVEYOR_BUILD_FOLDER%\LICENSE.txt
 artifacts:
