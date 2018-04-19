@@ -32,24 +32,25 @@
       this.menuStrip1 = new System.Windows.Forms.MenuStrip();
       this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+      this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
       this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-      this.pictureBox1 = new System.Windows.Forms.PictureBox();
-      this.tabControl1 = new System.Windows.Forms.TabControl();
-      this.tabPage1 = new System.Windows.Forms.TabPage();
-      this.tabPage2 = new System.Windows.Forms.TabPage();
-      this.dataTextBox = new System.Windows.Forms.TextBox();
-      this.tabPage3 = new System.Windows.Forms.TabPage();
-      this.songDataInspector1 = new ForgeToolGUI.SongDataInspector();
       this.tabPage4 = new System.Windows.Forms.TabPage();
       this.meshTextBox = new System.Windows.Forms.TextBox();
+      this.tabPage3 = new System.Windows.Forms.TabPage();
+      this.songDataInspector1 = new ForgeToolGUI.SongDataInspector();
+      this.tabPage2 = new System.Windows.Forms.TabPage();
+      this.dataTextBox = new System.Windows.Forms.TextBox();
+      this.tabPage1 = new System.Windows.Forms.TabPage();
+      this.pictureBox1 = new System.Windows.Forms.PictureBox();
+      this.tabControl1 = new System.Windows.Forms.TabControl();
       this.menuStrip1.SuspendLayout();
+      this.tabPage4.SuspendLayout();
+      this.tabPage3.SuspendLayout();
+      this.tabPage2.SuspendLayout();
+      this.tabPage1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
       this.tabControl1.SuspendLayout();
-      this.tabPage1.SuspendLayout();
-      this.tabPage2.SuspendLayout();
-      this.tabPage3.SuspendLayout();
-      this.tabPage4.SuspendLayout();
       this.SuspendLayout();
       // 
       // treeView1
@@ -76,6 +77,7 @@
       // 
       this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openToolStripMenuItem,
+            this.toolStripMenuItem1,
             this.closeToolStripMenuItem,
             this.exitToolStripMenuItem});
       this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -85,60 +87,72 @@
       // openToolStripMenuItem
       // 
       this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-      this.openToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+      this.openToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
       this.openToolStripMenuItem.Text = "&Open...";
       this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+      // 
+      // toolStripMenuItem1
+      // 
+      this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+      this.toolStripMenuItem1.Size = new System.Drawing.Size(148, 22);
+      this.toolStripMenuItem1.Text = "Open &Folder...";
+      this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
       // 
       // closeToolStripMenuItem
       // 
       this.closeToolStripMenuItem.Enabled = false;
       this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-      this.closeToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+      this.closeToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
       this.closeToolStripMenuItem.Text = "&Close";
       this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
       // 
       // exitToolStripMenuItem
       // 
       this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-      this.exitToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+      this.exitToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
       this.exitToolStripMenuItem.Text = "E&xit";
       this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
       // 
-      // pictureBox1
+      // tabPage4
       // 
-      this.pictureBox1.Location = new System.Drawing.Point(6, 6);
-      this.pictureBox1.Name = "pictureBox1";
-      this.pictureBox1.Size = new System.Drawing.Size(18, 17);
-      this.pictureBox1.TabIndex = 2;
-      this.pictureBox1.TabStop = false;
+      this.tabPage4.Controls.Add(this.meshTextBox);
+      this.tabPage4.Location = new System.Drawing.Point(4, 22);
+      this.tabPage4.Name = "tabPage4";
+      this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+      this.tabPage4.Size = new System.Drawing.Size(396, 438);
+      this.tabPage4.TabIndex = 3;
+      this.tabPage4.Text = "Mesh";
+      this.tabPage4.UseVisualStyleBackColor = true;
       // 
-      // tabControl1
+      // meshTextBox
       // 
-      this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+      this.meshTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.tabControl1.Controls.Add(this.tabPage1);
-      this.tabControl1.Controls.Add(this.tabPage2);
-      this.tabControl1.Controls.Add(this.tabPage3);
-      this.tabControl1.Controls.Add(this.tabPage4);
-      this.tabControl1.Location = new System.Drawing.Point(396, 27);
-      this.tabControl1.Name = "tabControl1";
-      this.tabControl1.SelectedIndex = 0;
-      this.tabControl1.Size = new System.Drawing.Size(404, 464);
-      this.tabControl1.TabIndex = 3;
+      this.meshTextBox.Location = new System.Drawing.Point(6, 6);
+      this.meshTextBox.Multiline = true;
+      this.meshTextBox.Name = "meshTextBox";
+      this.meshTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+      this.meshTextBox.Size = new System.Drawing.Size(384, 426);
+      this.meshTextBox.TabIndex = 0;
       // 
-      // tabPage1
+      // tabPage3
       // 
-      this.tabPage1.AutoScroll = true;
-      this.tabPage1.AutoScrollMinSize = new System.Drawing.Size(100, 100);
-      this.tabPage1.Controls.Add(this.pictureBox1);
-      this.tabPage1.Location = new System.Drawing.Point(4, 22);
-      this.tabPage1.Name = "tabPage1";
-      this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage1.Size = new System.Drawing.Size(396, 438);
-      this.tabPage1.TabIndex = 0;
-      this.tabPage1.Text = "Texture";
-      this.tabPage1.UseVisualStyleBackColor = true;
+      this.tabPage3.Controls.Add(this.songDataInspector1);
+      this.tabPage3.Location = new System.Drawing.Point(4, 22);
+      this.tabPage3.Name = "tabPage3";
+      this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+      this.tabPage3.Size = new System.Drawing.Size(396, 438);
+      this.tabPage3.TabIndex = 2;
+      this.tabPage3.Text = "SongDTA";
+      this.tabPage3.UseVisualStyleBackColor = true;
+      // 
+      // songDataInspector1
+      // 
+      this.songDataInspector1.Location = new System.Drawing.Point(6, 6);
+      this.songDataInspector1.Name = "songDataInspector1";
+      this.songDataInspector1.Size = new System.Drawing.Size(288, 426);
+      this.songDataInspector1.TabIndex = 0;
       // 
       // tabPage2
       // 
@@ -164,46 +178,41 @@
       this.dataTextBox.Size = new System.Drawing.Size(384, 428);
       this.dataTextBox.TabIndex = 0;
       // 
-      // tabPage3
+      // tabPage1
       // 
-      this.tabPage3.Controls.Add(this.songDataInspector1);
-      this.tabPage3.Location = new System.Drawing.Point(4, 22);
-      this.tabPage3.Name = "tabPage3";
-      this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage3.Size = new System.Drawing.Size(396, 438);
-      this.tabPage3.TabIndex = 2;
-      this.tabPage3.Text = "SongDTA";
-      this.tabPage3.UseVisualStyleBackColor = true;
+      this.tabPage1.AutoScroll = true;
+      this.tabPage1.AutoScrollMinSize = new System.Drawing.Size(100, 100);
+      this.tabPage1.Controls.Add(this.pictureBox1);
+      this.tabPage1.Location = new System.Drawing.Point(4, 22);
+      this.tabPage1.Name = "tabPage1";
+      this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+      this.tabPage1.Size = new System.Drawing.Size(396, 438);
+      this.tabPage1.TabIndex = 0;
+      this.tabPage1.Text = "Texture";
+      this.tabPage1.UseVisualStyleBackColor = true;
       // 
-      // songDataInspector1
+      // pictureBox1
       // 
-      this.songDataInspector1.Location = new System.Drawing.Point(6, 6);
-      this.songDataInspector1.Name = "songDataInspector1";
-      this.songDataInspector1.Size = new System.Drawing.Size(288, 426);
-      this.songDataInspector1.TabIndex = 0;
+      this.pictureBox1.Location = new System.Drawing.Point(6, 6);
+      this.pictureBox1.Name = "pictureBox1";
+      this.pictureBox1.Size = new System.Drawing.Size(18, 17);
+      this.pictureBox1.TabIndex = 2;
+      this.pictureBox1.TabStop = false;
       // 
-      // tabPage4
+      // tabControl1
       // 
-      this.tabPage4.Controls.Add(this.meshTextBox);
-      this.tabPage4.Location = new System.Drawing.Point(4, 22);
-      this.tabPage4.Name = "tabPage4";
-      this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage4.Size = new System.Drawing.Size(396, 438);
-      this.tabPage4.TabIndex = 3;
-      this.tabPage4.Text = "Mesh";
-      this.tabPage4.UseVisualStyleBackColor = true;
-      // 
-      // meshTextBox
-      // 
-      this.meshTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+      this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.meshTextBox.Location = new System.Drawing.Point(6, 6);
-      this.meshTextBox.Multiline = true;
-      this.meshTextBox.Name = "meshTextBox";
-      this.meshTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-      this.meshTextBox.Size = new System.Drawing.Size(384, 426);
-      this.meshTextBox.TabIndex = 0;
+      this.tabControl1.Controls.Add(this.tabPage1);
+      this.tabControl1.Controls.Add(this.tabPage2);
+      this.tabControl1.Controls.Add(this.tabPage3);
+      this.tabControl1.Controls.Add(this.tabPage4);
+      this.tabControl1.Location = new System.Drawing.Point(396, 27);
+      this.tabControl1.Name = "tabControl1";
+      this.tabControl1.SelectedIndex = 0;
+      this.tabControl1.Size = new System.Drawing.Size(404, 464);
+      this.tabControl1.TabIndex = 3;
       // 
       // ArkFileBrowser
       // 
@@ -219,14 +228,14 @@
       this.Text = "Ark File Browser";
       this.menuStrip1.ResumeLayout(false);
       this.menuStrip1.PerformLayout();
-      ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-      this.tabControl1.ResumeLayout(false);
-      this.tabPage1.ResumeLayout(false);
-      this.tabPage2.ResumeLayout(false);
-      this.tabPage2.PerformLayout();
-      this.tabPage3.ResumeLayout(false);
       this.tabPage4.ResumeLayout(false);
       this.tabPage4.PerformLayout();
+      this.tabPage3.ResumeLayout(false);
+      this.tabPage2.ResumeLayout(false);
+      this.tabPage2.PerformLayout();
+      this.tabPage1.ResumeLayout(false);
+      ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+      this.tabControl1.ResumeLayout(false);
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -240,15 +249,16 @@
     private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-    private System.Windows.Forms.PictureBox pictureBox1;
-    private System.Windows.Forms.TabControl tabControl1;
-    private System.Windows.Forms.TabPage tabPage1;
-    private System.Windows.Forms.TabPage tabPage2;
-    private System.Windows.Forms.TextBox dataTextBox;
-    private System.Windows.Forms.TabPage tabPage3;
-    private SongDataInspector songDataInspector1;
+    private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
     private System.Windows.Forms.TabPage tabPage4;
     private System.Windows.Forms.TextBox meshTextBox;
+    private System.Windows.Forms.TabPage tabPage3;
+    private SongDataInspector songDataInspector1;
+    private System.Windows.Forms.TabPage tabPage2;
+    private System.Windows.Forms.TextBox dataTextBox;
+    private System.Windows.Forms.TabPage tabPage1;
+    private System.Windows.Forms.PictureBox pictureBox1;
+    private System.Windows.Forms.TabControl tabControl1;
   }
 }
 

@@ -23,8 +23,21 @@ namespace ForgeToolGUI
 
     private void LoadArk(string filename)
     {
-      if (state.ark != null) CloseArk();
+      if (state.Loaded) Unload();
       state.ark = GameArchives.Ark.ArkPackage.OpenFile(GameArchives.Util.LocalFile(filename));
+      state.root = state.ark.RootDirectory;
+      FinishLoad();
+    }
+
+    private void LoadFolder(string path)
+    {
+      if (state.Loaded) Unload();
+      state.root = GameArchives.Util.LocalDir(path);
+      FinishLoad();
+    }
+
+    private void FinishLoad()
+    {
       closeToolStripMenuItem.Enabled = true;
       void AddNodes(GameArchives.IDirectory dir, TreeNodeCollection nodes)
       {
@@ -34,23 +47,29 @@ namespace ForgeToolGUI
           nodes.Add(node);
           AddNodes(d, node.Nodes);
         }
-        foreach(var f in dir.Files)
+        foreach (var f in dir.Files)
         {
           var node = new TreeNode(f.Name);
           node.Tag = f;
           nodes.Add(node);
         }
       }
-      AddNodes(state.ark.RootDirectory, treeView1.Nodes);
+      AddNodes(state.root, treeView1.Nodes);
+      state.Loaded = true;
     }
 
-    private void CloseArk()
+    private void Unload()
     {
-      if (state.ark == null) return;
+      if (!state.Loaded) return;
       treeView1.Nodes.Clear();
-      state.ark.Dispose();
-      state.ark = null;
+      state.root = null;
+      if (state.ark != null)
+      {
+        state.ark.Dispose();
+        state.ark = null;
+      }
       closeToolStripMenuItem.Enabled = false;
+      state.Loaded = false;
     }
 
     private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -65,7 +84,7 @@ namespace ForgeToolGUI
 
     private void closeToolStripMenuItem_Click(object sender, EventArgs e)
     {
-      CloseArk();
+      Unload();
     }
 
     private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -114,6 +133,16 @@ namespace ForgeToolGUI
               dataTextBox.Text = sb.ToString();
             }
           }
+          else if(i.Name.EndsWith(".dta") || i.Name.EndsWith(".moggsong"))
+          {
+            using (var s = i.GetStream())
+            using (var r = new System.IO.StreamReader(s))
+            {
+              tabControl1.SelectTab(1);
+              treeView1.Select();
+              dataTextBox.Text = r.ReadToEnd();
+            }
+          }
           else if(i.Name.Contains(".songdta"))
           {
             using (var s = i.GetStream())
@@ -137,9 +166,22 @@ namespace ForgeToolGUI
           break;
       }
     }
+
+    private void toolStripMenuItem1_Click(object sender, EventArgs e)
+    {
+      // Sorry.
+      var of = new FolderBrowserDialog();
+      of.ShowNewFolderButton = false;
+      if(of.ShowDialog(this) == DialogResult.OK)
+      {
+        LoadFolder(of.SelectedPath);
+      }
+    }
   }
   public class ArkFileBrowserState
   {
+    public bool Loaded = false;
     public GameArchives.Ark.ArkPackage ark;
+    public GameArchives.IDirectory root;
   }
 }
