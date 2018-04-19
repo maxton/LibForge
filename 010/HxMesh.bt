@@ -25,7 +25,7 @@ typedef struct {
     int unk;
     int unk;
     int unk;
-    if(points_size == 15){
+    if(points_size2 == 7){
         short unk;
         short unk;
         int unk;
