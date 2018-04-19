@@ -254,7 +254,7 @@ namespace LibForge.Midi
         var marker_ends = new uint[3];
         var endmarkers = new RBMid.CYMBALMARKER.MARKER[3];
         var mixes = new List<RBMid.TICKTEXT>[4];
-        for(var i = 0; i < 4; i++)
+        for (var i = 0; i < 4; i++)
         {
           mixes[i] = new List<RBMid.TICKTEXT>();
         }
@@ -276,12 +276,12 @@ namespace LibForge.Midi
           var key = e.Key;
           var lane = 0;
           var diff = 0;
-          if(key >= EasyStart && key <= EasyEnd)
+          if (key >= EasyStart && key <= EasyEnd)
           {
             lane = key - EasyStart;
             diff = 0;
           }
-          else if(key >= MediumStart && key <= MediumEnd)
+          else if (key >= MediumStart && key <= MediumEnd)
           {
             lane = key - MediumStart;
             diff = 1;
@@ -302,6 +302,7 @@ namespace LibForge.Midi
           }
 
           if (gem_tracks[diff] == null) gem_tracks[diff] = new List<RBMid.GEMTRACK.GEM>();
+          var lastOverdrive = overdrive_markers.LastOrDefault();
           gem_tracks[diff].Add(new RBMid.GEMTRACK.GEM
           {
             StartMillis = (float)e.StartTime * 1000,
@@ -312,11 +313,11 @@ namespace LibForge.Midi
             IsHopo = false,
             NoTail = true,
             // TODO: Sometimes this is not zero
-            Unknown = 0
+            Unknown = (lastOverdrive.StartTicks + lastOverdrive.LengthTicks == e.StartTicks) ? 1 : 0
           });
           return true;
         }
-        foreach(var item in track.Items)
+        foreach (var item in track.Items)
         {
           var ticks = item.StartTicks;
           var time = item.StartTime;
@@ -359,9 +360,9 @@ namespace LibForge.Midi
                 var startMarker = cymbal_markers.ContainsKey(ticks) ? cymbal_markers[ticks]
                                                                : new RBMid.CYMBALMARKER.MARKER { Tick = ticks };
                 startMarker.Flags |= GetFlag(e.Key);
-                for(var i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                 {
-                  if(endmarkers[i] != null && endmarkers[i].Tick > e.StartTicks)
+                  if (endmarkers[i] != null && endmarkers[i].Tick > e.StartTicks)
                   {
                     startMarker.Flags |= GetFlag((byte)(i + 110));
                     endmarkers[i].Flags |= GetFlag(e.Key);
@@ -391,18 +392,18 @@ namespace LibForge.Midi
               {
                 // TODO: Anims?
               }
-              else if(e.Key == Roll1 || e.Key == Roll2)
+              else if (e.Key == Roll1 || e.Key == Roll2)
               {
                 rolls.Add(new RBMid.LANEMARKER.MARKER
                 {
                   StartTick = e.StartTicks,
                   EndTick = e.StartTicks + e.LengthTicks,
-                  Flags = e.Key == Roll1 ? 
+                  Flags = e.Key == Roll1 ?
                       RBMid.LANEMARKER.MARKER.Flag.Roll_1Lane
                     : RBMid.LANEMARKER.MARKER.Flag.Roll_2Lane
                 });
               }
-              else if(e.Key == 105 || e.Key == 106 || e.Key == 12 || e.Key == 13 || e.Key == 14 || e.Key == 15)
+              else if (e.Key == 105 || e.Key == 106 || e.Key == 12 || e.Key == 13 || e.Key == 14 || e.Key == 15)
               {
                 // TODO: What are these note?
               }
@@ -465,9 +466,14 @@ namespace LibForge.Midi
           Gems = gem_tracks.Select(g => g.ToArray()).ToArray(),
           Unknown = 0xAA
         });
-        var sections = new RBMid.SECTIONS.SECTION[6][];
-        sections[0] = overdrive_markers.ToArray();
-        sections[1] = solo_markers.ToArray();
+        var sections = new RBMid.SECTIONS.SECTION[6][] {
+          overdrive_markers.ToArray(),
+          solo_markers.ToArray(),
+          new RBMid.SECTIONS.SECTION[0],
+          new RBMid.SECTIONS.SECTION[0],
+          new RBMid.SECTIONS.SECTION[0],
+          new RBMid.SECTIONS.SECTION[0]
+        };
         OverdriveSoloSections.Add(new RBMid.SECTIONS
         {
           Sections = new RBMid.SECTIONS.SECTION[4][][]
@@ -558,6 +564,7 @@ namespace LibForge.Midi
               {
                 hopo = true;
               }
+              // TODO: Swing notes have different HOPO rules?
             }
             var chord = new RBMid.GEMTRACK.GEM
             {
@@ -606,6 +613,11 @@ namespace LibForge.Midi
             {
               chords[diff].IsHopo = force;
             }
+            if(chords[diff].StartTicks + chords[diff].LengthTicks > e.StartTicks)
+            {
+              // Still the One has an invalid HOPO force (doesn't line up with the note)
+              return true;
+            }
             else
             {
               chords[diff] = new RBMid.GEMTRACK.GEM
@@ -646,6 +658,13 @@ namespace LibForge.Midi
               else if (AddHopo(e)) { }
               else if (e.Key == TrillMarker)
               {
+                // Remove invalid trill (one with no notes)
+                if (trills.Count > 0)
+                {
+                  var lastTrill = trills.Last();
+                  if (lastTrill.HighFret < lastTrill.LowFret)
+                    trills.RemoveAt(trills.Count - 1);
+                }
                 trill = new RBMid.GTRTRILLS.TRILL
                 {
                   StartTick = e.StartTicks,
@@ -716,6 +735,13 @@ namespace LibForge.Midi
               break;
           }
         }
+        // In case the last trill was an invalid one, remove it
+        if (trills.Count > 0)
+        {
+          var lastTrill = trills.Last();
+          if (lastTrill.HighFret < lastTrill.LowFret)
+            trills.RemoveAt(trills.Count - 1);
+        }
 
         int Unk = track.Name == "PART BASS" ? 2 : 1;
         Lyrics.Add(new RBMid.LYRICS
@@ -748,6 +774,7 @@ namespace LibForge.Midi
             null, null, null, tremolos.ToArray()
           }
         });
+
         TrillMarkers.Add(new RBMid.GTRTRILLS
         {
           Trills = trills.Count == 0 ? null : new RBMid.GTRTRILLS.TRILL[4][]
@@ -764,9 +791,14 @@ namespace LibForge.Midi
           Gems = gem_tracks.Select(g => g.ToArray()).ToArray(),
           Unknown = 0xAA
         });
-        var sections = new RBMid.SECTIONS.SECTION[6][];
-        sections[0] = overdrive_markers.ToArray();
-        sections[1] = solo_markers.ToArray();
+        var sections = new RBMid.SECTIONS.SECTION[6][] {
+          overdrive_markers.ToArray(),
+          solo_markers.ToArray(),
+          new RBMid.SECTIONS.SECTION[0],
+          new RBMid.SECTIONS.SECTION[0],
+          new RBMid.SECTIONS.SECTION[0],
+          new RBMid.SECTIONS.SECTION[0]
+        };
         OverdriveSoloSections.Add(new RBMid.SECTIONS
         {
           Sections = new RBMid.SECTIONS.SECTION[4][][]
@@ -1062,18 +1094,25 @@ namespace LibForge.Midi
         });
         LaneMarkers.Add(new RBMid.LANEMARKER());
         TrillMarkers.Add(new RBMid.GTRTRILLS());
+        var emptyMixes = new RBMid.TICKTEXT[0];
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
-          Mixes = new RBMid.TICKTEXT[4][]
+          Mixes = new RBMid.TICKTEXT[4][] { emptyMixes, emptyMixes, emptyMixes, emptyMixes }
         });
+        var emptyGems = new RBMid.GEMTRACK.GEM[0];
         GemTracks.Add(new RBMid.GEMTRACK
         {
-          Gems = new RBMid.GEMTRACK.GEM[4][],
+          Gems = new RBMid.GEMTRACK.GEM[4][] { emptyGems, emptyGems, emptyGems, emptyGems },
           Unknown = 0xAA
         });
         var overdriveSections = new RBMid.SECTIONS.SECTION[6][]
         {
-          overdrive_markers.ToArray(), null, null, null, null, null
+          overdrive_markers.ToArray(),
+          new RBMid.SECTIONS.SECTION[0],
+          new RBMid.SECTIONS.SECTION[0],
+          new RBMid.SECTIONS.SECTION[0],
+          new RBMid.SECTIONS.SECTION[0],
+          new RBMid.SECTIONS.SECTION[0]
         };
         OverdriveSoloSections.Add(new RBMid.SECTIONS
         {

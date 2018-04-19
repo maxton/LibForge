@@ -405,6 +405,51 @@ namespace LibForge.Midi
       }
       return null;
     }
+    private string Check<T>(T[][] a, T[][] b, string n, Func<T, T, string> f)
+    {
+      if ((b == null || b.Length == 0) && (a == null || a.Length == 0))
+        return null;
+
+      if (a.Length != b.Length)
+        return $"{n}.Length: a={a.Length}, b={b.Length}";
+      for (var i = 0; i < a.Length; i++)
+      {
+        if (a[i].Length != b[i].Length)
+          return $"{n}[{i}].Length: a={a[i].Length}, b={b[i].Length}";
+        for (var j = 0; j < a[i].Length; j++)
+        {
+          var r = f(a[i][j], b[i][j]);
+          if (r != null)
+            return $"{n}[{i}][{j}].{r}";
+        }
+      }
+      return null;
+    }
+    private string Check<T>(T[][][] a, T[][][] b, string n, Func<T, T, string> f)
+    {
+      if ((b == null || b.Length == 0) && (a == null || a.Length == 0))
+        return null;
+
+      if (a.Length != b.Length)
+        return $"{n}.Length: a={a.Length}, b={b.Length}";
+      for (var i = 0; i < a.Length; i++)
+      {
+        if (a[i].Length != b[i].Length)
+          return $"{n}[{i}].Length: a={a[i].Length}, b={b[i].Length}";
+        for (var j = 0; j < a[i].Length; j++)
+        {
+          if (a[i][j].Length != b[i][j].Length)
+            return $"{n}[{i}][{j}].Length: a={a[i][j].Length}, b={b[i][j].Length}";
+          for (var k = 0; k < a[i][j].Length; k++)
+          {
+            var r = f(a[i][j][k], b[i][j][k]);
+            if (r != null)
+              return $"{n}[{i}][{j}][{k}].{r}";
+          }
+        }
+      }
+      return null;
+    }
     private string Check<T>(T a, T b, string n)
       => a.Equals(b) ? null : $"{n}: a={a}, b={b}";
     private string Check<T>(T a, T b)
@@ -448,6 +493,7 @@ namespace LibForge.Midi
                 // TODO: Figure out why this is not always the same after conversion
                 ?? CheckFloats(their2.EndTick, my2.EndTick, nameof(my2.EndTick), 11)
                 ?? Check(their2.IsBRE, my2.IsBRE, nameof(my2.IsBRE))))
+      // TODO: Keyboard anims... maybe
       ?? Check(other.Anims, Anims, nameof(Anims), (their, my) => null)
       ?? Check(other.ProMarkers, ProMarkers, nameof(ProMarkers), (their, my)
            => Check(their.Markers, my.Markers, nameof(my.Markers), (their2, my2)
@@ -455,13 +501,42 @@ namespace LibForge.Midi
                 ?? Check(their2.Flags, my2.Flags, nameof(my2.Flags)))
            ?? Check(their.Unknown1, my.Unknown1, nameof(my.Unknown1))
            ?? Check(their.Unknown2, my.Unknown2, nameof(my.Unknown2)))
-      ?? Check(other.LaneMarkers, LaneMarkers, nameof(LaneMarkers), (their, my) => null)
-      ?? Check(other.TrillMarkers, TrillMarkers, nameof(TrillMarkers), (their, my) => null)
+      ?? Check(other.LaneMarkers, LaneMarkers, nameof(LaneMarkers), (their, my)
+           => Check(their.Markers, my.Markers, nameof(my.Markers), (their2, my2)
+                => Check(their2.StartTick, my2.StartTick, nameof(my2.StartTick))
+                ?? Check(their2.EndTick, my2.EndTick, nameof(my2.EndTick))
+                ?? Check(their2.Flags, my2.Flags, nameof(my2.Flags))))
+      ?? Check(other.TrillMarkers, TrillMarkers, nameof(TrillMarkers), (their, my) 
+           => Check(their.Trills, my.Trills, nameof(my.Trills), (their2, my2)
+                => Check(their2.StartTick, my2.StartTick, nameof(my2.StartTick))
+                ?? Check(their2.EndTick, my2.EndTick, nameof(my2.EndTick))
+                ?? Check(their2.LowFret, my2.LowFret, nameof(my2.LowFret))
+                ?? Check(their2.HighFret, my2.HighFret, nameof(my2.HighFret))))
       ?? Check(other.DrumMixes, DrumMixes, nameof(DrumMixes), (their, my)
            => Check(their.Mixes, my.Mixes, nameof(my.Mixes), (t,m)=>Check(t,m,"",CheckTickText)))
-      ?? Check(other.GemTracks, GemTracks, nameof(GemTracks), (their, my) => null)
-      ?? Check(other.OverdriveSoloSections, OverdriveSoloSections, nameof(OverdriveSoloSections), (their, my) => null)
-      ?? Check(other.VocalTracks, VocalTracks, nameof(VocalTracks), (their, my) => null)
+      ?? Check(other.GemTracks, GemTracks, nameof(GemTracks), (their, my)
+           => Check(their.Gems, my.Gems, nameof(my.Gems), (their2, my2)
+                => CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 0.2f)
+                ?? CheckFloats(their2.LengthMillis, my2.LengthMillis, nameof(my2.LengthMillis), 1.5f) // who ever cared about a couple ms
+                ?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
+                ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
+                ?? Check(their2.Lanes, my2.Lanes, nameof(my2.Lanes))
+                // TODO: Swing notes...
+                //?? Check(their2.IsHopo, my2.IsHopo, nameof(my2.IsHopo))
+                ?? Check(their2.NoTail, my2.NoTail, nameof(my2.NoTail))
+                // TODO
+                //?? Check(their2.Unknown, my2.Unknown, nameof(my2.Unknown))
+                ))
+      ?? Check(other.OverdriveSoloSections, OverdriveSoloSections, nameof(OverdriveSoloSections), (their, my)
+           => Check(their.Sections, my.Sections, nameof(my.Sections), (their2, my2)
+                => Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
+                ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))))
+      ?? Check(other.VocalTracks, VocalTracks, nameof(VocalTracks), (their, my)
+           => Check(their.Notes, my.Notes, nameof(my.Notes), (their2, my2) => null)
+           ?? Check(their.Percussion, my.Percussion, nameof(my.Percussion), Check)
+           ?? Check(their.Tacets, my.Tacets, nameof(my.Tacets), (their2, my2) => null)
+           ?? Check(their.PhraseMarkers, my.PhraseMarkers, nameof(my.PhraseMarkers), (their2, my2) => null)
+           ?? Check(their.PhraseMarkers2, my.PhraseMarkers2, nameof(my.PhraseMarkers2), (their2, my2) => null))
       ?? Check(other.UnknownOne, UnknownOne, nameof(UnknownOne))
       ?? Check(other.UnknownNegOne, UnknownNegOne, nameof(UnknownNegOne))
       ?? Check(other.UnknownHundred, UnknownHundred, nameof(UnknownHundred))
@@ -473,8 +548,16 @@ namespace LibForge.Midi
       ?? Check(other.UnknownZeroByte, UnknownZeroByte, nameof(UnknownZeroByte))
       ?? CheckFloats(other.PreviewStartMillis, PreviewStartMillis, nameof(PreviewStartMillis))
       ?? CheckFloats(other.PreviewEndMillis, PreviewEndMillis, nameof(PreviewEndMillis))
-      ?? Check(other.GuitarHandmap, GuitarHandmap, nameof(GuitarHandmap), (their, my) => null)
-      ?? Check(other.GuitarLeftHandPos, GuitarLeftHandPos, nameof(GuitarLeftHandPos), (their, my) => null)
+      ?? Check(other.GuitarHandmap, GuitarHandmap, nameof(GuitarHandmap), (their, my) 
+           => Check(their.Maps, my.Maps, nameof(my.Maps), (their2, my2)
+                => Check(their2.StartTime, my2.StartTime, nameof(my2.StartTime))
+                ?? Check(their2.Map, my2.Map, nameof(my2.Map))))
+      ?? Check(other.GuitarLeftHandPos, GuitarLeftHandPos, nameof(GuitarLeftHandPos), (their, my)
+           => Check(their.Events, my.Events, nameof(my.Events), (their2, my2)
+                => CheckFloats(their2.StartTime, my2.StartTime, nameof(my2.StartTime), 0.0002f)
+                ?? CheckFloats(their2.Length, my2.Length, nameof(my2.Length), 0.2f)
+                ?? Check(their2.Position, my2.Position, nameof(my2.Position))
+                ?? Check(their2.Unknown, my2.Unknown, nameof(my2.Unknown))))
       ?? Check(other.Unktrack, Unktrack, nameof(Unktrack), (their, my) => null)
       ?? Check(other.MarkupSoloNotes1, MarkupSoloNotes1, nameof(MarkupSoloNotes1), CheckSoloNotes)
       ?? Check(other.MarkupLoop1, MarkupLoop1, nameof(MarkupLoop1), CheckTwoTick)
@@ -497,7 +580,8 @@ namespace LibForge.Midi
       ?? Check(other.Measures, Measures, nameof(Measures))
       ?? Check(other.Unknown, Unknown, nameof(Unknown), Check)
       ?? Check(other.FinalTickMinusOne, FinalTickMinusOne, nameof(FinalTickMinusOne))
-      ?? Check(other.UnknownFloats, UnknownFloats, nameof(UnknownFloats), Check)
+      // TODO: Floats are sometimes 0xABCDABCD ???
+      //?? Check(other.UnknownFloats, UnknownFloats, nameof(UnknownFloats), Check)
       ?? Check(other.Tempos, Tempos, nameof(Tempos), (their, my)
            => CheckFloats(their.StartMillis, my.StartMillis, nameof(my.StartMillis), 0.3f)
            ?? Check(their.StartTick, my.StartTick, nameof(my.StartTick))
