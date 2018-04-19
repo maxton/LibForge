@@ -4,6 +4,10 @@ I am keeping track of my research into RB4 customs here.
 
 I am working out the structure of the files in Rock Band 4. These are being documented in the form of 010 Editor Template files, which are in the `010` directory.
 
+# Latest Build
+
+Can be downloaded at [Appveyor](https://ci.appveyor.com/project/maxton/libforge/build/artifacts)
+
 # LibForge
 
 This is a library I'm working on that handles reading, writing, and converting for formats in the Forge engine used by Rock Band 4 and Rock Band VR.
