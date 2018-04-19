@@ -20,6 +20,7 @@ namespace LibForge.Midi
     {
       private MidiFile mf;
       private RBMid rb;
+      private List<MidiTrackProcessed> processedTracks;
 
       private List<RBMid.LYRICS> Lyrics;
       private List<RBMid.DRUMFILLS> DrumFills;
@@ -52,6 +53,7 @@ namespace LibForge.Midi
       public MidiConverter(MidiFile mf)
       {
         this.mf = mf;
+        processedTracks = new MidiHelper().ProcessTracks(mf);
         trackHandlers = new Dictionary<string, Action<MidiTrackProcessed>>
         {
           {"PART DRUMS", HandleDrumTrk },
@@ -134,7 +136,6 @@ namespace LibForge.Midi
           }
         }
         uint lastMeasureTick2 = MeasureTicks.LastOrDefault();
-        var processedTracks = new MidiHelper().ProcessTracks(mf);
         FinalTick = processedTracks.Select(t => t.LastTick).Max();
         for (var i = MeasureTicks.Count; lastMeasureTick2 < FinalTick; i++)
         {
@@ -920,12 +921,31 @@ namespace LibForge.Midi
         var phrase_markers_1 = new List<RBMid.VOCALTRACK.PHRASE_MARKER>();
         var phrase_markers_2 = new List<RBMid.VOCALTRACK.PHRASE_MARKER>();
         var tacets = new List<RBMid.VOCALTRACK.VOCAL_TACET>();
-
         int phrase_index = 0;
         RBMid.VOCALTRACK.PHRASE_MARKER last_phrase_1 = null;
         RBMid.VOCALTRACK.PHRASE_MARKER last_phrase_2 = null;
+
+        if (track.Name == "HARM3")
+        {
+          phrase_markers_1.Add(VocalTracks[2].PhraseMarkers[0]);
+          last_phrase_1 = phrase_markers_1[0];
+        }
         foreach (var item in track.Items)
         {
+          if (track.Name == "HARM3")
+          {
+            while (last_phrase_1.StartTicks + last_phrase_1.LengthTicks < item.StartTicks)
+            {
+              phrase_markers_1.Add(VocalTracks[2].PhraseMarkers[phrase_markers_1.Count]);
+              last_phrase_1 = phrase_markers_1.Last();
+              if (notes.Count > 0)
+              {
+                var lastNoteInPhrase = notes.Last();
+                lastNoteInPhrase.LastNoteInPhrase = true;
+                notes[notes.Count - 1] = lastNoteInPhrase;
+              }
+            }
+          }
           switch (item)
           {
             case MidiNote e:
@@ -966,6 +986,12 @@ namespace LibForge.Midi
                 } else if(last_phrase_1 != null)
                 {
                   last_phrase_1.EndNoteIdx = notes.Count;
+                  if (notes.Count > 0)
+                  {
+                    var lastNoteInPhrase = notes.Last();
+                    lastNoteInPhrase.LastNoteInPhrase = true;
+                    notes[notes.Count - 1] = lastNoteInPhrase;
+                  }
                 }
                 last_phrase_1 = new RBMid.VOCALTRACK.PHRASE_MARKER
                 {
@@ -1001,7 +1027,8 @@ namespace LibForge.Midi
               else if (e.Key >= VocalsStart && e.Key <= VocalsEnd)
               {
                 var lyric = (track.Items.Find(s => s is MidiText && s.StartTicks == e.StartTicks) as MidiText).Text;
-                if(lyric == "+")
+                var lyricCleaned = lyric.Replace("$", "");
+                if(lyricCleaned == "+")
                 {
                   var previous = notes.LastOrDefault();
                   notes.Add(new RBMid.VOCALTRACK.VOCAL_NOTE
@@ -1012,7 +1039,7 @@ namespace LibForge.Midi
                     StartMillis = previous.StartMillis + previous.LengthMillis,
                     StartTick = previous.StartTick + previous.LengthTicks,
                     LengthMillis = ((float)e.StartTime * 1000) - (previous.StartMillis + previous.LengthMillis),
-                    LengthTicks = (ushort)(e.StartTicks - previous.StartTick + previous.LengthTicks),
+                    LengthTicks = (ushort)(e.StartTicks - (previous.StartTick + previous.LengthTicks)),
                     Lyric = "",
                     LastNoteInPhrase = false,
                     // TODO: What is this?
@@ -1035,19 +1062,19 @@ namespace LibForge.Midi
                 }
                 notes.Add(new RBMid.VOCALTRACK.VOCAL_NOTE
                 {
-                  PhraseIndex = phrase_index,
+                  PhraseIndex = phrase_markers_1.Count - 1,
                   MidiNote = e.Key,
                   MidiNote2 = e.Key,
                   StartMillis = (float)e.StartTime * 1000,
                   StartTick = e.StartTicks,
                   LengthMillis = (float)e.Length * 1000,
                   LengthTicks = (ushort)e.LengthTicks,
-                  Lyric = lyric == "+" ? "" : lyric,
+                  Lyric = lyricCleaned == "+" ? "" : lyricCleaned,
                   // TODO
                   LastNoteInPhrase = false,
                   // TODO: What is this?
                   Unknown = 1,
-                  Portamento = lyric == "+",
+                  Portamento = lyricCleaned == "+",
                   Flag9 = true
                 });
               }
@@ -1065,11 +1092,16 @@ namespace LibForge.Midi
           }
         }
         var lastNote = notes.Last();
+        var lastTempo = mf.TempoTimeSigMap.Last();
+        var lastMeasure = MeasureTicks.Last() + (480U * lastTempo.Numerator * 4 / lastTempo.Denominator);
+        var lastTime = lastTempo.Time + ((lastMeasure - lastTempo.Tick) / 480.0) * (60 / lastTempo.BPM);
         tacets.Add(new RBMid.VOCALTRACK.VOCAL_TACET
         {
           StartMillis = lastNote.StartMillis + lastNote.LengthMillis + 100f,
-          EndMillis = (float)mf.Duration * 1000
+          EndMillis = (float)lastTime * 1000,
         });
+        lastNote.LastNoteInPhrase = true;
+        notes[notes.Count - 1] = lastNote;
 
 
         Lyrics.Add(new RBMid.LYRICS

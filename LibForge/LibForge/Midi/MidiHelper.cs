@@ -35,6 +35,7 @@ namespace LibForge.Midi
       var notesOn = new Dictionary<int, MidiNote>();
       var ticks = 0u;
       var finalTick = 0u;
+      var finalTime = 0d;
       foreach (var msg in track.Messages)
       {
         ticks += msg.DeltaTime;
@@ -81,13 +82,18 @@ namespace LibForge.Midi
             continue;
         }
 
-        if (ticks > finalTick) finalTick = ticks;
+        if (ticks > finalTick)
+        {
+          finalTick = ticks;
+          finalTime = time;
+        }
       }
 
       return new MidiTrackProcessed
       {
         Name = track.Name,
         LastTick = finalTick,
+        LastTime = finalTime,
         Items = items
       };
     }
@@ -97,6 +103,7 @@ namespace LibForge.Midi
   {
     public string Name;
     public uint LastTick;
+    public double LastTime;
     public List<MidiItem> Items;
   }
 

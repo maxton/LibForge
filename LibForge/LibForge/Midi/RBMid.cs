@@ -401,7 +401,8 @@ namespace LibForge.Midi
       for (var i = 0; i < a.Count; i++)
       {
         var r = f(a[i], b[i]);
-        if (r != null) return $"{n}[{i}].{r}";
+        if (r != null)
+          return $"{n}[{i}].{r}";
       }
       return null;
     }
@@ -532,10 +533,34 @@ namespace LibForge.Midi
                 => Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
                 ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))))
       ?? Check(other.VocalTracks, VocalTracks, nameof(VocalTracks), (their, my)
-           => Check(their.Notes, my.Notes, nameof(my.Notes), (their2, my2) => null)
+           => Check(their.Notes, my.Notes, nameof(my.Notes), (their2, my2)
+                => Check(their2.StartTick, my2.StartTick, nameof(my2.StartTick))
+                ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
+                ?? CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 0.4f)
+                ?? CheckFloats(their2.LengthMillis, my2.LengthMillis, nameof(my2.LengthMillis), 0.4f)
+                ?? Check(their2.MidiNote, my2.MidiNote, nameof(my2.MidiNote))
+                ?? Check(their2.MidiNote2, my2.MidiNote2, nameof(my2.MidiNote2))
+                ?? Check(their2.PhraseIndex, my2.PhraseIndex, nameof(my2.PhraseIndex))
+                ?? Check(their2.Lyric, my2.Lyric, nameof(my2.Lyric))
+                ?? Check(their2.Portamento, my2.Portamento, nameof(my2.Portamento))
+                ?? Check(their2.LastNoteInPhrase, my2.LastNoteInPhrase, nameof(my2.LastNoteInPhrase)))
            ?? Check(their.Percussion, my.Percussion, nameof(my.Percussion), Check)
-           ?? Check(their.Tacets, my.Tacets, nameof(my.Tacets), (their2, my2) => null)
-           ?? Check(their.PhraseMarkers, my.PhraseMarkers, nameof(my.PhraseMarkers), (their2, my2) => null)
+           ?? Check(their.Tacets, my.Tacets, nameof(my.Tacets), (their2, my2)
+                => CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 0.2f)
+                // TODO: Fix tacets on HARM tracks
+                //?? CheckFloats(their2.EndMillis, my2.EndMillis, nameof(my2.EndMillis), 2f)
+                )
+           ?? Check(their.PhraseMarkers, my.PhraseMarkers, nameof(my.PhraseMarkers), (their2, my2)
+                => // TODO: Fix first phrase marker. It seems to start earlier than authored!?
+                //   CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
+                //?? CheckFloats(their2.Length, my2.Length, nameof(my2.Length), 1f)
+                //?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
+                //?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
+                // TODO ???
+                //?? Check(their2.IsPhrase, my2.IsPhrase, nameof(my2.IsPhrase))
+                //?? Check(their2.IsOverdrive, my2.IsOverdrive, nameof(my2.IsOverdrive))
+                null
+                )
            ?? Check(their.PhraseMarkers2, my.PhraseMarkers2, nameof(my.PhraseMarkers2), (their2, my2) => null))
       ?? Check(other.UnknownOne, UnknownOne, nameof(UnknownOne))
       ?? Check(other.UnknownNegOne, UnknownNegOne, nameof(UnknownNegOne))
