@@ -1,0 +1,34 @@
+version: 0.1.{build}
+
+image: Visual Studio 2017
+
+configuration: Release
+
+platform: Any CPU
+
+assembly_info:
+  patch: true
+  file: '**\AssemblyInfo.*'
+  assembly_version: '{version}.0'
+  assembly_file_version: '{version}.0'
+  assembly_informational_version: '{version}.0'
+
+build:
+  project: LibForge/LibForge.sln
+  parallel: true
+  verbosity: minimal
+
+after_build:
+ - >
+   7z a LibForge-%APPVEYOR_BUILD_VERSION%.zip 
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\ForgeTool.exe
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\LibForge.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\MidiCS.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\GameArchives.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\DtxCS.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\ForgeToolGUI.exe
+   %APPVEYOR_BUILD_FOLDER%\files-in-DLC-packages.md.md
+   %APPVEYOR_BUILD_FOLDER%\README.md
+   %APPVEYOR_BUILD_FOLDER%\LICENSE.txt
+artifacts:
+- path: LibForge-%APPVEYOR_BUILD_VERSION%.zip
