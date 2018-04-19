@@ -28,7 +28,7 @@
     /// </summary>
     private void InitializeComponent()
     {
-      this.treeView1 = new System.Windows.Forms.TreeView();
+      this.fileTreeView = new System.Windows.Forms.TreeView();
       this.menuStrip1 = new System.Windows.Forms.MenuStrip();
       this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -44,6 +44,8 @@
       this.tabPage1 = new System.Windows.Forms.TabPage();
       this.pictureBox1 = new System.Windows.Forms.PictureBox();
       this.tabControl1 = new System.Windows.Forms.TabControl();
+      this.tabPage5 = new System.Windows.Forms.TabPage();
+      this.treeView1 = new System.Windows.Forms.TreeView();
       this.menuStrip1.SuspendLayout();
       this.tabPage4.SuspendLayout();
       this.tabPage3.SuspendLayout();
@@ -51,17 +53,18 @@
       this.tabPage1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
       this.tabControl1.SuspendLayout();
+      this.tabPage5.SuspendLayout();
       this.SuspendLayout();
       // 
-      // treeView1
+      // fileTreeView
       // 
-      this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+      this.fileTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-      this.treeView1.Location = new System.Drawing.Point(12, 27);
-      this.treeView1.Name = "treeView1";
-      this.treeView1.Size = new System.Drawing.Size(378, 464);
-      this.treeView1.TabIndex = 0;
-      this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
+      this.fileTreeView.Location = new System.Drawing.Point(12, 27);
+      this.fileTreeView.Name = "fileTreeView";
+      this.fileTreeView.Size = new System.Drawing.Size(378, 464);
+      this.fileTreeView.TabIndex = 0;
+      this.fileTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
       // 
       // menuStrip1
       // 
@@ -208,11 +211,31 @@
       this.tabControl1.Controls.Add(this.tabPage2);
       this.tabControl1.Controls.Add(this.tabPage3);
       this.tabControl1.Controls.Add(this.tabPage4);
+      this.tabControl1.Controls.Add(this.tabPage5);
       this.tabControl1.Location = new System.Drawing.Point(396, 27);
       this.tabControl1.Name = "tabControl1";
       this.tabControl1.SelectedIndex = 0;
       this.tabControl1.Size = new System.Drawing.Size(404, 464);
       this.tabControl1.TabIndex = 3;
+      // 
+      // tabPage5
+      // 
+      this.tabPage5.Controls.Add(this.treeView1);
+      this.tabPage5.Location = new System.Drawing.Point(4, 22);
+      this.tabPage5.Name = "tabPage5";
+      this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+      this.tabPage5.Size = new System.Drawing.Size(396, 438);
+      this.tabPage5.TabIndex = 4;
+      this.tabPage5.Text = "RBMid";
+      this.tabPage5.UseVisualStyleBackColor = true;
+      // 
+      // treeView1
+      // 
+      this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.treeView1.Location = new System.Drawing.Point(3, 3);
+      this.treeView1.Name = "treeView1";
+      this.treeView1.Size = new System.Drawing.Size(390, 432);
+      this.treeView1.TabIndex = 0;
       // 
       // ArkFileBrowser
       // 
@@ -220,7 +243,7 @@
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(812, 503);
       this.Controls.Add(this.tabControl1);
-      this.Controls.Add(this.treeView1);
+      this.Controls.Add(this.fileTreeView);
       this.Controls.Add(this.menuStrip1);
       this.MainMenuStrip = this.menuStrip1;
       this.Name = "ArkFileBrowser";
@@ -236,6 +259,7 @@
       this.tabPage1.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
       this.tabControl1.ResumeLayout(false);
+      this.tabPage5.ResumeLayout(false);
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -243,7 +267,7 @@
 
     #endregion
 
-    private System.Windows.Forms.TreeView treeView1;
+    private System.Windows.Forms.TreeView fileTreeView;
     private System.Windows.Forms.MenuStrip menuStrip1;
     private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
@@ -259,6 +283,8 @@
     private System.Windows.Forms.TabPage tabPage1;
     private System.Windows.Forms.PictureBox pictureBox1;
     private System.Windows.Forms.TabControl tabControl1;
+    private System.Windows.Forms.TabPage tabPage5;
+    private System.Windows.Forms.TreeView treeView1;
   }
 }
 

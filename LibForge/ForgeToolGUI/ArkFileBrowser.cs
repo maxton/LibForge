@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using LibForge.Mesh;
+using LibForge.Midi;
 using LibForge.SongData;
 using LibForge.Texture;
 
@@ -54,14 +55,14 @@ namespace ForgeToolGUI
           nodes.Add(node);
         }
       }
-      AddNodes(state.root, treeView1.Nodes);
+      AddNodes(state.root, fileTreeView.Nodes);
       state.Loaded = true;
     }
 
     private void Unload()
     {
       if (!state.Loaded) return;
-      treeView1.Nodes.Clear();
+      fileTreeView.Nodes.Clear();
       state.root = null;
       if (state.ark != null)
       {
@@ -107,7 +108,7 @@ namespace ForgeToolGUI
               pictureBox1.Width = tex.Mipmaps[0].Width;
               pictureBox1.Height = tex.Mipmaps[0].Height;
               tabControl1.SelectTab(0);
-              treeView1.Select();
+              fileTreeView.Select();
               try
               {
                 pictureBox1.Image = TextureConverter.ToBitmap(tex, 0);
@@ -124,7 +125,7 @@ namespace ForgeToolGUI
             {
               var data = DtxCS.DTX.FromDtb(s);
               tabControl1.SelectTab(1);
-              treeView1.Select();
+              fileTreeView.Select();
               var sb = new StringBuilder();
               foreach (var x in data.Children)
               {
@@ -139,7 +140,7 @@ namespace ForgeToolGUI
             using (var r = new System.IO.StreamReader(s))
             {
               tabControl1.SelectTab(1);
-              treeView1.Select();
+              fileTreeView.Select();
               dataTextBox.Text = r.ReadToEnd();
             }
           }
@@ -150,7 +151,7 @@ namespace ForgeToolGUI
               var songData = SongDataReader.ReadStream(s);
               songDataInspector1.UpdateValues(songData);
               tabControl1.SelectTab(2);
-              treeView1.Select();
+              fileTreeView.Select();
             }
           }
           else if(i.Name.Contains(".fbx"))
@@ -160,11 +161,69 @@ namespace ForgeToolGUI
               var mesh = HxMeshReader.ReadStream(s);
               meshTextBox.Text = HxMeshConverter.ToObj(mesh);
               tabControl1.SelectTab(3);
-              treeView1.Select();
+              fileTreeView.Select();
+            }
+          }
+          else if(i.Name.Contains(".rbmid_"))
+          {
+            using (var s = i.GetStream())
+            {
+              var rbmid = RBMidReader.ReadStream(s);
+              treeView1.Nodes.Clear();
+              AddObjectNodes(rbmid, treeView1.Nodes);
+              tabControl1.SelectTab(4);
+              fileTreeView.Select();
             }
           }
           break;
       }
+    }
+
+    void AddObjectNodes(object obj, TreeNodeCollection nodes)
+    {
+      if (obj == null) return;
+      var fields = obj.GetType().GetFields();
+      foreach(var f in fields)
+      {
+        if (f.IsLiteral) continue;
+        if (f.FieldType.IsPrimitive || f.FieldType == typeof(string))
+        {
+          nodes.Add(f.Name + " = " + f.GetValue(obj).ToString());
+        }
+        else if(f.FieldType.IsArray)
+        {
+          AddArrayNodes(f.GetValue(obj) as Array, f.Name, nodes);
+        }
+        else
+        {
+          var node = new TreeNode(f.Name);
+          AddObjectNodes(f.GetValue(obj), node.Nodes);
+          nodes.Add(node);
+        }
+      }
+    }
+
+    void AddArrayNodes(Array arr, string name, TreeNodeCollection nodes)
+    {
+      var node = new TreeNode($"{name} ({arr.Length})");
+      var eType = arr.GetType().GetElementType();
+      if (eType.IsPrimitive || eType == typeof(string))
+        for (var i = 0; i < arr.Length; i++)
+        {
+          var n = new TreeNode($"{name}[{i}] = {arr.GetValue(i)}");
+          node.Nodes.Add(n);
+        }
+      else for (var i = 0; i < arr.Length; i++)
+        {
+          var myName = $"{name}[{i}]";
+          var n = new TreeNode(myName);
+          node.Nodes.Add(n);
+          if (eType.IsArray)
+            AddArrayNodes(arr.GetValue(i) as Array, myName, n.Nodes);
+          else
+            AddObjectNodes(arr.GetValue(i), n.Nodes);
+        }
+      nodes.Add(node);
     }
 
     private void toolStripMenuItem1_Click(object sender, EventArgs e)
