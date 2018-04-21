@@ -216,12 +216,14 @@ namespace ForgeToolGUI
       else for (var i = 0; i < arr.Length; i++)
         {
           var myName = $"{name}[{i}]";
-          var n = new TreeNode(myName);
-          node.Nodes.Add(n);
           if (eType.IsArray)
-            AddArrayNodes(arr.GetValue(i) as Array, myName, n.Nodes);
+            AddArrayNodes(arr.GetValue(i) as Array, myName, node.Nodes);
           else
+          {
+            var n = new TreeNode(myName);
+            node.Nodes.Add(n);
             AddObjectNodes(arr.GetValue(i), n.Nodes);
+          }
         }
       nodes.Add(node);
     }
