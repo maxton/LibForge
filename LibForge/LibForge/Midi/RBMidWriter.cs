@@ -42,9 +42,9 @@ namespace LibForge.Midi
       Write(r.UnknownZeroByte);
       Write(r.PreviewStartMillis);
       Write(r.PreviewEndMillis);
-      Write(r.GuitarHandmap, WriteHandMap);
+      Write(r.HandMaps, x => Write(x, WriteMap));
       Write(r.GuitarLeftHandPos, WriteHandPos);
-      Write(r.Unktrack, WriteUnktrack);
+      Write(r.StrumMaps, x => Write(x, WriteMap));
       // begin weirdness
       Write(r.MarkupSoloNotes1, WriteSoloNotes);
       Write(r.MarkupLoop1, WriteTwoTicks);
@@ -231,13 +231,10 @@ namespace LibForge.Midi
       Write(obj.Unknown3);
       Write(obj.Unknown4);
     }
-    private void WriteHandMap(RBMid.HANDMAP obj)
+    private void WriteMap(RBMid.MAP obj)
     {
-      Write(obj.Maps, x =>
-      {
-        Write(x.StartTime);
-        Write(x.Map);
-      });
+      Write(obj.StartTime);
+      Write(obj.Map);
     }
     private void WriteHandPos(RBMid.HANDPOS obj)
     {
@@ -247,14 +244,6 @@ namespace LibForge.Midi
         Write(x.Length);
         Write(x.Position);
         Write(x.Unknown);
-      });
-    }
-    private void WriteUnktrack(RBMid.UNKTRACK obj)
-    {
-      Write(obj.Data, data =>
-      {
-        Write(data.FloatData);
-        Write(data.IntData);
       });
     }
     private void WriteSoloNotes(RBMid.MARKUP_SOLO_NOTES obj)

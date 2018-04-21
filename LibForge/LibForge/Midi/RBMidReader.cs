@@ -52,9 +52,9 @@ namespace LibForge.Midi
       r.UnknownZeroByte = Check(Byte(), (byte)0);
       r.PreviewStartMillis = Float();
       r.PreviewEndMillis = Float();
-      r.GuitarHandmap = Arr(ReadHandMap, numTracks);
+      r.HandMaps = Arr(() => Arr(ReadMap), numTracks);
       r.GuitarLeftHandPos = Arr(ReadHandPos, numTracks);
-      r.Unktrack = Arr(ReadUnkTrack, numTracks);
+      r.StrumMaps = Arr(() => Arr(ReadMap), numTracks);
 
       r.MarkupSoloNotes1 = Arr(ReadMarkupSoloNotes);
       r.MarkupLoop1 = Arr(ReadTwoTicks);
@@ -240,13 +240,10 @@ namespace LibForge.Midi
       Unknown3 = Float(),
       Unknown4 = Float(),
     };
-    private RBMid.HANDMAP ReadHandMap() => new RBMid.HANDMAP
+    private RBMid.MAP ReadMap() => new RBMid.MAP
     {
-      Maps = Arr(() => new RBMid.HANDMAP.MAP
-      {
-        StartTime = Float(),
-        Map = Int()
-      })
+      StartTime = Float(),
+      Map = Int()
     };
     private RBMid.HANDPOS ReadHandPos() => new RBMid.HANDPOS
     {
@@ -256,14 +253,6 @@ namespace LibForge.Midi
         Length = Float(),
         Position = Int(),
         Unknown = Byte()
-      })
-    };
-    private RBMid.UNKTRACK ReadUnkTrack() => new RBMid.UNKTRACK
-    {
-      Data = Arr(() => new RBMid.UNKTRACK.DATA
-      {
-        FloatData = Float(),
-        IntData = Int()
       })
     };
     private RBMid.MARKUP_SOLO_NOTES ReadMarkupSoloNotes() => new RBMid.MARKUP_SOLO_NOTES

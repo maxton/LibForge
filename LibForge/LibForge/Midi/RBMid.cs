@@ -209,14 +209,10 @@ namespace LibForge.Midi
       public float Unknown3;
       public float Unknown4;
     }
-    public struct HANDMAP
+    public struct MAP
     {
-      public struct MAP
-      {
-        public float StartTime;
-        public int Map;
-      }
-      public MAP[] Maps;
+      public float StartTime;
+      public int Map;
     }
     public struct HANDPOS
     {
@@ -228,15 +224,6 @@ namespace LibForge.Midi
         public byte Unknown;
       }
       public POS[] Events;
-    }
-    public struct UNKTRACK
-    {
-      public struct DATA
-      {
-        public float FloatData;
-        public int IntData;
-      }
-      public DATA[] Data;
     }
     public struct MARKUP_SOLO_NOTES
     {
@@ -364,9 +351,9 @@ namespace LibForge.Midi
     public byte UnknownZeroByte;
     public float PreviewStartMillis;
     public float PreviewEndMillis;
-    public HANDMAP[] GuitarHandmap;
+    public MAP[][] HandMaps;
     public HANDPOS[] GuitarLeftHandPos;
-    public UNKTRACK[] Unktrack;
+    public MAP[][] StrumMaps;
 
     public MARKUP_SOLO_NOTES[] MarkupSoloNotes1;
     public TWOTICKS[] MarkupLoop1;
@@ -566,24 +553,28 @@ namespace LibForge.Midi
       ?? Check(other.UnknownNegOne, UnknownNegOne, nameof(UnknownNegOne))
       ?? Check(other.UnknownHundred, UnknownHundred, nameof(UnknownHundred))
       ?? Check(other.Unknown4, Unknown4, nameof(Unknown4), (their, my) => null)
-      ?? Check(other.Unknown5, Unknown5, nameof(Unknown5), (their, my) => null)
+      ?? Check(other.Unknown5, Unknown5, nameof(Unknown5), (their, my)
+           => Check(their.Unknown1, my.Unknown1, nameof(my.Unknown1))
+           ?? Check(their.Unknown2, my.Unknown2, nameof(my.Unknown2))
+           /* TODO: where the heckin heck are those floats from? */)
       ?? Check(other.Unknown6, Unknown6, nameof(Unknown6))
       ?? Check(other.NumPlayableTracks, NumPlayableTracks, nameof(NumPlayableTracks))
       ?? Check(other.FinalEventTick, FinalEventTick, nameof(FinalEventTick))
       ?? Check(other.UnknownZeroByte, UnknownZeroByte, nameof(UnknownZeroByte))
       ?? CheckFloats(other.PreviewStartMillis, PreviewStartMillis, nameof(PreviewStartMillis))
       ?? CheckFloats(other.PreviewEndMillis, PreviewEndMillis, nameof(PreviewEndMillis))
-      ?? Check(other.GuitarHandmap, GuitarHandmap, nameof(GuitarHandmap), (their, my) 
-           => Check(their.Maps, my.Maps, nameof(my.Maps), (their2, my2)
-                => Check(their2.StartTime, my2.StartTime, nameof(my2.StartTime))
-                ?? Check(their2.Map, my2.Map, nameof(my2.Map))))
+      ?? Check(other.HandMaps, HandMaps, nameof(HandMaps), (their, my) 
+           => Check(their.StartTime, my.StartTime, nameof(my.StartTime))
+           ?? Check(their.Map, my.Map, nameof(my.Map)))
       ?? Check(other.GuitarLeftHandPos, GuitarLeftHandPos, nameof(GuitarLeftHandPos), (their, my)
            => Check(their.Events, my.Events, nameof(my.Events), (their2, my2)
                 => CheckFloats(their2.StartTime, my2.StartTime, nameof(my2.StartTime), 0.0002f)
                 ?? CheckFloats(their2.Length, my2.Length, nameof(my2.Length), 0.2f)
                 ?? Check(their2.Position, my2.Position, nameof(my2.Position))
                 ?? Check(their2.Unknown, my2.Unknown, nameof(my2.Unknown))))
-      ?? Check(other.Unktrack, Unktrack, nameof(Unktrack), (their, my) => null)
+      ?? Check(other.StrumMaps, StrumMaps, nameof(StrumMaps), (their, my)
+                => CheckFloats(their.StartTime, my.StartTime, nameof(my.StartTime))
+                ?? Check(their.Map, my.Map, nameof(my.Map)))
       ?? Check(other.MarkupSoloNotes1, MarkupSoloNotes1, nameof(MarkupSoloNotes1), CheckSoloNotes)
       ?? Check(other.MarkupLoop1, MarkupLoop1, nameof(MarkupLoop1), CheckTwoTick)
       ?? Check(other.MarkupChords1, MarkupChords1, nameof(MarkupChords1), (their, my)

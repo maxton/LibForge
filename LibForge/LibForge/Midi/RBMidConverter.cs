@@ -34,9 +34,9 @@ namespace LibForge.Midi
       private List<RBMid.VOCALTRACK> VocalTracks;
       private List<RBMid.UNKSTRUCT1> Unknown4;
       private List<RBMid.UNKSTRUCT2> Unknown5;
-      private List<RBMid.HANDMAP> HandMap;
+      private List<RBMid.MAP[]> HandMap;
       private List<RBMid.HANDPOS> HandPos;
-      private List<RBMid.UNKTRACK> Unktrack;
+      private List<RBMid.MAP[]> strumMaps;
       private List<RBMid.MARKUP_SOLO_NOTES> MarkupSoloNotes1, MarkupSoloNotes2, MarkupSoloNotes3;
       private List<RBMid.TWOTICKS> TwoTicks1, TwoTicks2;
       private List<RBMid.MARKUPCHORD> MarkupChords1;
@@ -87,9 +87,9 @@ namespace LibForge.Midi
         VocalTracks = new List<RBMid.VOCALTRACK>();
         Unknown4 = new List<RBMid.UNKSTRUCT1>();
         Unknown5 = new List<RBMid.UNKSTRUCT2>();
-        HandMap = new List<RBMid.HANDMAP>();
+        HandMap = new List<RBMid.MAP[]>();
         HandPos = new List<RBMid.HANDPOS>();
-        Unktrack = new List<RBMid.UNKTRACK>();
+        strumMaps = new List<RBMid.MAP[]>();
         MarkupSoloNotes1 = new List<RBMid.MARKUP_SOLO_NOTES>();
         TwoTicks1 = new List<RBMid.TWOTICKS>();
         MarkupChords1 = new List<RBMid.MARKUPCHORD>();
@@ -166,9 +166,9 @@ namespace LibForge.Midi
           VocalTracks = VocalTracks.ToArray(),
           Unknown4 = Unknown4.ToArray(),
           Unknown5 = Unknown5.ToArray(),
-          GuitarHandmap = HandMap.ToArray(),
+          HandMaps = HandMap.ToArray(),
           GuitarLeftHandPos = HandPos.ToArray(),
-          Unktrack = Unktrack.ToArray(),
+          StrumMaps = strumMaps.ToArray(),
           MarkupSoloNotes1 = MarkupSoloNotes1.ToArray(),
           MarkupLoop1 = TwoTicks1.ToArray(),
           MarkupChords1 = MarkupChords1.ToArray(),
@@ -482,12 +482,9 @@ namespace LibForge.Midi
             sections, sections, sections, sections
           }
         });
-        HandMap.Add(new RBMid.HANDMAP());
+        HandMap.Add(new RBMid.MAP[0]);
         HandPos.Add(new RBMid.HANDPOS());
-        Unktrack.Add(new RBMid.UNKTRACK
-        {
-
-        });
+        strumMaps.Add(new RBMid.MAP[0]);
       }
 
       private static Dictionary<string, int> HandMaps = new Dictionary<string, int>
@@ -504,6 +501,13 @@ namespace LibForge.Midi
         {"HandMap_Solo", 9 },
       };
 
+      private static Dictionary<string, int> StrumMaps = new Dictionary<string, int>
+      {
+        {"StrumMap_Default", 0 },
+        {"StrumMap_Pick", 1 },
+        {"StrumMap_SlapBass", 2 },
+      };
+
       const byte TrillMarker = 127;
       const byte TremoloMarker = 126;
       const byte LeftHandEnd = 59;
@@ -516,11 +520,12 @@ namespace LibForge.Midi
         RBMid.GEMTRACK.GEM[] chords = new RBMid.GEMTRACK.GEM[4];
         var trills = new List<RBMid.GTRTRILLS.TRILL>();
         var trill = new RBMid.GTRTRILLS.TRILL();
-        var maps = new List<RBMid.HANDMAP.MAP>();
+        var maps = new List<RBMid.MAP>();
         var left_hand = new List<RBMid.HANDPOS.POS>();
         var overdrive_markers = new List<RBMid.SECTIONS.SECTION>();
         var solo_markers = new List<RBMid.SECTIONS.SECTION>();
         var tremolos = new List<RBMid.LANEMARKER.MARKER>();
+        var strummaps = new List<RBMid.MAP>();
         bool AddGem(MidiNote e)
         {
           var key = e.Key;
@@ -727,11 +732,24 @@ namespace LibForge.Midi
               if (match.Success)
               {
                 var mapType = HandMaps[match.Groups[1].Value];
-                maps.Add(new RBMid.HANDMAP.MAP
+                maps.Add(new RBMid.MAP
                 {
                   Map = mapType,
                   StartTime = (float)e.StartTime
                 });
+                break;
+              }
+              regex = new System.Text.RegularExpressions.Regex("\\[map (StrumMap_[A-Za-z]+)\\]");
+              match = regex.Match(e.Text);
+              if(match.Success)
+              {
+                var mapType = StrumMaps[match.Groups[1].Value];
+                strummaps.Add(new RBMid.MAP
+                {
+                  StartTime = (float)e.StartTime,
+                  Map = mapType
+                });
+                break;
               }
               break;
           }
@@ -807,18 +825,12 @@ namespace LibForge.Midi
             sections, sections, sections, sections
           }
         });
-        HandMap.Add(new RBMid.HANDMAP
-        {
-          Maps = maps.ToArray()
-        });
+        HandMap.Add(maps.ToArray());
         HandPos.Add(new RBMid.HANDPOS
         {
           Events = left_hand.ToArray()
         });
-        Unktrack.Add(new RBMid.UNKTRACK
-        {
-
-        });
+        strumMaps.Add(strummaps.ToArray());
       }
 
       private void HandleRealKeysXTrk(MidiTrackProcessed track)
@@ -867,9 +879,9 @@ namespace LibForge.Midi
         {
 
         });
-        HandMap.Add(new RBMid.HANDMAP());
+        HandMap.Add(new RBMid.MAP[0]);
         HandPos.Add(new RBMid.HANDPOS());
-        Unktrack.Add(new RBMid.UNKTRACK());
+        strumMaps.Add(new RBMid.MAP[0]);
       }
 
       private void HandleKeysAnimTrk(MidiTrackProcessed track)
@@ -1161,9 +1173,9 @@ namespace LibForge.Midi
           Percussion = percussions.ToArray(),
           Tacets = tacets.ToArray()
         });
-        HandMap.Add(new RBMid.HANDMAP());
+        HandMap.Add(new RBMid.MAP[0]);
         HandPos.Add(new RBMid.HANDPOS());
-        Unktrack.Add(new RBMid.UNKTRACK());
+        strumMaps.Add(new RBMid.MAP[0]);
       }
 
       private void HandleEventsTrk(MidiTrackProcessed track)

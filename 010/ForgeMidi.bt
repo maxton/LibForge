@@ -381,11 +381,11 @@ typedef struct {
 typedef struct {
     int count;
     struct {
-        float flt;
-        int i;
-    } data[count]<optimize=false>;
-} UNKTRACK<read=UNKTRACK_read>;
-string UNKTRACK_read(UNKTRACK& u)
+        float Time;
+        int Map;
+    } maps[count]<optimize=false>;
+} STRUMMAP<read=STRUMMAP_read>;
+string STRUMMAP_read(STRUMMAP& u)
 {
     string ret;
     SPrintf(ret, "%d", u.count);
@@ -574,9 +574,9 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int num_left_hand_tracks;
     Assert(num_left_hand_tracks == num_lyric_tracks);
     HANDPOS left_hand_tracks[num_left_hand_tracks]<optimize=false>;
-    int num_unk_tracks;
-    Assert(num_unk_tracks == num_lyric_tracks);
-    UNKTRACK unktracks[num_unk_tracks]<optimize=false>;
+    int num_strummap_tracks;
+    Assert(num_strummap_tracks == num_lyric_tracks);
+    STRUMMAP strum_maps[num_strummap_tracks]<optimize=false>;
 
     // =============================================
     // Begin confusing section
