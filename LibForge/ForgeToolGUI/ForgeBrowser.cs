@@ -13,20 +13,20 @@ using LibForge.Texture;
 
 namespace ForgeToolGUI
 {
-  public partial class ArkFileBrowser : Form
+  public partial class ForgeBrowser : Form
   {
-    public ArkFileBrowserState state;
-    public ArkFileBrowser()
+    public ForgeBrowserState state;
+    public ForgeBrowser()
     {
-      state = new ArkFileBrowserState();
+      state = new ForgeBrowserState();
       InitializeComponent();
     }
 
-    private void LoadArk(string filename)
+    private void LoadPackage(string filename)
     {
       if (state.Loaded) Unload();
-      state.ark = GameArchives.Ark.ArkPackage.OpenFile(GameArchives.Util.LocalFile(filename));
-      state.root = state.ark.RootDirectory;
+      state.pkg = GameArchives.PackageReader.ReadPackageFromFile(GameArchives.Util.LocalFile(filename));
+      state.root = state.pkg.RootDirectory;
       FinishLoad();
     }
 
@@ -64,10 +64,10 @@ namespace ForgeToolGUI
       if (!state.Loaded) return;
       fileTreeView.Nodes.Clear();
       state.root = null;
-      if (state.ark != null)
+      if (state.pkg != null)
       {
-        state.ark.Dispose();
-        state.ark = null;
+        state.pkg.Dispose();
+        state.pkg = null;
       }
       closeToolStripMenuItem.Enabled = false;
       state.Loaded = false;
@@ -76,10 +76,10 @@ namespace ForgeToolGUI
     private void openToolStripMenuItem_Click(object sender, EventArgs e)
     {
       OpenFileDialog of = new OpenFileDialog();
-      of.Filter = "Ark Header (*.hdr)|*.hdr";
+      of.Filter = "Ark Header (*.hdr)|*.hdr|PFS Image (*.dat)|*.dat";
       if(of.ShowDialog(this) == DialogResult.OK)
       {
-        LoadArk(of.FileName);
+        LoadPackage(of.FileName);
       }
     }
 
@@ -239,10 +239,10 @@ namespace ForgeToolGUI
       }
     }
   }
-  public class ArkFileBrowserState
+  public class ForgeBrowserState
   {
     public bool Loaded = false;
-    public GameArchives.Ark.ArkPackage ark;
+    public GameArchives.AbstractPackage pkg;
     public GameArchives.IDirectory root;
   }
 }

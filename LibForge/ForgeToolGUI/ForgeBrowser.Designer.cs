@@ -1,6 +1,6 @@
 ﻿namespace ForgeToolGUI
 {
-  partial class ArkFileBrowser
+  partial class ForgeBrowser
   {
     /// <summary>
     /// Required designer variable.
@@ -237,7 +237,7 @@
       this.treeView1.Size = new System.Drawing.Size(390, 432);
       this.treeView1.TabIndex = 0;
       // 
-      // ArkFileBrowser
+      // ForgeBrowser
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -246,9 +246,9 @@
       this.Controls.Add(this.fileTreeView);
       this.Controls.Add(this.menuStrip1);
       this.MainMenuStrip = this.menuStrip1;
-      this.Name = "ArkFileBrowser";
+      this.Name = "ForgeBrowser";
       this.ShowIcon = false;
-      this.Text = "Ark File Browser";
+      this.Text = "Forge Browser";
       this.menuStrip1.ResumeLayout(false);
       this.menuStrip1.PerformLayout();
       this.tabPage4.ResumeLayout(false);

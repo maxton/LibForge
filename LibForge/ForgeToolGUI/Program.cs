@@ -15,7 +15,7 @@ namespace ForgeToolGUI
     {
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
-      Application.Run(new ArkFileBrowser());
+      Application.Run(new ForgeBrowser());
     }
   }
 }
