@@ -33,12 +33,14 @@ namespace LibForge.Midi
       private List<RBMid.SECTIONS> OverdriveSoloSections;
       private List<RBMid.VOCALTRACK> VocalTracks;
       private List<RBMid.UNKSTRUCT1> Unknown4;
-      private List<RBMid.UNKSTRUCT2> Unknown5;
+      private List<RBMid.VocalTrackRange> VocalRanges;
+      // TODO: multiple ranges? that's probably a thing?
+      private RBMid.VocalTrackRange theVocalRange = new RBMid.VocalTrackRange { LowNote = 100, HighNote = 0 };
       private List<RBMid.MAP[]> HandMap;
       private List<RBMid.HANDPOS[]> HandPos;
       private List<RBMid.MAP[]> strumMaps;
       private List<RBMid.MARKUP_SOLO_NOTES> MarkupSoloNotes1, MarkupSoloNotes2, MarkupSoloNotes3;
-      private List<RBMid.TWOTICKS> TwoTicks1, TwoTicks2;
+      private List<RBMid.TWOTICKS> SoloLoops1, SoloLoops2;
       private List<RBMid.MARKUPCHORD> MarkupChords1;
       private List<RBMid.TEMPO> Tempos;
       private List<RBMid.TIMESIG> TimeSigs;
@@ -86,16 +88,16 @@ namespace LibForge.Midi
         OverdriveSoloSections = new List<RBMid.SECTIONS>();
         VocalTracks = new List<RBMid.VOCALTRACK>();
         Unknown4 = new List<RBMid.UNKSTRUCT1>();
-        Unknown5 = new List<RBMid.UNKSTRUCT2>();
+        VocalRanges = new List<RBMid.VocalTrackRange>();
         HandMap = new List<RBMid.MAP[]>();
         HandPos = new List<RBMid.HANDPOS[]>();
         strumMaps = new List<RBMid.MAP[]>();
         MarkupSoloNotes1 = new List<RBMid.MARKUP_SOLO_NOTES>();
-        TwoTicks1 = new List<RBMid.TWOTICKS>();
+        SoloLoops1 = new List<RBMid.TWOTICKS>();
         MarkupChords1 = new List<RBMid.MARKUPCHORD>();
         MarkupSoloNotes2 = new List<RBMid.MARKUP_SOLO_NOTES>();
         MarkupSoloNotes3 = new List<RBMid.MARKUP_SOLO_NOTES>();
-        TwoTicks2 = new List<RBMid.TWOTICKS>();
+        SoloLoops2 = new List<RBMid.TWOTICKS>();
         Tempos = new List<RBMid.TEMPO>();
         TimeSigs = new List<RBMid.TIMESIG>();
         Beats = new List<RBMid.BEAT>();
@@ -143,14 +145,8 @@ namespace LibForge.Midi
           if (lastMeasureTick2 >= FinalTick) break;
           MeasureTicks.Add(lastMeasureTick2);
         }
-        Unknown5.Add(new RBMid.UNKSTRUCT2
-        {
-          Unknown1 = 0,
-          Unknown2 = 0,
-          Unknown3 = 40f,
-          Unknown4 = 76f
-        });
         processedTracks.ForEach(ProcessTrack);
+        VocalRanges.Add(theVocalRange);
         rb = new RBMid
         {
           Format = 0x10,
@@ -165,16 +161,16 @@ namespace LibForge.Midi
           OverdriveSoloSections = OverdriveSoloSections.ToArray(),
           VocalTracks = VocalTracks.ToArray(),
           Unknown4 = Unknown4.ToArray(),
-          Unknown5 = Unknown5.ToArray(),
+          VocalRange = VocalRanges.ToArray(),
           HandMaps = HandMap.ToArray(),
           GuitarLeftHandPos = HandPos.ToArray(),
           StrumMaps = strumMaps.ToArray(),
           MarkupSoloNotes1 = MarkupSoloNotes1.ToArray(),
-          MarkupLoop1 = TwoTicks1.ToArray(),
+          MarkupLoop1 = SoloLoops1.ToArray(),
           MarkupChords1 = MarkupChords1.ToArray(),
           MarkupSoloNotes2 = MarkupSoloNotes2.ToArray(),
           MarkupSoloNotes3 = MarkupSoloNotes3.ToArray(),
-          MarkupLoop2 = TwoTicks2.ToArray(),
+          MarkupLoop2 = SoloLoops2.ToArray(),
           MidiTracks = mf.Tracks.ToArray(),
           Tempos = Tempos.ToArray(),
           TimeSigs = TimeSigs.ToArray(),
@@ -1086,6 +1082,8 @@ namespace LibForge.Midi
                   Portamento = lyricCleaned == "+",
                   Flag9 = true
                 });
+                if (theVocalRange.HighNote < e.Key) theVocalRange.HighNote = e.Key;
+                if (theVocalRange.LowNote > e.Key) theVocalRange.LowNote = e.Key;
               }
               break;
             case MidiText e:
@@ -1308,12 +1306,12 @@ namespace LibForge.Midi
               {
                 var loop_measures =int.Parse(match.Groups[1].Value);
                 var loop_end = MeasureTicks[loop_measures - 1];
-                TwoTicks1.Add(new RBMid.TWOTICKS
+                SoloLoops1.Add(new RBMid.TWOTICKS
                 {
                   StartTick = e.StartTicks,
                   EndTick = loop_end
                 });
-                TwoTicks2.Add(new RBMid.TWOTICKS
+                SoloLoops2.Add(new RBMid.TWOTICKS
                 {
                   StartTick = e.StartTicks,
                   EndTick = loop_end

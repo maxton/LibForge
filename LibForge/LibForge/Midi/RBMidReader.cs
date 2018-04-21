@@ -41,7 +41,7 @@ namespace LibForge.Midi
       r.UnknownNegOne = Check(Int(), -1);
       r.UnknownHundred = Check(Float(), 100f);
       r.Unknown4 = Arr(ReadUnkstruct1);
-      r.Unknown5 = Arr(ReadUnkstruct2);
+      r.VocalRange = Arr(ReadVocalTrackRange);
       r.Unknown6 = Int();
       r.NumPlayableTracks = Check(UInt(), numTracks);
       r.FinalEventTick = UInt();
@@ -233,12 +233,12 @@ namespace LibForge.Midi
       Tick = UInt(),
       FloatData = Float()
     };
-    private RBMid.UNKSTRUCT2 ReadUnkstruct2() => new RBMid.UNKSTRUCT2
+    private RBMid.VocalTrackRange ReadVocalTrackRange() => new RBMid.VocalTrackRange
     {
-      Unknown1 = Int(),
-      Unknown2 = Int(),
-      Unknown3 = Float(),
-      Unknown4 = Float(),
+      StartMillis = Float(),
+      StartTicks = Int(),
+      LowNote = Float(),
+      HighNote = Float(),
     };
     private RBMid.MAP ReadMap() => new RBMid.MAP
     {

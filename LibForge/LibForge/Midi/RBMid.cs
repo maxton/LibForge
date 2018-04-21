@@ -202,12 +202,12 @@ namespace LibForge.Midi
       public uint Tick;
       public float FloatData;
     }
-    public struct UNKSTRUCT2
+    public struct VocalTrackRange
     {
-      public int Unknown1;
-      public int Unknown2;
-      public float Unknown3;
-      public float Unknown4;
+      public float StartMillis;
+      public int StartTicks;
+      public float LowNote;
+      public float HighNote;
     }
     public struct MAP
     {
@@ -338,7 +338,7 @@ namespace LibForge.Midi
     public int UnknownNegOne;
     public float UnknownHundred;
     public UNKSTRUCT1[] Unknown4;
-    public UNKSTRUCT2[] Unknown5;
+    public VocalTrackRange[] VocalRange;
     // Takes values 90, 92, 125, 130, 170, 250
     public int Unknown6;
     public uint NumPlayableTracks;
@@ -549,10 +549,12 @@ namespace LibForge.Midi
       ?? Check(other.UnknownNegOne, UnknownNegOne, nameof(UnknownNegOne))
       ?? Check(other.UnknownHundred, UnknownHundred, nameof(UnknownHundred))
       ?? Check(other.Unknown4, Unknown4, nameof(Unknown4), (their, my) => null)
-      ?? Check(other.Unknown5, Unknown5, nameof(Unknown5), (their, my)
-           => Check(their.Unknown1, my.Unknown1, nameof(my.Unknown1))
-           ?? Check(their.Unknown2, my.Unknown2, nameof(my.Unknown2))
-           /* TODO: where the heckin heck are those floats from? */)
+      ?? Check(other.VocalRange, VocalRange, nameof(VocalRange), (their, my)
+            // TODO: Which one is ticks and which one is time?
+           => Check(their.StartMillis, my.StartMillis, nameof(my.StartMillis))
+           ?? Check(their.StartTicks, my.StartTicks, nameof(my.StartTicks))
+           ?? Check(their.LowNote, my.LowNote, nameof(my.LowNote))
+           ?? Check(their.HighNote, my.HighNote, nameof(my.HighNote)))
       ?? Check(other.Unknown6, Unknown6, nameof(Unknown6))
       ?? Check(other.NumPlayableTracks, NumPlayableTracks, nameof(NumPlayableTracks))
       ?? Check(other.FinalEventTick, FinalEventTick, nameof(FinalEventTick))

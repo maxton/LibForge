@@ -31,7 +31,7 @@ namespace LibForge.Midi
       Write(r.UnknownNegOne);
       Write(r.UnknownHundred);
       Write(r.Unknown4, WriteUnkstruct1);
-      Write(r.Unknown5, WriteUnkstruct2);
+      Write(r.VocalRange, WriteVocalRange);
       Write(r.Unknown6);
       Write(r.NumPlayableTracks);
       Write(r.FinalEventTick);
@@ -224,12 +224,12 @@ namespace LibForge.Midi
       Write(obj.Tick);
       Write(obj.FloatData);
     }
-    private void WriteUnkstruct2(RBMid.UNKSTRUCT2 obj)
+    private void WriteVocalRange(RBMid.VocalTrackRange obj)
     {
-      Write(obj.Unknown1);
-      Write(obj.Unknown2);
-      Write(obj.Unknown3);
-      Write(obj.Unknown4);
+      Write(obj.StartMillis);
+      Write(obj.StartTicks);
+      Write(obj.LowNote);
+      Write(obj.HighNote);
     }
     private void WriteMap(RBMid.MAP obj)
     {
