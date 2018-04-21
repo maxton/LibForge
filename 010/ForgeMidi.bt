@@ -297,40 +297,27 @@ typedef struct {
 } OVERDRIVE;
 
 typedef struct {
+    float start_ms;
+    float length;
+    tick_t start_tick;
+    tick_t length_ticks;
+    int unk_start_note;
+    int unk_end_note;
+    char is_phrase;
+    char is_overdrive;
+    char unused[9]<hidden=true>;
+    float LowNote;
+    float HighNote;
+    char UnknownCount;
+    char UnknownFlag;
+    char unused2[8]<hidden=true>;
+} PHRASE;
+
+typedef struct {
     int num_phrase_markers;
-    struct {
-        float start_ms;
-        float length;
-        tick_t start_tick;
-        tick_t length_ticks;
-        int unk_start_note;
-        int unk_end_note;
-        char is_phrase;
-        char is_overdrive;
-        char unk_flag;
-        char unk_flag;
-        char unk;
-        int unk;
-        int unk;
-        int unk;
-        int unk;
-        int unk;
-        int unk;
-    } phrase_markers[num_phrase_markers] <optimize=false>;
+    PHRASE phrase_markers[num_phrase_markers];
     int num_phrase_markers_2;
-    struct {
-        float start_ms;
-        float length;
-        tick_t start_tick;
-        tick_t length_ticks;
-        int unk_start_note;
-        int unk_end_note;
-        char is_phrase;
-        char is_overdrive;
-        char unk_flag;
-        char unk_flag;
-        char unknown[25];
-    } phrase_markers_2[num_phrase_markers_2] <optimize=false>;
+    PHRASE phrase_markers_2[num_phrase_markers_2];
     int num_notes;
     struct {
         int type;
