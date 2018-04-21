@@ -53,7 +53,7 @@ namespace LibForge.Midi
       r.PreviewStartMillis = Float();
       r.PreviewEndMillis = Float();
       r.HandMaps = Arr(() => Arr(ReadMap), numTracks);
-      r.GuitarLeftHandPos = Arr(ReadHandPos, numTracks);
+      r.GuitarLeftHandPos = Arr(() => Arr(ReadHandPos), numTracks);
       r.StrumMaps = Arr(() => Arr(ReadMap), numTracks);
 
       r.MarkupSoloNotes1 = Arr(ReadMarkupSoloNotes);
@@ -247,13 +247,10 @@ namespace LibForge.Midi
     };
     private RBMid.HANDPOS ReadHandPos() => new RBMid.HANDPOS
     {
-      Events = Arr(() => new RBMid.HANDPOS.POS
-      {
-        StartTime = Float(),
-        Length = Float(),
-        Position = Int(),
-        Unknown = Byte()
-      })
+      StartTime = Float(),
+      Length = Float(),
+      Position = Int(),
+      Unknown = Byte()
     };
     private RBMid.MARKUP_SOLO_NOTES ReadMarkupSoloNotes() => new RBMid.MARKUP_SOLO_NOTES
     {

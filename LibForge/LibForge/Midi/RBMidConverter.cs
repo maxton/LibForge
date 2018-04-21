@@ -35,7 +35,7 @@ namespace LibForge.Midi
       private List<RBMid.UNKSTRUCT1> Unknown4;
       private List<RBMid.UNKSTRUCT2> Unknown5;
       private List<RBMid.MAP[]> HandMap;
-      private List<RBMid.HANDPOS> HandPos;
+      private List<RBMid.HANDPOS[]> HandPos;
       private List<RBMid.MAP[]> strumMaps;
       private List<RBMid.MARKUP_SOLO_NOTES> MarkupSoloNotes1, MarkupSoloNotes2, MarkupSoloNotes3;
       private List<RBMid.TWOTICKS> TwoTicks1, TwoTicks2;
@@ -88,7 +88,7 @@ namespace LibForge.Midi
         Unknown4 = new List<RBMid.UNKSTRUCT1>();
         Unknown5 = new List<RBMid.UNKSTRUCT2>();
         HandMap = new List<RBMid.MAP[]>();
-        HandPos = new List<RBMid.HANDPOS>();
+        HandPos = new List<RBMid.HANDPOS[]>();
         strumMaps = new List<RBMid.MAP[]>();
         MarkupSoloNotes1 = new List<RBMid.MARKUP_SOLO_NOTES>();
         TwoTicks1 = new List<RBMid.TWOTICKS>();
@@ -483,7 +483,7 @@ namespace LibForge.Midi
           }
         });
         HandMap.Add(new RBMid.MAP[0]);
-        HandPos.Add(new RBMid.HANDPOS());
+        HandPos.Add(new RBMid.HANDPOS[0]);
         strumMaps.Add(new RBMid.MAP[0]);
       }
 
@@ -521,7 +521,7 @@ namespace LibForge.Midi
         var trills = new List<RBMid.GTRTRILLS.TRILL>();
         var trill = new RBMid.GTRTRILLS.TRILL();
         var maps = new List<RBMid.MAP>();
-        var left_hand = new List<RBMid.HANDPOS.POS>();
+        var left_hand = new List<RBMid.HANDPOS>();
         var overdrive_markers = new List<RBMid.SECTIONS.SECTION>();
         var solo_markers = new List<RBMid.SECTIONS.SECTION>();
         var tremolos = new List<RBMid.LANEMARKER.MARKER>();
@@ -700,7 +700,7 @@ namespace LibForge.Midi
               }
               else if(e.Key >= LeftHandStart && e.Key <= LeftHandEnd)
               {
-                left_hand.Add(new RBMid.HANDPOS.POS
+                left_hand.Add(new RBMid.HANDPOS
                 {
                   StartTime = (float)e.StartTime,
                   Length = (float)e.Length,
@@ -826,10 +826,7 @@ namespace LibForge.Midi
           }
         });
         HandMap.Add(maps.ToArray());
-        HandPos.Add(new RBMid.HANDPOS
-        {
-          Events = left_hand.ToArray()
-        });
+        HandPos.Add(left_hand.ToArray());
         strumMaps.Add(strummaps.ToArray());
       }
 
@@ -880,7 +877,7 @@ namespace LibForge.Midi
 
         });
         HandMap.Add(new RBMid.MAP[0]);
-        HandPos.Add(new RBMid.HANDPOS());
+        HandPos.Add(new RBMid.HANDPOS[0]);
         strumMaps.Add(new RBMid.MAP[0]);
       }
 
@@ -1174,7 +1171,7 @@ namespace LibForge.Midi
           Tacets = tacets.ToArray()
         });
         HandMap.Add(new RBMid.MAP[0]);
-        HandPos.Add(new RBMid.HANDPOS());
+        HandPos.Add(new RBMid.HANDPOS[0]);
         strumMaps.Add(new RBMid.MAP[0]);
       }
 

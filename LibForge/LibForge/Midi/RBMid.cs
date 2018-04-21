@@ -216,14 +216,10 @@ namespace LibForge.Midi
     }
     public struct HANDPOS
     {
-      public struct POS
-      {
-        public float StartTime;
-        public float Length;
-        public int Position;
-        public byte Unknown;
-      }
-      public POS[] Events;
+      public float StartTime;
+      public float Length;
+      public int Position;
+      public byte Unknown;
     }
     public struct MARKUP_SOLO_NOTES
     {
@@ -352,7 +348,7 @@ namespace LibForge.Midi
     public float PreviewStartMillis;
     public float PreviewEndMillis;
     public MAP[][] HandMaps;
-    public HANDPOS[] GuitarLeftHandPos;
+    public HANDPOS[][] GuitarLeftHandPos;
     public MAP[][] StrumMaps;
 
     public MARKUP_SOLO_NOTES[] MarkupSoloNotes1;
@@ -567,11 +563,10 @@ namespace LibForge.Midi
            => Check(their.StartTime, my.StartTime, nameof(my.StartTime))
            ?? Check(their.Map, my.Map, nameof(my.Map)))
       ?? Check(other.GuitarLeftHandPos, GuitarLeftHandPos, nameof(GuitarLeftHandPos), (their, my)
-           => Check(their.Events, my.Events, nameof(my.Events), (their2, my2)
-                => CheckFloats(their2.StartTime, my2.StartTime, nameof(my2.StartTime), 0.0002f)
-                ?? CheckFloats(their2.Length, my2.Length, nameof(my2.Length), 0.2f)
-                ?? Check(their2.Position, my2.Position, nameof(my2.Position))
-                ?? Check(their2.Unknown, my2.Unknown, nameof(my2.Unknown))))
+           => CheckFloats(their.StartTime, my.StartTime, nameof(my.StartTime), 0.0002f)
+           ?? CheckFloats(their.Length, my.Length, nameof(my.Length), 0.2f)
+           ?? Check(their.Position, my.Position, nameof(my.Position))
+           ?? Check(their.Unknown, my.Unknown, nameof(my.Unknown)))
       ?? Check(other.StrumMaps, StrumMaps, nameof(StrumMaps), (their, my)
                 => CheckFloats(their.StartTime, my.StartTime, nameof(my.StartTime))
                 ?? Check(their.Map, my.Map, nameof(my.Map)))
