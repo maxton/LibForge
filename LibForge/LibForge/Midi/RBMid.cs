@@ -159,8 +159,10 @@ namespace LibForge.Midi
         public int EndNoteIdx;
         public byte IsPhrase;
         public byte IsOverdrive;
-        public ushort Unused;
-        public byte[] Unknown6;
+        public float LowNote;
+        public float HighNote;
+        public byte UnknownCount; // seen: 0, 1, 2, and 3
+        public bool UnknownFlag;
       }
       public struct VOCAL_NOTE
       {

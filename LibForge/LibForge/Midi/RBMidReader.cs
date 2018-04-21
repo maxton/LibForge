@@ -224,9 +224,13 @@ namespace LibForge.Midi
         StartNoteIdx = Int(),
         EndNoteIdx = Int(),
         IsPhrase = Byte(),
-        IsOverdrive = Byte(),
-        Unused = Check(UShort(), (ushort)0),
-        Unknown6 = FixedArr(Byte, 25)
+        IsOverdrive = Byte().Then(Skip(9)),
+        // 9 bytes here are zero in every single rbmid I have found. So we are skipping them.
+        LowNote = Float(),
+        HighNote = Float(),
+        UnknownCount = Byte(),
+        UnknownFlag = Bool().Then(Skip(8)),
+        // 8 bytes here are zero in every single rbmid I have found. So we are skipping them.
       };
     private RBMid.UNKSTRUCT1 ReadUnkstruct1() => new RBMid.UNKSTRUCT1
     {
