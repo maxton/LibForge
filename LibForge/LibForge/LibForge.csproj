@@ -50,6 +50,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lipsync\Lipsync.cs" />
+    <Compile Include="Lipsync\LipsyncReader.cs" />
+    <Compile Include="Lipsync\LipsyncWriter.cs" />
     <Compile Include="Mesh\HxMesh.cs" />
     <Compile Include="Mesh\HxMeshConverter.cs" />
     <Compile Include="Mesh\HxMeshReader.cs" />
