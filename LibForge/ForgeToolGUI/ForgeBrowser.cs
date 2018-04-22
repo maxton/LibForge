@@ -119,7 +119,7 @@ namespace ForgeToolGUI
               }
             }
           }
-          else if(i.Name.Contains("_dta_"))
+          else if(i.Name.Contains("_dta_") || i.Name.EndsWith(".dtb"))
           {
             using (var s = i.GetStream())
             {
