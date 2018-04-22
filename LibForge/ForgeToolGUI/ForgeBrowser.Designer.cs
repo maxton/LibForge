@@ -226,7 +226,7 @@
       this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
       this.tabPage5.Size = new System.Drawing.Size(396, 438);
       this.tabPage5.TabIndex = 4;
-      this.tabPage5.Text = "RBMid";
+      this.tabPage5.Text = "Structure";
       this.tabPage5.UseVisualStyleBackColor = true;
       // 
       // treeView1

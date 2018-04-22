@@ -169,14 +169,27 @@ namespace ForgeToolGUI
             using (var s = i.GetStream())
             {
               var rbmid = RBMidReader.ReadStream(s);
-              treeView1.Nodes.Clear();
-              AddObjectNodes(rbmid, treeView1.Nodes);
-              tabControl1.SelectTab(4);
-              fileTreeView.Select();
+              ObjectPreview(rbmid);
+            }
+          }
+          else if(i.Name.Contains(".lipsync"))
+          {
+            using (var s = i.GetStream())
+            {
+              var lipsync = new LibForge.Lipsync.LipsyncReader(s).Read();
+              ObjectPreview(lipsync);
             }
           }
           break;
       }
+    }
+
+    void ObjectPreview(object obj)
+    {
+      treeView1.Nodes.Clear();
+      AddObjectNodes(obj, treeView1.Nodes);
+      tabControl1.SelectTab(4);
+      fileTreeView.Select();
     }
 
     void AddObjectNodes(object obj, TreeNodeCollection nodes)
