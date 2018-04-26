@@ -199,7 +199,7 @@ namespace ForgeToolGUI
       foreach(var f in fields)
       {
         if (f.IsLiteral) continue;
-        if (f.FieldType.IsPrimitive || f.FieldType == typeof(string))
+        if (f.FieldType.IsPrimitive || f.FieldType == typeof(string) || f.FieldType.IsEnum)
         {
           nodes.Add(f.Name + " = " + f.GetValue(obj).ToString());
         }
@@ -220,7 +220,7 @@ namespace ForgeToolGUI
     {
       var node = new TreeNode($"{name} ({arr.Length})");
       var eType = arr.GetType().GetElementType();
-      if (eType.IsPrimitive || eType == typeof(string))
+      if (eType.IsPrimitive || eType == typeof(string) || eType.IsEnum)
         for (var i = 0; i < arr.Length; i++)
         {
           var n = new TreeNode($"{name}[{i}] = {arr.GetValue(i)}");
@@ -234,8 +234,8 @@ namespace ForgeToolGUI
           else
           {
             var n = new TreeNode(myName);
-            node.Nodes.Add(n);
             AddObjectNodes(arr.GetValue(i), n.Nodes);
+            node.Nodes.Add(n);
           }
         }
       nodes.Add(node);
