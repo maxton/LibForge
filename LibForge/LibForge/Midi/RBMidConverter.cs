@@ -450,10 +450,13 @@ namespace LibForge.Midi
         {
           Markers = rolls.Count == 0 ? null : new RBMid.LANEMARKER.MARKER[4][]
           {
-            null, null, null, rolls.ToArray()
+            new RBMid.LANEMARKER.MARKER[0],
+            new RBMid.LANEMARKER.MARKER[0],
+            new RBMid.LANEMARKER.MARKER[0],
+            rolls.ToArray()
           }
         });
-        TrillMarkers.Add(new RBMid.GTRTRILLS());
+        TrillMarkers.Add(new RBMid.GTRTRILLS { Trills = new RBMid.GTRTRILLS.TRILL[0][] });
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
           Mixes = mixes.Select(m => m.ToArray()).ToArray()
@@ -546,6 +549,12 @@ namespace LibForge.Midi
           {
             lane = key - ExpertStart;
             diff = 3;
+            if (trill.EndTick >= e.StartTicks)
+            {
+              var note = e.Key - ExpertStart;
+              if (note < trill.LowFret) trill.LowFret = note;
+              if (note > trill.HighFret) trill.HighFret = note;
+            }
           }
           else
           {
@@ -576,7 +585,7 @@ namespace LibForge.Midi
               LengthTicks = (ushort)e.LengthTicks,
               Lanes = 1 << lane,
               IsHopo = hopo,
-              NoTail = e.LengthTicks <= 120
+              NoTail = e.LengthTicks <= 120 || (hopo && e.LengthTicks <= 160)
             };
             chords[diff] = chord;
             gem_tracks[diff].Add(chord);
@@ -682,17 +691,8 @@ namespace LibForge.Midi
                 {
                   StartTick = e.StartTicks,
                   EndTick = e.StartTicks + e.LengthTicks,
-                  Flags = (RBMid.LANEMARKER.MARKER.Flag)1
+                  Flags = (RBMid.LANEMARKER.MARKER.Flag)4
                 });
-              }
-              else if (e.Key >= ExpertStart && e.Key <= ExpertEnd)
-              {
-                if (trill.EndTick >= e.StartTicks)
-                {
-                  var note = e.Key - ExpertStart;
-                  if (note < trill.LowFret) trill.LowFret = note;
-                  if (note > trill.HighFret) trill.HighFret = note;
-                }
               }
               else if(e.Key >= LeftHandStart && e.Key <= LeftHandEnd)
               {
@@ -786,7 +786,10 @@ namespace LibForge.Midi
         {
           Markers = tremolos.Count == 0 ? null : new RBMid.LANEMARKER.MARKER[4][]
           {
-            null, null, null, tremolos.ToArray()
+            new RBMid.LANEMARKER.MARKER[0],
+            new RBMid.LANEMARKER.MARKER[0],
+            new RBMid.LANEMARKER.MARKER[0],
+            tremolos.ToArray()
           }
         });
 
@@ -794,7 +797,10 @@ namespace LibForge.Midi
         {
           Trills = trills.Count == 0 ? null : new RBMid.GTRTRILLS.TRILL[4][]
           {
-            null, null, null, trills.ToArray()
+            new RBMid.GTRTRILLS.TRILL[0],
+            new RBMid.GTRTRILLS.TRILL[0],
+            new RBMid.GTRTRILLS.TRILL[0],
+            trills.ToArray()
           }
         });
         DrumMixes.Add(new RBMid.DRUMMIXES
@@ -1032,7 +1038,7 @@ namespace LibForge.Midi
               else if (e.Key >= VocalsStart && e.Key <= VocalsEnd)
               {
                 var lyric = (track.Items.Find(s => s is MidiText && s.StartTicks == e.StartTicks) as MidiText).Text;
-                var lyricCleaned = lyric.Replace("$", "");
+                var lyricCleaned = lyric.Replace("$", "").Replace("#", "").Replace("^", "");
                 if(lyricCleaned == "+")
                 {
                   var previous = notes.LastOrDefault();
