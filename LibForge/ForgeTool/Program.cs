@@ -92,10 +92,11 @@ namespace ForgeTool
           break;
         case "test":
           {
-            // TODO: Test RBMid -> Mid -> RBMid (currently only testing RBMid -> RBMid)
             var dir = args[1];
             int succ = 0, warn = 0, fail = 0;
-            foreach (var f in Directory.EnumerateFiles(dir, "*.rbmid_*"))
+            var files = dir.EndsWith(".rbmid_ps4") || dir.EndsWith(".rbmid_pc") ? 
+              new[] { dir } : Directory.EnumerateFiles(dir, "*.rbmid_*");
+            foreach (var f in files)
             {
               var info = new FileInfo(f);
               var name = info.Name;
@@ -129,6 +130,50 @@ namespace ForgeTool
                     }
                   }
                 } catch(Exception e)
+                {
+                  Console.WriteLine($"[ERROR] {name}:");
+                  Console.WriteLine("  " + e.Message);
+                  fail++;
+                }
+              }
+            }
+            Console.WriteLine($"Summary: {succ} OK, {warn} WARN, {fail} ERROR");
+            if(fail > 0)
+            {
+              Console.WriteLine("(a = converted file, b = original)");
+            }
+          }
+          break;
+        case "simpletest":
+          {
+            var dir = args[1];
+            int succ = 0, warn = 0, fail = 0;
+            foreach (var f in Directory.EnumerateFiles(dir, "*.rbmid_*"))
+            {
+              var info = new FileInfo(f);
+              var name = info.Name;
+              using (var fi = File.OpenRead(f))
+              {
+                try
+                {
+                  var rbmid = RBMidReader.ReadStream(fi);
+                  using (var ms = new MemoryStream((int)fi.Length))
+                  {
+                    RBMidWriter.WriteStream(rbmid, ms);
+                    ms.Position = 0;
+                    if (ms.Length == fi.Length)
+                    {
+                      succ++;
+                    }
+                    else
+                    {
+                      Console.WriteLine($"[WARN] {name}:");
+                      Console.WriteLine($"  Processed file had different length ({fi.Length} orig, {ms.Length} processed)");
+                      warn++;
+                    }
+                  }
+                }
+                catch (Exception e)
                 {
                   Console.WriteLine($"[ERROR] {name}:");
                   Console.WriteLine("  " + e.Message);
