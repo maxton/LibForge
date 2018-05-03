@@ -16,59 +16,45 @@ namespace ForgeTool
         Usage();
         return;
       }
+      void WithIO(Action<Stream,Stream> action)
+      {
+        using (var fi = File.OpenRead(args[1]))
+        using (var fo = File.OpenWrite(args[2]))
+          action(fi, fo);
+      }
       switch (args[0])
       {
         case "rbmid2mid":
+          WithIO((fi, fo) =>
           {
-            var input = args[1];
-            var output = args[2];
-            using (var fi = File.OpenRead(input))
-            using (var fo = File.OpenWrite(output))
-            {
-              var rbmid = RBMidReader.ReadStream(fi);
-              var midi = RBMidConverter.ToMid(rbmid);
-              MidiCS.MidiFileWriter.WriteSMF(midi, fo);
-            }
-          }
+            var rbmid = RBMidReader.ReadStream(fi);
+            var midi = RBMidConverter.ToMid(rbmid);
+            MidiCS.MidiFileWriter.WriteSMF(midi, fo);
+          });
           break;
         case "mid2rbmid":
+          WithIO((fi, fo) =>
           {
-            var input = args[1];
-            var output = args[2];
-            using (var fi = File.OpenRead(input))
-            using (var fo = File.OpenWrite(output))
-            {
-              var mid = MidiCS.MidiFileReader.FromStream(fi);
-              var rbmid = RBMidConverter.ToRBMid(mid);
-              RBMidWriter.WriteStream(rbmid, fo);
-            }
-          }
+            var mid = MidiCS.MidiFileReader.FromStream(fi);
+            var rbmid = RBMidConverter.ToRBMid(mid);
+            RBMidWriter.WriteStream(rbmid, fo);
+          });
           break;
         case "reprocess":
+          WithIO((fi, fo) =>
           {
-            var input = args[1];
-            var output = args[2];
-            using (var fi = File.OpenRead(input))
-            using (var fo = File.OpenWrite(output))
-            {
-              var rbmid = RBMidReader.ReadStream(fi);
-              var processed = RBMidConverter.ToRBMid(RBMidConverter.ToMid(rbmid));
-              RBMidWriter.WriteStream(processed, fo);
-            }
-          }
+            var rbmid = RBMidReader.ReadStream(fi);
+            var processed = RBMidConverter.ToRBMid(RBMidConverter.ToMid(rbmid));
+            RBMidWriter.WriteStream(processed, fo);
+          });
           break;
         case "tex2png":
+          WithIO((fi, fo) =>
           {
-            var input = args[1];
-            var output = args[2];
-            using (var fi = File.OpenRead(input))
-            {
-              var tex = TextureReader.ReadStream(fi);
-              var bitmap = TextureConverter.ToBitmap(tex, 0);
-              using (var fo = File.OpenWrite(output))
-                bitmap.Save(fo, System.Drawing.Imaging.ImageFormat.Png);
-            }
-          }
+            var tex = TextureReader.ReadStream(fi);
+            var bitmap = TextureConverter.ToBitmap(tex, 0);
+            bitmap.Save(fo, System.Drawing.Imaging.ImageFormat.Png);
+          });
           break;
         case "mesh2obj":
           {
