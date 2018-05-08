@@ -180,6 +180,14 @@ namespace ForgeToolGUI
               ObjectPreview(lipsync);
             }
           }
+          else if (i.Name.Contains(".rbsong"))
+          {
+            using (var s = i.GetStream())
+            {
+              var rbsong = new LibForge.RBSong.RBSongReader(s).Read();
+              ObjectPreview(rbsong);
+            }
+          }
           break;
       }
     }

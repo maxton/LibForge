@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using LibForge.Extensions;
 
@@ -25,7 +26,38 @@ namespace LibForge.Util
     {
       this.s = s;
     }
-    public abstract D Read();
+    public virtual D Read() => (D)Read(typeof(D));
+    
+    protected T Object<T>()
+    {
+      T ret = default;
+      foreach(var field in typeof(T).GetFields())
+      {
+        var type = field.FieldType;
+        field.SetValue(ret, Read(field.FieldType));
+      }
+      return default;
+    }
+    protected object Read(Type t)
+    {
+      var readers =
+      new Dictionary<Type, Func<object>> {
+        { typeof(int), () => Int() },
+        { typeof(uint), () => UInt() },
+        { typeof(long), () => Long() },
+        { typeof(ulong), () => ULong() },
+        { typeof(float), () => Float() },
+        { typeof(short), () => Short() },
+        { typeof(ushort), () => UShort() },
+        { typeof(byte), () => Byte() },
+        { typeof(string), () => String() },
+        { typeof(bool), () => Bool() },
+      };
+      if (readers.ContainsKey(t))
+        return readers[t]();
+      var method = GetType().GetMethod(nameof(Object)).MakeGenericMethod(t);
+      return method.Invoke(this, new object[] { });
+    }
     protected static Func<T> Seq<T>(Action a, Func<T> v)
     {
       return () =>
@@ -34,7 +66,6 @@ namespace LibForge.Util
         return v();
       };
     }
-
     protected T Check<T>(T v, T expected)
     {
       if (v.Equals(expected))
@@ -81,6 +112,8 @@ namespace LibForge.Util
     // For reading simple types
     protected int Int() => s.ReadInt32LE();
     protected uint UInt() => s.ReadUInt32LE();
+    protected long Long() => s.ReadInt64LE();
+    protected ulong ULong() => s.ReadUInt64LE();
     protected float Float() => s.ReadFloat();
     protected short Short() => s.ReadInt16LE();
     protected ushort UShort() => s.ReadUInt16LE();
