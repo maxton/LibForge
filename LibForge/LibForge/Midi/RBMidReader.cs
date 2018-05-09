@@ -73,7 +73,7 @@ namespace LibForge.Midi
       r.FinalTick = UInt();
       r.Measures = UInt();
       r.Unknown = FixedArr(UInt, 6);
-      r.FinalTickMinusOne = UInt();
+      r.FinalTickMinusOne = Check(UInt(), r.FinalTick - 1);
       r.UnknownFloats = FixedArr(Float, 4);
       r.Tempos = Arr(ReadTempo);
       r.TimeSigs = Arr(ReadTimesig);
