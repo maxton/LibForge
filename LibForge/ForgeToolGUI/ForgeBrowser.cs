@@ -200,6 +200,9 @@ namespace ForgeToolGUI
       fileTreeView.Select();
     }
 
+    /// <summary>
+    /// Adds the given object's public fields to the given TreeNodeCollection.
+    /// </summary>
     void AddObjectNodes(object obj, TreeNodeCollection nodes)
     {
       if (obj == null) return;
@@ -224,6 +227,9 @@ namespace ForgeToolGUI
       }
     }
 
+    /// <summary>
+    /// Adds the given array to the given TreeNodeCollection.
+    /// </summary>
     void AddArrayNodes(Array arr, string name, TreeNodeCollection nodes)
     {
       var node = new TreeNode($"{name} ({arr.Length})");
@@ -241,6 +247,12 @@ namespace ForgeToolGUI
             AddArrayNodes(arr.GetValue(i) as Array, myName, node.Nodes);
           else
           {
+            var obj = arr.GetValue(i);
+            System.Reflection.FieldInfo nameField;
+            if(null != (nameField = obj.GetType().GetField("Name")))
+            {
+              myName += $" (Name: {nameField.GetValue(obj)})";
+            }
             var n = new TreeNode(myName);
             AddObjectNodes(arr.GetValue(i), n.Nodes);
             node.Nodes.Add(n);
