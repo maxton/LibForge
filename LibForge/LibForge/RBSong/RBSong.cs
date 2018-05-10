@@ -129,12 +129,12 @@ namespace LibForge.RBSong
     public class Component
     {
       public string ClassName;
-      public string InstanceName;
+      public string Name;
       public int Type;
       public long Count;
       public Property[] Props;
     }
-    public class ForgeObject
+    public class Entity
     {
       public ushort Index0;
       public ushort Index1;
@@ -151,7 +151,7 @@ namespace LibForge.RBSong
       public int Unknown3;
       public int Unknown4;
       public short Unknown5;
-      public ForgeObject[] Objects;
+      public Entity[] Entities;
     }
     public class KeyValue : IUnknown
     {

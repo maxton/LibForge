@@ -49,13 +49,13 @@ namespace LibForge.RBSong
           Unknown3 = Int(),
           Unknown4 = Int(),
           Unknown5 = Short(),
-          Objects = Arr(ReadObject)
+          Entities = Arr(ReadObject)
         };
       }
     }
 
-    private RBSong.ForgeObject ReadObject()
-      => new RBSong.ForgeObject
+    private RBSong.Entity ReadObject()
+      => new RBSong.Entity
       {
         Index0 = UShort(),
         Index1 = UShort(),
@@ -69,7 +69,7 @@ namespace LibForge.RBSong
       var entity = new RBSong.Component
       {
         ClassName = String(),
-        InstanceName = String(),
+        Name = String(),
         Type = Int(),
         Count = Long(),
         Props = Arr(ReadPropDef)
