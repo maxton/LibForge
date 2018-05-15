@@ -314,7 +314,9 @@ namespace LibForge.Midi
           });
           return true;
         }
-        foreach (var item in track.Items)
+        // If shorter notes come first we get better output for arabella
+        var itemsOrdered = track.Items.OrderBy(x => (x as MidiNote)?.LengthTicks ?? 0).OrderBy(x => x.StartTicks);
+        foreach (var item in itemsOrdered)
         {
           var ticks = item.StartTicks;
           var time = item.StartTime;
@@ -941,7 +943,8 @@ namespace LibForge.Midi
           phrase_markers_1.Add(VocalTracks[2].PhraseMarkers[0]);
           last_phrase_1 = phrase_markers_1[0];
         }
-        foreach (var item in track.Items)
+        // Order the notes by descending key so that bad phrase markers (that start at the same time as a note) are counted
+        foreach (var item in track.Items.OrderBy(x => -(x as MidiNote)?.Key ?? 0).OrderBy(x => x.StartTicks))
         {
           if (track.Name == "HARM3")
           {
