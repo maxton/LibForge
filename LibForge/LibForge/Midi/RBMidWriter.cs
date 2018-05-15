@@ -177,8 +177,8 @@ namespace LibForge.Midi
     }
     private void WriteReadVocalTrack(RBMid.VOCALTRACK obj)
     {
-      Write(obj.PhraseMarkers, WritePhraseMarker);
-      Write(obj.PhraseMarkers2, WritePhraseMarker);
+      Write(obj.FakePhraseMarkers, WritePhraseMarker);
+      Write(obj.AuthoredPhraseMarkers, WritePhraseMarker);
       Write(obj.Notes, x =>
       {
         Write(x.PhraseIndex);

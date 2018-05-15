@@ -193,8 +193,8 @@ namespace LibForge.Midi
         public float StartMillis;
         public float EndMillis;
       }
-      public PHRASE_MARKER[] PhraseMarkers;
-      public PHRASE_MARKER[] PhraseMarkers2;
+      public PHRASE_MARKER[] FakePhraseMarkers;
+      public PHRASE_MARKER[] AuthoredPhraseMarkers;
       public VOCAL_NOTE[] Notes;
       public uint[] Percussion;
       public VOCAL_TACET[] Tacets;
@@ -535,18 +535,33 @@ namespace LibForge.Midi
                 // TODO: Fix tacets on HARM tracks
                 //?? CheckFloats(their2.EndMillis, my2.EndMillis, nameof(my2.EndMillis), 2f)
                 )
-           ?? Check(their.PhraseMarkers, my.PhraseMarkers, nameof(my.PhraseMarkers), (their2, my2)
+           ?? Check(their.FakePhraseMarkers, my.FakePhraseMarkers, nameof(my.FakePhraseMarkers), (their2, my2)
                 => // TODO: Fix first phrase marker. It seems to start earlier than authored!?
-                //   CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
-                //?? CheckFloats(their2.Length, my2.Length, nameof(my2.Length), 1f)
-                //?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
-                //?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
+                  null // CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
+                // TODO: why is this wrong?
+                // ?? CheckFloats(their2.Length, my2.Length, nameof(my2.Length), 1f)
+                // ?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
+                // TODO: fix this
+                // ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
                 // TODO ???
-                //?? Check(their2.IsPhrase, my2.IsPhrase, nameof(my2.IsPhrase))
-                //?? Check(their2.IsOverdrive, my2.IsOverdrive, nameof(my2.IsOverdrive))
-                null
+                // ?? Check(their2.IsPhrase, my2.IsPhrase, nameof(my2.IsPhrase))
+                // ?? Check(their2.IsOverdrive, my2.IsOverdrive, nameof(my2.IsOverdrive))
+                // ?? Check(their2.StartNoteIdx, my2.StartNoteIdx, nameof(my2.StartNoteIdx))
+                // ?? Check(their2.EndNoteIdx, my2.EndNoteIdx, nameof(my2.EndNoteIdx))
                 )
-           ?? Check(their.PhraseMarkers2, my.PhraseMarkers2, nameof(my.PhraseMarkers2), (their2, my2) => null))
+           ?? Check(their.AuthoredPhraseMarkers, my.AuthoredPhraseMarkers, nameof(my.AuthoredPhraseMarkers), (their2, my2)
+                => CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
+                ?? CheckFloats(their2.Length, my2.Length, nameof(my2.Length), 1f)
+                ?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
+                ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
+                ?? Check(their2.IsPhrase, my2.IsPhrase, nameof(my2.IsPhrase))
+                ?? Check(their2.IsOverdrive, my2.IsOverdrive, nameof(my2.IsOverdrive))
+                // TODO...
+                // ?? Check(their2.StartNoteIdx, my2.StartNoteIdx, nameof(my2.StartNoteIdx))
+                // ?? Check(their2.EndNoteIdx, my2.EndNoteIdx, nameof(my2.EndNoteIdx))
+                // ?? Check(their2.UnknownCount, my2.UnknownCount, nameof(my2.UnknownCount))
+                // ?? Check(their2.UnknownFlag, my2.UnknownFlag, nameof(my2.UnknownFlag))
+                ))
       ?? Check(other.UnknownOne, UnknownOne, nameof(UnknownOne))
       ?? Check(other.UnknownNegOne, UnknownNegOne, nameof(UnknownNegOne))
       ?? Check(other.UnknownHundred, UnknownHundred, nameof(UnknownHundred))

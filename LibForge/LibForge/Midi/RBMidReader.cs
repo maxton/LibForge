@@ -184,8 +184,8 @@ namespace LibForge.Midi
     };
     private RBMid.VOCALTRACK ReadVocalTrack() => new RBMid.VOCALTRACK
     {
-      PhraseMarkers = Arr(ReadPhraseMarker),
-      PhraseMarkers2 = Arr(ReadPhraseMarker),
+      FakePhraseMarkers = Arr(ReadPhraseMarker),
+      AuthoredPhraseMarkers = Arr(ReadPhraseMarker),
       Notes = Arr(() => {
         var note = new RBMid.VOCALTRACK.VOCAL_NOTE
         {

@@ -937,20 +937,25 @@ namespace LibForge.Midi
         int phrase_index = 0;
         RBMid.VOCALTRACK.PHRASE_MARKER last_phrase_1 = null;
         RBMid.VOCALTRACK.PHRASE_MARKER last_phrase_2 = null;
-
-        if (track.Name == "HARM3")
+        
+        bool copyPreviousPhrases = track.Name == "HARM3"
+          || (track.Name == "HARM2" && mf.GetTrackByName("HARM3") == null);
+        RBMid.VOCALTRACK.PHRASE_MARKER[] last_track_markers = null;
+        if (copyPreviousPhrases)
         {
-          phrase_markers_1.Add(VocalTracks[2].PhraseMarkers[0]);
+          last_track_markers = VocalTracks.Last().FakePhraseMarkers;
+          phrase_markers_1.Add(last_track_markers[0]);
           last_phrase_1 = phrase_markers_1[0];
         }
+
         // Order the notes by descending key so that bad phrase markers (that start at the same time as a note) are counted
         foreach (var item in track.Items.OrderBy(x => -(x as MidiNote)?.Key ?? 0).OrderBy(x => x.StartTicks))
         {
-          if (track.Name == "HARM3")
+          if (copyPreviousPhrases)
           {
             while (last_phrase_1.StartTicks + last_phrase_1.LengthTicks < item.StartTicks)
             {
-              phrase_markers_1.Add(VocalTracks[2].PhraseMarkers[phrase_markers_1.Count]);
+              phrase_markers_1.Add(last_track_markers[phrase_markers_1.Count]);
               last_phrase_1 = phrase_markers_1.Last();
               if (notes.Count > 0)
               {
@@ -1170,23 +1175,23 @@ namespace LibForge.Midi
           }
         });
         // hack: copy data from HARM2 into HARM3
-        if(track.Name == "HARM3")
+        if(copyPreviousPhrases)
         {
           VocalTracks.Add(new RBMid.VOCALTRACK
           {
-            PhraseMarkers = VocalTracks[2].PhraseMarkers,
-            PhraseMarkers2 = new RBMid.VOCALTRACK.PHRASE_MARKER[0],
+            FakePhraseMarkers = VocalTracks.Last().FakePhraseMarkers,
+            AuthoredPhraseMarkers = new RBMid.VOCALTRACK.PHRASE_MARKER[0],
             Notes = notes.ToArray(),
             Percussion = percussions.ToArray(),
-            Tacets = VocalTracks[2].Tacets
+            Tacets = VocalTracks.Last().Tacets
           });
         }
         else
         {
           VocalTracks.Add(new RBMid.VOCALTRACK
           {
-            PhraseMarkers = phrase_markers_1.ToArray(),
-            PhraseMarkers2 = phrase_markers_2.ToArray(),
+            FakePhraseMarkers = phrase_markers_1.ToArray(),
+            AuthoredPhraseMarkers = phrase_markers_2.ToArray(),
             Notes = notes.ToArray(),
             Percussion = percussions.ToArray(),
             Tacets = tacets.ToArray()
