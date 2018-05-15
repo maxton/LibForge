@@ -503,8 +503,8 @@ namespace LibForge.Midi
       ?? Check(other.GemTracks, GemTracks, nameof(GemTracks), (their, my)
            => Check(their.Gems, my.Gems, nameof(my.Gems), (their2, my2)
                 => CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 0.2f)
-                ?? CheckFloats(their2.LengthMillis, my2.LengthMillis, nameof(my2.LengthMillis), 1.5f) // who ever cared about a couple ms
                 ?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
+                ?? CheckFloats(their2.LengthMillis, my2.LengthMillis, nameof(my2.LengthMillis), 1.5f) // who ever cared about a couple ms
                 ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
                 ?? Check(their2.Lanes, my2.Lanes, nameof(my2.Lanes))
                 // TODO: Swing notes...
@@ -550,9 +550,13 @@ namespace LibForge.Midi
       ?? Check(other.UnknownOne, UnknownOne, nameof(UnknownOne))
       ?? Check(other.UnknownNegOne, UnknownNegOne, nameof(UnknownNegOne))
       ?? Check(other.UnknownHundred, UnknownHundred, nameof(UnknownHundred))
-      ?? Check(other.Unknown4, Unknown4, nameof(Unknown4), (their, my) => null)
+      ?? Check(other.Unknown4, Unknown4, nameof(Unknown4), (their, my)
+           // TODO: What is this?
+           => // Check(their.Tick, my.Tick, nameof(my.Tick))
+           // ?? Check(their.FloatData, my.FloatData, nameof(my.FloatData))
+           null
+           )
       ?? Check(other.VocalRange, VocalRange, nameof(VocalRange), (their, my)
-            // TODO: Which one is ticks and which one is time?
            => Check(their.StartMillis, my.StartMillis, nameof(my.StartMillis))
            ?? Check(their.StartTicks, my.StartTicks, nameof(my.StartTicks))
            ?? Check(their.LowNote, my.LowNote, nameof(my.LowNote))
@@ -564,7 +568,7 @@ namespace LibForge.Midi
       ?? CheckFloats(other.PreviewStartMillis, PreviewStartMillis, nameof(PreviewStartMillis))
       ?? CheckFloats(other.PreviewEndMillis, PreviewEndMillis, nameof(PreviewEndMillis))
       ?? Check(other.HandMaps, HandMaps, nameof(HandMaps), (their, my) 
-           => Check(their.StartTime, my.StartTime, nameof(my.StartTime))
+           => CheckFloats(their.StartTime, my.StartTime, nameof(my.StartTime), 0.1f)
            ?? Check(their.Map, my.Map, nameof(my.Map)))
       ?? Check(other.GuitarLeftHandPos, GuitarLeftHandPos, nameof(GuitarLeftHandPos), (their, my)
            => CheckFloats(their.StartTime, my.StartTime, nameof(my.StartTime), 0.0002f)
