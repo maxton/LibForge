@@ -1100,7 +1100,7 @@ namespace LibForge.Midi
               {
                 lyrics.Add(new RBMid.TICKTEXT
                 {
-                  Text = e.Text,
+                  Text = e.Text.Trim(' '),
                   Tick = e.StartTicks,
                 });
               }
@@ -1169,14 +1169,29 @@ namespace LibForge.Midi
             overdriveSections, overdriveSections, overdriveSections, overdriveSections
           }
         });
-        VocalTracks.Add(new RBMid.VOCALTRACK
+        // hack: copy data from HARM2 into HARM3
+        if(track.Name == "HARM3")
         {
-          PhraseMarkers = phrase_markers_1.ToArray(),
-          PhraseMarkers2 = phrase_markers_2.ToArray(),
-          Notes = notes.ToArray(),
-          Percussion = percussions.ToArray(),
-          Tacets = tacets.ToArray()
-        });
+          VocalTracks.Add(new RBMid.VOCALTRACK
+          {
+            PhraseMarkers = VocalTracks[2].PhraseMarkers,
+            PhraseMarkers2 = new RBMid.VOCALTRACK.PHRASE_MARKER[0],
+            Notes = notes.ToArray(),
+            Percussion = percussions.ToArray(),
+            Tacets = VocalTracks[2].Tacets
+          });
+        }
+        else
+        {
+          VocalTracks.Add(new RBMid.VOCALTRACK
+          {
+            PhraseMarkers = phrase_markers_1.ToArray(),
+            PhraseMarkers2 = phrase_markers_2.ToArray(),
+            Notes = notes.ToArray(),
+            Percussion = percussions.ToArray(),
+            Tacets = tacets.ToArray()
+          });
+        }
         HandMap.Add(new RBMid.MAP[0]);
         HandPos.Add(new RBMid.HANDPOS[0]);
         strumMaps.Add(new RBMid.MAP[0]);
