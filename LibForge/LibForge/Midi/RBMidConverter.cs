@@ -1091,9 +1091,15 @@ namespace LibForge.Midi
                   Lyric = lyricCleaned == "+" ? "" : lyricCleaned,
                   // TODO
                   LastNoteInPhrase = false,
+                  UnknownFalse = false,
+                  Unpitched = lyric.Contains("#") || lyric.Contains("^"),
+                  UnknownFalse2 = false,
+                  UnkFlag1 = false,
                   // TODO: What is this?
                   Unknown = 1,
                   Portamento = lyricCleaned == "+",
+                  Flag8 = false,
+                  // TODO: What is this?
                   Flag9 = true
                 });
                 if (theVocalRange.HighNote < e.Key) theVocalRange.HighNote = e.Key;
