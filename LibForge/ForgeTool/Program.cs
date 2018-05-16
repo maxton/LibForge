@@ -11,12 +11,12 @@ namespace ForgeTool
   {
     static void Main(string[] args)
     {
-      if(args.Length < 1)
+      if (args.Length < 1)
       {
         Usage();
         return;
       }
-      void WithIO(Action<Stream,Stream> action)
+      void WithIO(Action<Stream, Stream> action)
       {
         using (var fi = File.OpenRead(args[1]))
         using (var fo = File.OpenWrite(args[2]))
@@ -64,7 +64,7 @@ namespace ForgeTool
             {
               var mesh = HxMeshReader.ReadStream(fi);
               var obj = HxMeshConverter.ToObj(mesh);
-              File.WriteAllText(output, obj);  
+              File.WriteAllText(output, obj);
             }
             break;
           }
@@ -80,7 +80,7 @@ namespace ForgeTool
           {
             var dir = args[1];
             int succ = 0, warn = 0, fail = 0;
-            var files = dir.EndsWith(".rbmid_ps4") || dir.EndsWith(".rbmid_pc") ? 
+            var files = dir.EndsWith(".rbmid_ps4") || dir.EndsWith(".rbmid_pc") ?
               new[] { dir } : Directory.EnumerateFiles(dir, "*.rbmid_*");
             foreach (var f in files)
             {
@@ -102,10 +102,11 @@ namespace ForgeTool
                     if (ms.Length == fi.Length)
                     {
                       var comparison = rbmid.Compare(rbmid2);
-                      if(comparison != null)
+                      if (comparison != null)
                       {
-                        throw new Exception("File comparison failed at field: " + comparison);
+                        throw new CompareException("File comparison failed at field: " + comparison);
                       }
+                      Console.WriteLine($"[OK] {name}");
                       succ++;
                     }
                     else
@@ -115,16 +116,23 @@ namespace ForgeTool
                       warn++;
                     }
                   }
-                } catch(Exception e)
+                } catch (CompareException e)
+                {
+                  Console.WriteLine($"[WARN] {name}:");
+                  Console.WriteLine("  " + e.Message);
+                  warn++;
+                }
+                catch (Exception e)
                 {
                   Console.WriteLine($"[ERROR] {name}:");
-                  Console.WriteLine("  " + e.Message);
+                  Console.WriteLine(e.Message);
+                  Console.WriteLine(e.StackTrace);
                   fail++;
                 }
               }
             }
             Console.WriteLine($"Summary: {succ} OK, {warn} WARN, {fail} ERROR");
-            if(fail > 0)
+            if (fail > 0)
             {
               Console.WriteLine("(a = converted file, b = original)");
             }
@@ -193,5 +201,8 @@ namespace ForgeTool
       Console.WriteLine("  mesh2obj <input.fbx...> <output.obj>");
       Console.WriteLine("   - converts a Forge mesh to OBJ");
     }
+  }
+  class CompareException : Exception {
+    public CompareException(string msg) : base(msg) { }
   }
 }
