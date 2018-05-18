@@ -20,11 +20,17 @@ typedef struct {
     int unk;
     int unk;
     int unk;
-    int unk;
-    int unk;
-    int unk;
-    int unk;
-    int unk;
+    hfloat unk; // Not sure about this one
+    hfloat unk;
+    hfloat unk;
+    hfloat unk;
+    hfloat unk;
+    hfloat unk;
+    // Repeated UV coordinates?
+    hfloat u1;
+    hfloat v1;
+    hfloat u2;
+    hfloat v2;
     if(points_size2 == 7){
         short unk;
         short unk;
