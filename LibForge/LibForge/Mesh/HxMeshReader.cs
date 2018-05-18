@@ -37,7 +37,12 @@ namespace LibForge.Mesh
         {
           X = Float(),
           Y = Float(),
-          Z = Float().Then(Skip(unk2 == 7 ? 52 : 40))
+          //Z = Float().Then(Skip(unk2 == 7 ? 52 : 40))
+          Z = Float().Then(Skip(32)),
+          U1 = Half(),
+          V1 = Half(),
+          U2 = Half(),
+          V2 = Half().Then(Skip(unk2 == 7 ? 12 : 0))
         }, numVerts),
         Triangles = FixedArr(() => new HxMesh.Triangle
         {
