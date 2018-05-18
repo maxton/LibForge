@@ -114,7 +114,7 @@ namespace LibForge.Util
     protected uint UInt() => s.ReadUInt32LE();
     protected long Long() => s.ReadInt64LE();
     protected ulong ULong() => s.ReadUInt64LE();
-    protected float Half() => ReadHalf();
+    protected float Half() => s.ReadHalfFloat();
     protected float Float() => s.ReadFloat();
     protected short Short() => s.ReadInt16LE();
     protected ushort UShort() => s.ReadUInt16LE();
@@ -123,44 +123,5 @@ namespace LibForge.Util
     protected string String(int length) => s.ReadFixedLengthNullTerminatedString(length);
     protected uint UInt24() => s.ReadUInt24LE();
     protected bool Bool() => CheckRange(Byte(), 0, 1) != 0;
-
-    private float ReadHalf()
-    {
-      // TODO: Replace with robust half-precision library
-
-      // Assume little endian
-      var b = s.ReadBytes(2);
-
-      int sign =  (b[1] & 0b1000_0000) >> 7;
-      int exp  =  (b[1] & 0b0111_1100) >> 2;
-      int man  = ((b[1] & 0b0000_0011) << 8 ) | (b[0]);
-
-      // Checks if zero, infinity, or NaN
-      if (exp == 0 && man == 0)
-        return 0;
-      else if (exp == 0x1F && man == 0)
-        return (sign == 1) ? float.NegativeInfinity : float.PositiveInfinity;
-      else if (exp == 0x1F && man != 0)
-        return float.NaN;
-      
-      // Pretty hacky way of doing this
-      var value = Math.Pow(-1, sign) * Math.Pow(2, exp - 15) * GetSummation(man, 10);
-      return (float)value;
-    }
-    
-    private double GetSummation(int man, int expSize)
-    {
-      int i = 1, p = expSize - 1;
-      double sum = 1;
-
-      while (i <= expSize)
-      {
-        sum += ((man & (1 << p)) >> p) * Math.Pow(2, -i);
-        i++;
-        p--;
-      }
-
-      return sum;
-    }
   }
 }

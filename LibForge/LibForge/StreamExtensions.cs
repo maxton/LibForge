@@ -346,6 +346,53 @@ namespace LibForge.Extensions
     }
 
     /// <summary>
+    /// Read a half-precision (2-byte) floating point value from the stream.
+    /// Return value is aliased to a single precision float because C# does not support half floats.
+    /// </summary>
+    /// <param name="s"></param>
+    /// <returns></returns>
+    public static float ReadHalfFloat(this Stream s) => ParseHalfFloat(s.ReadUInt16LE());
+
+    unsafe public static float ParseHalfFloat(int half)
+    {
+      int sign = half >> 15;
+      int exponent = ((half >> 10) & 0x1F);
+      int mantissa = half & 0x03FF;
+      int single;
+      if (exponent == 0)
+      {
+        // Subnormal
+        if (mantissa == 0) return 0;
+        int exp = -15;
+        int mask = 0x3FF;
+        // Find the first leading 1.
+        while (mantissa == (mantissa & mask))
+        {
+          mask >>= 1;
+          exp--;
+        }
+        // AND the mantissa with the mask because the SP float is *not* subnormal and has an implied "1."
+        single = (sign << 31) | (((128 + exp) & 0xFF) << 23) | ((mantissa & mask) << (30 + exp));
+      }
+      else
+      {
+        single = exponent == 31 ?
+          // Infinity
+          (mantissa == 0 ? (sign << 31) | (0xFF << 23)
+          // NaN
+          : (sign << 31) | (0xFF << 23) | 1)
+          // Normal
+          : (sign << 31) | (((exponent + 112) & 0xFF) << 23) | (mantissa << 13);
+      }
+      // TODO: Any other option besides unsafe code or allocating an unnecessary byte array?
+      return *(float*)(&single);
+      /* Eek, unsafe, but BitConverter.ToSingle is also unsafe according to reference source,
+         and it requires allocating another byte array and multiple method calls... */
+      // return BitConverter.ToSingle(BitConverter.GetBytes(single), 0);
+    }
+
+
+    /// <summary>
     /// Read a null-terminated ASCII string from the given stream.
     /// </summary>
     /// <param name="s"></param>
