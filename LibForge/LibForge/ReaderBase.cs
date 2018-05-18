@@ -135,6 +135,14 @@ namespace LibForge.Util
       int exp  =  (b[1] & 0b0111_1100) >> 2;
       int man  = ((b[1] & 0b0000_0011) << 8 ) | (b[0]);
 
+      // Checks if zero, infinity, or NaN
+      if (exp == 0 && man == 0)
+        return 0;
+      else if (exp == 0x1F && man == 0)
+        return (sign == 1) ? float.NegativeInfinity : float.PositiveInfinity;
+      else if (exp == 0x1F && man != 0)
+        return float.NaN;
+      
       // Pretty hacky way of doing this
       var value = Math.Pow(-1, sign) * Math.Pow(2, exp - 15) * GetSummation(man, 10);
       return (float)value;
