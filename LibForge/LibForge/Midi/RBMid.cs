@@ -479,8 +479,13 @@ namespace LibForge.Midi
                 // TODO: Figure out why this is not always the same after conversion
                 ?? CheckFloats(their2.EndTick, my2.EndTick, nameof(my2.EndTick), 11)
                 ?? Check(their2.IsBRE, my2.IsBRE, nameof(my2.IsBRE))))
-      // TODO: Keyboard anims... maybe
-      ?? Check(other.Anims, Anims, nameof(Anims), (their, my) => null)
+      ?? Check(other.Anims, Anims, nameof(Anims), (their, my) 
+           => Check(their.TrackName, my.TrackName, nameof(my.TrackName))
+           ?? Check(their.Unknown1, my.Unknown1, nameof(my.Unknown1))
+           ?? Check(their.Unknown2, my.Unknown2, nameof(my.Unknown2))
+           // TODO: We are generating more events somehow. Probably to do with the broken chords
+           //?? Check(their.Events, my.Events, nameof(my.Events), (their2, my2) => null)
+           ?? Check(their.Unknown3, my.Unknown3, nameof(my.Unknown3)))
       ?? Check(other.ProMarkers, ProMarkers, nameof(ProMarkers), (their, my)
            => Check(their.Markers, my.Markers, nameof(my.Markers), (their2, my2)
                 => Check(their2.Tick, my2.Tick, nameof(my2.Tick))
