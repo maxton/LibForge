@@ -111,21 +111,19 @@ namespace ForgeTool
                     }
                     else
                     {
-                      Console.WriteLine($"[WARN] {name}:");
-                      Console.WriteLine($"  Processed file had different length ({fi.Length} orig, {ms.Length} processed)");
+                      Console.Write($"[WARN] {name}:");
+                      Console.WriteLine($" Processed file had different length ({fi.Length} orig, {ms.Length} processed)");
                       warn++;
                     }
                   }
                 } catch (CompareException e)
                 {
-                  Console.WriteLine($"[WARN] {name}:");
-                  Console.WriteLine("  " + e.Message);
+                  Console.WriteLine($"[WARN] {name}: {e.Message}");
                   warn++;
                 }
                 catch (Exception e)
                 {
-                  Console.WriteLine($"[ERROR] {name}:");
-                  Console.WriteLine(e.Message);
+                  Console.WriteLine($"[ERROR] {name}: {e.Message}");
                   Console.WriteLine(e.StackTrace);
                   fail++;
                 }
