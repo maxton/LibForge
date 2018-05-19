@@ -193,22 +193,22 @@ typedef struct {
     }
     if(data_size != 0)
         char prop_data[data_size];
-} Entity<read=ENTITY_READ>;
-string ENTITY_READ(Entity& e){
+} Component<read=COM_READ>;
+string COM_READ(Component& e){
     return e.ent_name.name;
 }
 
-typedef struct {
+typedef struct entity {
     int16 index_0;
     int16 index_1;
     //Assert(index_0 == index_1, "indices should be equal");
     int32 unk_two_0;
-    Assert(unk_two_0 == 2, "unk_two_0 should be 2");
+    //Assert(unk_two_0 == 2, "unk_two_0 should be 2");
     PSTR  name;
     int32 num_children;
-    Entity children[num_children] <optimize=false>;
-} forge_object<read=forge_object_read>;
-string forge_object_read(forge_object& f){
+    Component coms[num_children] <optimize=false>;
+} forge_Entity<read=forge_object_read>;
+string forge_object_read(forge_Entity& f){
     return f.name.name;
 }
 
@@ -217,16 +217,29 @@ typedef struct {
     int32 more_data;
 } forge_hdr;
 
-typedef struct {
+typedef struct forge_tree(forge_hdr& hdr){
     if(ReadInt() == 0){
         FSkip(4);
+        if(hdr.version == 0x10) {
+            FSkip(4);
+            int32 unk5;
+        }
         int32 unk_19_or_20;
         int32 unk_one_1;
         int32 same_19_or_20;
+        if(hdr.version == 0x10) {
+            int32 unk5;
+        }
         int32 unk_zero_1;
         int16 unk_flag1;
         int32 num_objects;
-        forge_object objects[num_objects]<optimize=false>;
+        if(hdr.version == 0x10) {
+            forge_Entity entities[num_objects/4]<optimize=false>;
+            int32 unknown_tail_data[9];
+        }
+        else {
+            forge_Entity entities[num_objects]<optimize=false>;
+        }
     } else {
         PSTR type;
         PSTR value;
@@ -236,10 +249,10 @@ typedef struct {
 // The file is a list of what I am calling forge_tree structs.
 // They start with a header. At the end of the list there is another header
 // that signals the end of the file by setting more_data=0
-forge_hdr hdr <hidden = true>;
+forge_hdr hdr;
 local int cont = hdr.more_data;
 while(cont) {
-    forge_tree tree;
-    forge_hdr hdr <hidden = true>;
+    forge_tree tree(hdr);
+    forge_hdr hdr;
     cont = hdr.more_data;
 }
