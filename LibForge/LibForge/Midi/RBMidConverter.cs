@@ -16,7 +16,7 @@ namespace LibForge.Midi
       return new MidiFile(MidiFormat.MultiTrack, new List<MidiTrack>(m.MidiTracks), 480);
     }
 
-    private class MidiConverter
+    public class MidiConverter
     {
       private MidiFile mf;
       private RBMid rb;
@@ -435,6 +435,7 @@ namespace LibForge.Midi
         Lyrics.Add(new RBMid.LYRICS
         {
           TrackName = track.Name,
+          Lyrics = new RBMid.TICKTEXT[0],
           Unknown1 = 0,
           Unknown2 = 0,
           Unknown3 = 1
@@ -450,7 +451,7 @@ namespace LibForge.Midi
         });
         LaneMarkers.Add(new RBMid.LANEMARKER
         {
-          Markers = rolls.Count == 0 ? null : new RBMid.LANEMARKER.MARKER[4][]
+          Markers = rolls.Count == 0 ? new RBMid.LANEMARKER.MARKER[0][] : new RBMid.LANEMARKER.MARKER[4][]
           {
             new RBMid.LANEMARKER.MARKER[0],
             new RBMid.LANEMARKER.MARKER[0],
@@ -764,6 +765,7 @@ namespace LibForge.Midi
         Lyrics.Add(new RBMid.LYRICS
         {
           TrackName = track.Name,
+          Lyrics = new RBMid.TICKTEXT[0],
           Unknown1 = Unk,
           Unknown2 = Unk,
           Unknown3 = 0
@@ -786,7 +788,7 @@ namespace LibForge.Midi
         });
         LaneMarkers.Add(new RBMid.LANEMARKER
         {
-          Markers = tremolos.Count == 0 ? null : new RBMid.LANEMARKER.MARKER[4][]
+          Markers = tremolos.Count == 0 ? new RBMid.LANEMARKER.MARKER[0][] : new RBMid.LANEMARKER.MARKER[4][]
           {
             new RBMid.LANEMARKER.MARKER[0],
             new RBMid.LANEMARKER.MARKER[0],
@@ -797,7 +799,7 @@ namespace LibForge.Midi
 
         TrillMarkers.Add(new RBMid.GTRTRILLS
         {
-          Trills = trills.Count == 0 ? null : new RBMid.GTRTRILLS.TRILL[4][]
+          Trills = trills.Count == 0 ? new RBMid.GTRTRILLS.TRILL[0][] : new RBMid.GTRTRILLS.TRILL[4][]
           {
             new RBMid.GTRTRILLS.TRILL[0],
             new RBMid.GTRTRILLS.TRILL[0],
@@ -847,11 +849,16 @@ namespace LibForge.Midi
         Lyrics.Add(new RBMid.LYRICS
         {
           TrackName = track.Name,
+          Lyrics = new RBMid.TICKTEXT[0],
           Unknown1 = 4,
           Unknown2 = 5,
           Unknown3 = 0
         });
-        DrumFills.Add(new RBMid.DRUMFILLS());
+        DrumFills.Add(new RBMid.DRUMFILLS
+        {
+          Fills = new RBMid.DRUMFILLS.FILL[0],
+          Lanes = new RBMid.DRUMFILLS.FILL_LANES[0]
+        });
         ProMarkers.Add(new RBMid.CYMBALMARKER
         {
           Markers = new RBMid.CYMBALMARKER.MARKER[]
@@ -863,10 +870,13 @@ namespace LibForge.Midi
             }
           }
         });
-        LaneMarkers.Add(new RBMid.LANEMARKER());
+        LaneMarkers.Add(new RBMid.LANEMARKER
+        {
+          Markers = new RBMid.LANEMARKER.MARKER[0][]
+        });
         TrillMarkers.Add(new RBMid.GTRTRILLS
         {
-
+          Trills = new RBMid.GTRTRILLS.TRILL[0][]
         });
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
@@ -874,11 +884,11 @@ namespace LibForge.Midi
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
-
+          Gems = new RBMid.GEMTRACK.GEM[0][]
         });
         OverdriveSoloSections.Add(new RBMid.SECTIONS
         {
-
+          Sections = new RBMid.SECTIONS.SECTION[0][][]
         });
         HandMap.Add(new RBMid.MAP[0]);
         HandPos.Add(new RBMid.HANDPOS[0]);
@@ -914,9 +924,9 @@ namespace LibForge.Midi
         Anims.Add(new RBMid.ANIM
         {
           TrackName = track.Name,
-          Events = anims.ToArray(),
           Unknown1 = 1,
           Unknown2 = 120,
+          Events = anims.ToArray(),
           Unknown3 = 120
         });
       }

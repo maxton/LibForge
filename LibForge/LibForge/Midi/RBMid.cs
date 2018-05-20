@@ -380,6 +380,10 @@ namespace LibForge.Midi
     {
       if ((b == null || b.Count == 0) && (a == null || a.Count == 0))
         return null;
+      else if (a == null)
+        return $"{n} was null in a";
+      else if (b == null)
+        return $"{n} was null in b";
 
       if (a.Count != b.Count)
         return $"{n}.Length: a={a.Count}, b={b.Count}";
@@ -395,6 +399,10 @@ namespace LibForge.Midi
     {
       if ((b == null || b.Length == 0) && (a == null || a.Length == 0))
         return null;
+      else if (a == null)
+        return $"{n} was null in a";
+      else if (b == null)
+        return $"{n} was null in b";
 
       if (a.Length != b.Length)
         return $"{n}.Length: a={a.Length}, b={b.Length}";
@@ -415,6 +423,10 @@ namespace LibForge.Midi
     {
       if ((b == null || b.Length == 0) && (a == null || a.Length == 0))
         return null;
+      else if (a == null)
+        return $"{n} was null in a";
+      else if (b == null)
+        return $"{n} was null in b";
 
       if (a.Length != b.Length)
         return $"{n}.Length: a={a.Length}, b={b.Length}";
