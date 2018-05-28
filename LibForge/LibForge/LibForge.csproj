@@ -73,6 +73,7 @@
     <Compile Include="Midi\RBMidWriter.cs" />
     <Compile Include="RBSong\RBSong.cs" />
     <Compile Include="RBSong\RBSongReader.cs" />
+    <Compile Include="RBSong\RBSongWriter.cs" />
     <Compile Include="ReaderBase.cs" />
     <Compile Include="SongData\SongData.cs" />
     <Compile Include="SongData\SongDataReader.cs" />
