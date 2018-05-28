@@ -7,7 +7,7 @@ using System.Text;
 
 namespace LibForge.RBSong
 {
-  class RBSongWriter : WriterBase<RBSong>
+  public class RBSongWriter : WriterBase<RBSong>
   {
     public RBSongWriter(Stream s) : base(s) { }
     public override void WriteStream(RBSong v)
