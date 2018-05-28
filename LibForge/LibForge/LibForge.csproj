@@ -76,6 +76,7 @@
     <Compile Include="RBSong\RBSongWriter.cs" />
     <Compile Include="ReaderBase.cs" />
     <Compile Include="SongData\SongData.cs" />
+    <Compile Include="SongData\SongDataConverter.cs" />
     <Compile Include="SongData\SongDataReader.cs" />
     <Compile Include="SongData\SongDataWriter.cs" />
     <Compile Include="StreamExtensions.cs" />
