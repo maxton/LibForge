@@ -965,6 +965,7 @@ namespace LibForge.Midi
           {
             while (last_phrase_1.StartTicks + last_phrase_1.LengthTicks < item.StartTicks)
             {
+              if (last_track_markers.Length - 1 < phrase_markers_1.Count) break;
               phrase_markers_1.Add(last_track_markers[phrase_markers_1.Count]);
               last_phrase_1 = phrase_markers_1.Last();
               if (notes.Count > 0)
@@ -1075,7 +1076,7 @@ namespace LibForge.Midi
                     Unknown = 1,
                     Portamento = true,
                     Flag9 = true
-                  });
+                  }); 
                 }
                 var last = notes.LastOrDefault();
                 var lastNoteEnd = last.StartMillis + last.LengthMillis;
