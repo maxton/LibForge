@@ -31,6 +31,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DtxCS">
+      <HintPath>..\..\Dependencies\DtxCS.dll</HintPath>
+    </Reference>
+    <Reference Include="GameArchives">
+      <HintPath>..\..\Dependencies\GameArchives.dll</HintPath>
+    </Reference>
     <Reference Include="MidiCS">
       <HintPath>..\..\Dependencies\MidiCS.dll</HintPath>
     </Reference>
@@ -44,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PkgCreator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
