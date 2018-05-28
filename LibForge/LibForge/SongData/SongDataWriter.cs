@@ -13,7 +13,6 @@ namespace LibForge.SongData
     public override void WriteStream(SongData r)
     {
       Write(r.Type);
-      Write(r.Type);
       Write(r.SongId);
       Write(r.Version);
       Write(r.GameOrigin, 18);
@@ -23,6 +22,7 @@ namespace LibForge.SongData
       Write(r.Artist, 256);
       Write(r.AlbumName, 256);
       Write(r.AlbumTrackNumber);
+      s.Position += 2;
       Write(r.AlbumYear);
       Write(r.OriginalYear);
       Write(r.Genre, 64);
@@ -40,10 +40,12 @@ namespace LibForge.SongData
       Write(r.VocalGender);
       Write(r.Medium, 16);
       Write(r.HasFreestyleVocals);
+      s.Position += 3;
       Write(r.VocalParts);
       Write(r.Flags);
       Write(r.Fake);
       Write(r.Shortname, 256);
+      s.WriteByte(0);
     }
   }
 }
