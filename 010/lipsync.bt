@@ -12,6 +12,16 @@ struct {
     int num_strings;
     PSTR strings[num_strings]<optimize=false>;
 } instruments;
-int count_unk;
-int unknown_data[count_unk];
-byte unknown_data2[count_unk];
+int count_off;
+int offset_data[count_off]; // Offsets for following data
+
+// Calculates lengths of keyframe group data
+local int i, size;
+for (i = 0; i < count_off - 1; i++) {
+    size = offset_data[i+1]-offset_data[i];
+    if (size == 0) continue;    
+
+    struct {
+        byte data[size];
+    } key_frame_data; // Maybe?
+}
