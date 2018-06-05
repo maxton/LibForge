@@ -7,6 +7,7 @@ using DtxCS.DataTypes;
 using LibForge.Lipsync;
 using LibForge.Mesh;
 using LibForge.Midi;
+using LibForge.Milo;
 using LibForge.SongData;
 using LibForge.Texture;
 using GameArchives.STFS;
@@ -213,6 +214,8 @@ namespace ForgeTool
             var pkgDesc = $"Custom: \"{name} - {artist}\"";
             var mid = MidiCS.MidiFileReader.FromBytes(con.RootDirectory.GetFileAtPath(midPath).GetBytes());
             var paramSfo = PkgCreator.MakeParamSfo(pkgId, pkgDesc);
+
+            var milo = Milo.ReadFromStream(con.RootDirectory.GetFileAtPath(miloPath).GetStream());
 
             // TODO: Lipsync
             var lipsync = new Lipsync

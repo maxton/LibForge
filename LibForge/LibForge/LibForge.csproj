@@ -69,6 +69,10 @@
     <Compile Include="Midi\RBMid.cs" />
     <Compile Include="Midi\RBMidConverter.cs" />
     <Compile Include="Midi\RBMidReader.cs" />
+    <Compile Include="Milo\BlockStructure.cs" />
+    <Compile Include="Milo\Milo.cs" />
+    <Compile Include="Milo\IMiloEntry.cs" />
+    <Compile Include="Milo\CharLipSync.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Midi\RBMidWriter.cs" />
     <Compile Include="RBSong\RBSong.cs" />

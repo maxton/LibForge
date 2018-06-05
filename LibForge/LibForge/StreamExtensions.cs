@@ -432,9 +432,9 @@ namespace LibForge.Extensions
     /// <param name="s"></param>
     /// <param name="e">The encoding to use to decode the string.</param>
     /// <returns></returns>
-    public static string ReadLengthPrefixedString(this Stream s, Encoding e)
+    public static string ReadLengthPrefixedString(this Stream s, Encoding e, bool bigEdn = false)
     {
-      int length = s.ReadInt32LE();
+      int length = bigEdn ? s.ReadInt32BE() : s.ReadInt32LE();
       byte[] chars = new byte[length];
       s.Read(chars, 0, length);
       return e.GetString(chars);
@@ -445,9 +445,9 @@ namespace LibForge.Extensions
     /// </summary>
     /// <param name="s"></param>
     /// <returns></returns>
-    public static string ReadLengthUTF8(this Stream s)
+    public static string ReadLengthUTF8(this Stream s, bool bigEdn = false)
     {
-      return s.ReadLengthPrefixedString(Encoding.UTF8);
+      return s.ReadLengthPrefixedString(Encoding.UTF8, bigEdn);
     }
 
     /// <summary>
