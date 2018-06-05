@@ -1,9 +1,9 @@
 #include "common.bt"
 LittleEndian();
 
-int unk;
-int unk;
-int unk;
+int version;
+int subtype;
+float frameRate;
 struct {
     int num_strings;
     PSTR strings[num_strings]<optimize=false>;
