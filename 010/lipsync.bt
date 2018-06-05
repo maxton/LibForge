@@ -7,7 +7,7 @@ int unk;
 struct {
     int num_strings;
     PSTR strings[num_strings]<optimize=false>;
-} strings;
+} visemes;
 struct {
     int num_strings;
     PSTR strings[num_strings]<optimize=false>;
@@ -15,13 +15,72 @@ struct {
 int count_off;
 int offset_data[count_off]; // Offsets for following data
 
-// Calculates lengths of keyframe group data
-local int i, size;
+typedef struct {
+    ubyte visemeIndex;
+    
+    if (visemeIndex != 0xFF)
+        ubyte weight;
+} visemeChange<read=VC_READ>;
+
+string VC_READ(visemeChange &vc){
+    if (vc.visemeIndex == 0xFF)
+        return "0xFF";
+    return visemes.strings[vc.visemeIndex].name;
+}
+
+int getSize(int off, int max) {
+    if (max <= 0) return 0;
+    
+    // Reads in size until terminating character
+    local int i;
+    for (i = 0; i < max; i += 2) {
+        if (ReadUByte(off + i) == 0xFF) return i + 1;
+    }
+    
+    return max;
+}
+
+// Calculates lengths for interlaced lipsync data
+local int i, size, keySize;
 for (i = 0; i < count_off - 1; i++) {
     size = offset_data[i+1]-offset_data[i];
     if (size == 0) continue;    
-
+    
     struct {
-        byte data[size];
-    } key_frame_data; // Maybe?
+        keySize = getSize(FTell(), size);
+        
+        // Part 1
+        if (keySize > 0) {
+            struct {
+                visemeChange changes[(keySize >> 1) + (keySize % 2)]<optimize=false>;
+            } lipsync1;
+        }
+        size -= keySize;
+        keySize = getSize(FTell(), size);
+        
+        // Part 2
+        if (keySize > 0) {
+            struct {
+                visemeChange changes[(keySize >> 1) + (keySize % 2)]<optimize=false>;
+            } lipsync2;
+        }
+        size -= keySize;
+        keySize = getSize(FTell(), size);
+        
+        // Part 3
+        if (keySize > 0) {
+            struct {
+                visemeChange changes[(keySize >> 1) + (keySize % 2)]<optimize=false>;
+            } lipsync3;
+        }
+        size -= keySize;
+        keySize = getSize(FTell(), size);
+        
+        // Part 4 - Not observed yet
+        if (keySize > 0) {
+            struct {
+                visemeChange changes[(keySize >> 1) + (keySize % 2)]<optimize=false>;
+            } lipsync4;
+        }
+    } key_frame_data;
 }
