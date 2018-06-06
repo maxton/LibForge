@@ -75,6 +75,16 @@ namespace ForgeTool
             }
             break;
           }
+        case "milo2lip":
+        case "milo2lips":
+        case "milo2lipsync":
+          WithIO((fi, fo) =>
+          {
+            var milo = MiloFile.ReadFromStream(fi);
+            var lipsync = LipsyncConverter.FromMilo(milo);
+            new LipsyncWriter(fo).WriteStream(lipsync);
+          });
+          break;
         case "version":
           var assembly = System.Reflection.Assembly.GetExecutingAssembly();
           var version = FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
@@ -320,6 +330,8 @@ namespace ForgeTool
       Console.WriteLine("   - converts a Forge mesh to OBJ");
       Console.WriteLine("  con2pkg <input_con> <output_dir>");
       Console.WriteLine("   - converts a CON custom to a .gp4 project in the given output directory");
+      Console.WriteLine("  milo2lipsync <input.milo_xbox> <output.lipsync>");
+      Console.WriteLine("   - converts an uncompressed milo archive to forge lipsync file");
     }
   }
   class CompareException : Exception {
