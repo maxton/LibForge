@@ -215,19 +215,9 @@ namespace ForgeTool
             var mid = MidiCS.MidiFileReader.FromBytes(con.RootDirectory.GetFileAtPath(midPath).GetBytes());
             var paramSfo = PkgCreator.MakeParamSfo(pkgId, pkgDesc);
 
-            var milo = Milo.ReadFromStream(con.RootDirectory.GetFileAtPath(miloPath).GetStream());
-
-            // TODO: Lipsync
-            var lipsync = new Lipsync
-            {
-              Version = 0,
-              Subtype = 0,
-              FrameRate = 30,
-              Visemes = new string[0],
-              Players = new string[0],
-              FrameIndices = new uint[2] { 0, 0 },
-              FrameData = new byte[0]
-            };
+            // TODO: Catch possible conversion exceptions? i.e. Unsupported milo version
+            var milo = MiloFile.ReadFromStream(con.RootDirectory.GetFileAtPath(miloPath).GetStream());
+            var lipsync = LipsyncConverter.FromMilo(milo);
 
             var moggDta = new DataArray();
             var trackArray = new DataArray();

@@ -16,5 +16,6 @@ namespace LibForge.Lipsync
     public string[] Players;
     public uint[] FrameIndices;
     public byte[] FrameData;
+    //public FrameGroup[] Groups;
   }
 }

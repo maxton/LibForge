@@ -8,18 +8,18 @@ using LibForge.Extensions;
 namespace LibForge.Milo
 {
   // Subset of code taken from Mackiloha library
-  public class Milo
+  public class MiloFile
   {
     private const uint ADDE_PADDING = 0xADDEADDE;
 
-    private Milo(string name, string type)
+    private MiloFile(string name, string type)
     {
       Name = name;
       Type = type;
       Entries = new List<IMiloEntry>();
     }
 
-    public static Milo ReadFromStream(Stream stream)
+    public static MiloFile ReadFromStream(Stream stream)
     {
       long startingOffset = stream.Position; // You might not be starting at 0x0
       var structureType = (BlockStructure)stream.ReadUInt32LE();
@@ -46,7 +46,7 @@ namespace LibForge.Milo
       }
     }
 
-    private static Milo ParseDirectory(Stream stream)
+    private static MiloFile ParseDirectory(Stream stream)
     {
       int version = stream.ReadInt32BE();
 
@@ -54,7 +54,7 @@ namespace LibForge.Milo
         throw new Exception("Unsupported milo directory version");
 
       string dirType = stream.ReadLengthUTF8(true), dirName = stream.ReadLengthUTF8(true);
-      Milo milo = new Milo(dirType, dirName);
+      MiloFile milo = new MiloFile(dirType, dirName);
 
       stream.Position += 8; // Skips string count + total length
 
