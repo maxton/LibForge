@@ -10,6 +10,8 @@ namespace LibForge.Lipsync
 {
   public class LipsyncConverter
   {
+    private static string[] partMapping = new string[] { "mic", "guitar", "bass", "drums" };
+
     public static Lipsync FromMilo(MiloFile milo)
     {
       var miloLips = milo.Entries
@@ -27,7 +29,7 @@ namespace LibForge.Lipsync
         return string.Compare(x.Name, y.Name);
       });
       
-      int totalFrames = miloLips.Select(x => x.Frames.Length).Max();
+      int totalFrames = miloLips.Select(x => x.Frames.Length).DefaultIfEmpty(0).Max();
       uint[] offsets = new uint[totalFrames + 1];
 
       long currentOffset = 0;
@@ -53,7 +55,7 @@ namespace LibForge.Lipsync
           Subtype = 0,
           FrameRate = 30,
           Visemes = visemes.Select((x, y) => x.Key).ToArray(),
-          Players = new string[] { "mic", "guitar", "bass"},
+          Players = partMapping.Take(miloLips.Count).ToArray(),
           FrameIndices = offsets,
           FrameData = ms.ToArray()
         };
