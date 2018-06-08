@@ -65,8 +65,6 @@ namespace LibForge.Lipsync
 
     private static byte[] GetBytes(List<CharLipSync> lips, Dictionary<string, int> visemes, int fo)
     {
-      if (lips.Select(x => x.Frames[fo].Events.Count).Sum() == 0) return new byte[0];
-
       byte[] GetBytes(CharLipSync lip)
       {
         byte[] data = new byte[(lip.Frames.Length < fo) ? 0 : lip.Frames[fo].Events.Count * 2];
@@ -82,13 +80,27 @@ namespace LibForge.Lipsync
 
         return data;
       }
+
+      int max = lips.Count;
+      while (max > 0)
+      {
+        if (lips[max - 1]
+          .Frames[fo]
+          .Events.Count > 0)
+          break;
+
+        max--;
+      }
+
+      if (max == 0)
+        return new byte[0];
       
       using (MemoryStream ms = new MemoryStream())
       {
         var buffer = GetBytes(lips.First());
         ms.Write(buffer, 0, buffer.Length);
         
-        foreach(var lip in lips.Skip(1))
+        foreach(var lip in lips.Take(max).Skip(1))
         {
           ms.WriteByte(0xFF);
           
