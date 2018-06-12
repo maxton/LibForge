@@ -1,0 +1,158 @@
+Section 0 (20,1,20,0,1)
+  Entity 0: root (0,0,2)
+    Editor Component
+    EntityHeader Component
+    RBSongMetadata Component (3):
+     - tempo: Symbol = 'medium'
+     - vocal_tonic_note: Enum = 4
+     - vocal_track_scroll_duration_ms: Enum = 2300
+     - global_tuning_offset: Float = 0.0
+     - band_fail_sound_event: Symbol = ''
+     - vocal_percussion_patch: String = "fusion/patches/vox_perc_tambourine.fusion"
+     - drum_kit_patch: String = "fusion/patches/kit01.fusion"
+     - improv_solo_patch: Symbol = "gtrsolo_amer_03"
+     - dynamic_drum_fill_override: Int = 10
+     - improv_solo_volume_db: Float = -9
+    RBVenueAuthoring Component (3):
+     - part2_instrument: Int = 2
+     - part3_instrument: Int = 0
+     - part4_instrument: Int = 1
+
+Section 1 - ?????
+  "PropAnimResource"
+  "venue_authoring_data"
+
+Section 2 (20,1,20,0,21)
+  Entity 0: root (0,0,2)
+    Editor Component
+    EntityHeader Component
+    PropAnim Component (3,0):
+     - frame_range_start: Float = FLOAT_MAX
+     - frame_range_end: Float = FLOAT_MIN
+     - time_units: Int = 0
+     - is_looping: Bool = false
+  Entity 1: Keys type 11 (1,1,2)
+    Editor Component
+    PropKeysSymCom "PropKeys" (3,0):
+     - keys: Array[{frame:Float, value:Symbol}] = [{0, 'idle_realtime'},{1, 'play'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'bass_intensity')
+  Entity 2: Keys type 11 (2,2,2)
+    Editor Component
+    PropKeysSymCom "PropKeys" (3,0):
+     - keys: Array[{frame:Float, value:Symbol}] = [{0, 'idle_realtime'},{1, 'play'},{2, 'play_solo'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'guitar_intensity')
+  Entity 3: Keys type 11 (3,3,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0, 'idle_realtime'},{1, 'play'},{5.5, 'mellow'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'drum_intensity')
+  Entity 4: Keys type 11 (4,4,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0, 'idle_realtime'},{1, 'play'},{5.5, 'tambourine_start'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'mic_intensity')
+  Entity 5: Keys type 11 (5,5,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{15, 'play'},{511, 'idle_realtime'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'keyboard_intensity')
+  Entity 6: Keys type 11 (6,6,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'coop_all_far'},{1,'coop_g_near'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'shot_bg')
+  Entity 7: Keys type 11 (7,7,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'coop_all_far'},{1,'coop_k_near'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'shot_bk')
+  Entity 8: Keys type 11 (8,8,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'coop_all_far'},{1,'coop_gk_near'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'shot_gk')
+  Entity 9: Keys type 11 (9,9,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'crowd_realtime'},{1,'crowd_mellow'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'crowd')
+  Entity 10: Keys type 11 (10,10,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'none'},{1,'bonusfx'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'world_event')
+  Entity 11: Keys type 11 (11,11,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'silhouettes_spot'},{1,'loop_warm'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'lightpreset')
+  Entity 12: Keys type 11 (12,12,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'film_contrast_blue'},{1,'horror_movie_special'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'postproc')
+  Entity 13: Keys type 11 (13,13,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'next'},{1,'next'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'lightpreset_keyframe')
+  Entity 14: Keys type 11 (14,14,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'off'},{1,'on'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'spot_guitar')
+  Entity 15: Keys type 11 (15,15,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'off'},{1,'on'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'spot_bass')
+  Entity 16: Keys type 11 (16,16,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'off'},{1,'on'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'spot_drums')
+  Entity 17: Keys type 11 (17,17,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'off'},{1,'on'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'spot_keyboard')
+  Entity 18: Keys type 11 (18,18,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'off'},{1,'on'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'spot_vocal')
+  Entity 19: Keys type 11 (19,19,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'coop_all_far'},{1,'coop_gk_near'},{1,'coop_bg_near'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'shot_5')
+  Entity 20: Keys type 11 (20,20,2)
+    Editor Component
+    PropKeysSymCom "PropKeys"
+     - keys: Array[{frame:Float, value:Symbol}] = [{0,'off'},{1,'on'},{1,'off'},...]
+     - interpolation: Int = 0
+     - driven_prop: DrivenProp = (RBVenueAuthoring, 0, 0, 1, 'stagekit_fog')
+  
+  
+  
+     
+    
