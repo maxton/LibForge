@@ -12,59 +12,49 @@ namespace LibForge.RBSong
 
     public override RBSong Read()
     {
-      var structs = new List<RBSong.IUnknown>();
-      var version = Int();
-      var more = Int() == 1;
-      while(more)
-      {
-        structs.Add(ReadTree());
-        version = Int();
-        if (version != 0xE)
-        {
-          throw new InvalidDataException($"Unknown RBsong version {version:X}");
-        }
-        more = Int() == 1;
-      }
-      
-      return new RBSong { Structs = structs.ToArray() };
+      var ret = new RBSong();
+      var version = Check(Int(), 0xE);
+      Check(Int(), 1);
+      Check(Int(), 0);
+      ret.Object1 = ReadObjectContainer();
+      Check(Int(), 0xE);
+      Check(Int(), 1);
+      ret.KV = ReadKeyValue();
+      Check(Int(), 0xE);
+      Check(Int(), 1);
+      Check(Int(), 0);
+      ret.Object2 = ReadObjectContainer();
+      Check(Int(), 0xE);
+      Check(Int(), 0);
+      return ret;
     }
 
-    private RBSong.IUnknown ReadTree()
-    {
-      if(Int() != 0)
+    private RBSong.KeyValue ReadKeyValue()
+      => new RBSong.KeyValue
       {
-        s.Position -= 4;
-        return new RBSong.KeyValue
-        {
-          Str1 = String(),
-          Str2 = String()
-        };
-      }
-      else
+        Str1 = String(),
+        Str2 = String()
+      };
+    private RBSong.ObjectContainer ReadObjectContainer()
+      => new RBSong.ObjectContainer
       {
-        return new RBSong.ObjectContainer
-        {
-          Unknown1 = Int(),
-          Unknown2 = Int(),
-          Unknown3 = Int(),
-          Unknown4 = Int(),
-          Unknown5 = Short(),
-          Entities = Arr(ReadObject)
-        };
-      }
-    }
-
-    private RBSong.Entity ReadObject()
+        Unknown1 = Int(),
+        Unknown2 = Int(),
+        Unknown3 = Int(),
+        Unknown4 = Int(),
+        Unknown5 = Short(),
+        Entities = Arr(ReadEntity)
+      };
+    private RBSong.Entity ReadEntity()
       => new RBSong.Entity
       {
         Index0 = UShort(),
         Index1 = UShort(),
         Unknown2 = UInt(),
         Name = String(),
-        Coms = Arr(ReadEntity)
+        Coms = Arr(ReadComponent)
       };
-    
-    private RBSong.Component ReadEntity()
+    private RBSong.Component ReadComponent()
     {
       var entity = new RBSong.Component
       {

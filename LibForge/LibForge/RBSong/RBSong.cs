@@ -142,9 +142,7 @@ namespace LibForge.RBSong
       public string Name;
       public Component[] Coms;
     }
-    public interface IUnknown
-    {}
-    public class ObjectContainer : IUnknown
+    public class ObjectContainer
     {
       public int Unknown1;
       public int Unknown2;
@@ -153,11 +151,13 @@ namespace LibForge.RBSong
       public short Unknown5;
       public Entity[] Entities;
     }
-    public class KeyValue : IUnknown
+    public class KeyValue
     {
       public string Str1;
       public string Str2;
     }
-    public IUnknown[] Structs;
+    public ObjectContainer Object1;
+    public KeyValue KV;
+    public ObjectContainer Object2;
   }
 }

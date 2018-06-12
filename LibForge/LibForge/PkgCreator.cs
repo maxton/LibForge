@@ -157,7 +157,47 @@ FILES  </files>
       // TODO: RBSONG
       var rbsong = new LibForge.RBSong.RBSong
       {
-        Structs = new LibForge.RBSong.RBSong.IUnknown[0]
+        Object1 = new RBSong.RBSong.ObjectContainer
+        {
+          Unknown1 = 20,
+          Unknown2 = 1,
+          Unknown3 = 20,
+          Unknown4 = 0,
+          Unknown5 = 1,
+          Entities = new[] {
+            new RBSong.RBSong.Entity
+            {
+              Index0 = 0,
+              Index1 = 0,
+              Unknown2 = 2,
+              Name = "root",
+              Coms = { }
+            }
+          }
+        },
+        KV = new RBSong.RBSong.KeyValue
+        {
+          Str1 = "PropAnimResource",
+          Str2 = "venue_authoring_data"
+        },
+        Object2 = new RBSong.RBSong.ObjectContainer
+        {
+          Unknown1 = 20,
+          Unknown2 = 1,
+          Unknown3 = 20,
+          Unknown4 = 0,
+          Unknown5 = 21,
+          Entities = new[] {
+            new RBSong.RBSong.Entity
+            {
+              Index0 = 0,
+              Index1 = 0,
+              Unknown2 = 2,
+              Name = "root",
+              Coms = { }
+            }
+          }
+        }
       };
 
       // Phase 2: Writing files

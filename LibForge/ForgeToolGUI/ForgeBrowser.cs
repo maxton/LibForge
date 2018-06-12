@@ -228,32 +228,43 @@ namespace ForgeToolGUI
       }
     }
 
-    void AddForgeProp(RBSong.Property prop, TreeNodeCollection nodes)
+    void AddForgeVal(string name, RBSong.Value value, TreeNodeCollection nodes)
     {
-      if (prop.Value == null) return;
-      if (prop.Type.InternalType.HasFlag(RBSong.DataType.Array))
+      if(value is RBSong.StructValue)
       {
-        var arr = prop.Value as RBSong.ArrayValue;
-        AddArrayNodes(
-          (prop.Value as RBSong.ArrayValue).Data,
-          prop.Name + ": " + (arr.Type as RBSong.ArrayType).ElementType.InternalType.ToString(),
-          nodes);
+        var no = new TreeNode($"{name}: Struct");
+        foreach (var x in (value as RBSong.StructValue).Props)
+        {
+          AddForgeProp(x, no.Nodes);
+        }
+        nodes.Add(no);
       }
-      else if (prop.Type.InternalType.HasFlag(RBSong.DataType.Struct))
+      else if(value is RBSong.ArrayValue)
       {
-        var struc = prop.Value as RBSong.StructValue;
-        AddArrayNodes(struc.Props, prop.Name + ": Struct", nodes);
+        var arr = value as RBSong.ArrayValue;
+        var no = new TreeNode($"{name}: {(arr.Type as RBSong.ArrayType).ElementType.InternalType}[] ({arr.Data.Length})");
+        for(var i = 0; i < arr.Data.Length; i++)
+        {
+          AddForgeVal(name + "[" + i + "]", arr.Data[i], no.Nodes);
+        }
+        nodes.Add(no);
       }
-      else if (prop.Type.InternalType.HasFlag(RBSong.DataType.DrivenValue))
+      else if(value is RBSong.DrivenProp)
       {
-        var driv = prop.Value as RBSong.DrivenProp;
-        nodes.Add($"{prop.Name}: DrivenProp [{driv.ClassName} {driv.PropertyName}] ({driv.Unknown1},{driv.Unknown2}, {driv.Unknown3})");
+        var driv = value as RBSong.DrivenProp;
+        nodes.Add($"{name}: DrivenProp [{driv.ClassName} {driv.PropertyName}] ({driv.Unknown1},{driv.Unknown2}, {driv.Unknown3})");
       }
       else
       {
-        var data = prop.Value.GetType().GetField("Data").GetValue(prop.Value);
-        nodes.Add(prop.Name + ": " + prop.Type.InternalType.ToString() + " = " + data.ToString());
+        var data = value.GetType().GetField("Data").GetValue(value);
+        nodes.Add(name + ": " + value.Type.InternalType.ToString() + " = " + data.ToString());
       }
+    }
+
+    void AddForgeProp(RBSong.Property prop, TreeNodeCollection nodes)
+    {
+      if (prop.Value == null) return;
+      AddForgeVal(prop.Name, prop.Value, nodes);
     }
 
     /// <summary>
@@ -283,14 +294,9 @@ namespace ForgeToolGUI
               AddForgeProp(obj as RBSong.Property, node.Nodes);
               continue;
             }
-            if (obj is RBSong.StructValue)
+            if (obj is RBSong.Value)
             {
-              var no = new TreeNode(myName);
-              foreach (var x in (obj as RBSong.StructValue).Props)
-              {
-                AddForgeProp(x, no.Nodes);
-              }
-              node.Nodes.Add(no);
+              AddForgeVal(myName, obj as RBSong.Value, node.Nodes);
               continue;
             }
 
