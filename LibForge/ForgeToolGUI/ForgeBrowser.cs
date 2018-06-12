@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using LibForge.Mesh;
 using LibForge.Midi;
+using LibForge.RBSong;
 using LibForge.SongData;
 using LibForge.Texture;
 
@@ -227,6 +228,34 @@ namespace ForgeToolGUI
       }
     }
 
+    void AddForgeProp(RBSong.Property prop, TreeNodeCollection nodes)
+    {
+      if (prop.Value == null) return;
+      if (prop.Type.InternalType.HasFlag(RBSong.DataType.Array))
+      {
+        var arr = prop.Value as RBSong.ArrayValue;
+        AddArrayNodes(
+          (prop.Value as RBSong.ArrayValue).Data,
+          prop.Name + ": " + (arr.Type as RBSong.ArrayType).ElementType.InternalType.ToString(),
+          nodes);
+      }
+      else if (prop.Type.InternalType.HasFlag(RBSong.DataType.Struct))
+      {
+        var struc = prop.Value as RBSong.StructValue;
+        AddArrayNodes(struc.Props, prop.Name + ": Struct", nodes);
+      }
+      else if (prop.Type.InternalType.HasFlag(RBSong.DataType.DrivenValue))
+      {
+        var driv = prop.Value as RBSong.DrivenProp;
+        nodes.Add($"{prop.Name}: DrivenProp [{driv.ClassName} {driv.PropertyName}] ({driv.Unknown1},{driv.Unknown2}, {driv.Unknown3})");
+      }
+      else
+      {
+        var data = prop.Value.GetType().GetField("Data").GetValue(prop.Value);
+        nodes.Add(prop.Name + ": " + prop.Type.InternalType.ToString() + " = " + data.ToString());
+      }
+    }
+
     /// <summary>
     /// Adds the given array to the given TreeNodeCollection.
     /// </summary>
@@ -248,6 +277,23 @@ namespace ForgeToolGUI
           else
           {
             var obj = arr.GetValue(i);
+
+            if (obj is RBSong.Property)
+            {
+              AddForgeProp(obj as RBSong.Property, node.Nodes);
+              continue;
+            }
+            if (obj is RBSong.StructValue)
+            {
+              var no = new TreeNode(myName);
+              foreach (var x in (obj as RBSong.StructValue).Props)
+              {
+                AddForgeProp(x, no.Nodes);
+              }
+              node.Nodes.Add(no);
+              continue;
+            }
+
             System.Reflection.FieldInfo nameField;
             if(null != (nameField = obj.GetType().GetField("Name")))
             {
