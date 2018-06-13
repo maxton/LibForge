@@ -125,6 +125,31 @@ FILES  </files>
     // TODO: RBSONG
     public static RBSong.RBSong MakeRBSong(DataArray array)
     {
+      var drumBank = array.Array("drum_bank").Any(1)
+        .Replace("sfx", "fusion/patches")
+        .Replace("_bank.milo", ".fusion");
+      var editorComponent = new RBSong.RBSong.Component
+      {
+        ClassName = "Editor",
+        Name = "Editor",
+        Unknown1 = 3,
+        Unknown2 = 2,
+        Props = new[]
+        {
+          new RBSong.RBSong.Property("capabilities", new RBSong.RBSong.FlagValue(50))
+        }
+      };
+      var entityHeaderComponent = new RBSong.RBSong.Component
+      {
+        ClassName = "EntityHeader",
+        Name = "EntityHeader",
+        Unknown1 = 3,
+        Unknown2 = 1,
+        Props =
+        {
+          // TODO
+        }
+      };
       return new RBSong.RBSong
       {
         Object1 = new RBSong.RBSong.ObjectContainer
@@ -140,7 +165,9 @@ FILES  </files>
               Index0 = 0,
               Index1 = 0,
               Name = "root",
-              Coms = { }
+              Coms = new RBSong.RBSong.Component[] {
+                editorComponent
+              }
             }
           }
         },

@@ -12,12 +12,23 @@ namespace LibForge.RBSong
     // A primitive data type
     // A struct containing fields, each with an associated TYPE
     // An array of a TYPE
+    // TODO: There must be a better way to do this.
     public abstract class Type
     {
       public DataType InternalType;
     }
     public class PrimitiveType : Type
     {
+      public static Type Float = new PrimitiveType(DataType.Float);
+      public static Type Int = new PrimitiveType(DataType.Int);
+      public static Type Byte = new PrimitiveType(DataType.Byte);
+      public static Type Flag = new PrimitiveType(DataType.Flag);
+      public static Type Long = new PrimitiveType(DataType.Long);
+      public static Type Bool = new PrimitiveType(DataType.Bool);
+      public static Type Symbol = new PrimitiveType(DataType.Symbol);
+      public static Type String = new PrimitiveType(DataType.String);
+      public static Type DrivenValue = new PrimitiveType(DataType.DrivenValue);
+      internal PrimitiveType(DataType internalType) { InternalType = internalType; }
     }
     public class StructType : Type
     {
@@ -50,6 +61,13 @@ namespace LibForge.RBSong
     }
     public class Property : PropertyDef
     {
+      public Property() { }
+      public Property(string name, Value val)
+      {
+        Name = name;
+        Value = val;
+        Type = val.Type;
+      }
       public Value Value;
     }
     public abstract class Value
@@ -58,43 +76,50 @@ namespace LibForge.RBSong
     }
     public class FloatValue : Value
     {
-      public override Type Type { get; }
-        = new PrimitiveType { InternalType = DataType.Float };
+      public FloatValue(float data) { Data = data; }
+      public override Type Type { get; } = PrimitiveType.Float;
       public float Data;
     }
     public class IntValue : Value
     {
-      public override Type Type { get; } = new PrimitiveType { InternalType = DataType.Int };
+      public IntValue(int data) { Data = data; }
+      public override Type Type { get; } = PrimitiveType.Int;
       public int Data;
     }
     public class ByteValue : Value
     {
-      public override Type Type { get; } = new PrimitiveType { InternalType = DataType.Byte };
+      public ByteValue(byte data) { Data = data; }
+      public override Type Type { get; } = PrimitiveType.Byte;
       public byte Data;
     }
     public class FlagValue : Value
     {
-      public override Type Type { get; } = new PrimitiveType { InternalType = DataType.Flag };
+      public FlagValue(int data) { Data = data; }
+      public override Type Type { get; } = PrimitiveType.Flag;
       public int Data;
     }
-    public class EnumValue : Value
+    public class LongValue : Value
     {
-      public override Type Type { get; } = new PrimitiveType { InternalType = DataType.Long };
+      public LongValue(long data) { Data = data; }
+      public override Type Type { get; } = PrimitiveType.Long;
       public long Data;
     }
     public class BoolValue : Value
     {
-      public override Type Type { get; } = new PrimitiveType { InternalType = DataType.Bool };
+      public BoolValue(bool data) { Data = data; }
+      public override Type Type { get; } = PrimitiveType.Bool;
       public bool Data;
     }
     public class SymbolValue : Value
     {
-      public override Type Type { get; } = new PrimitiveType { InternalType = DataType.Symbol };
+      public SymbolValue(string data) { Data = data; }
+      public override Type Type { get; } = PrimitiveType.Symbol;
       public string Data;
     }
     public class StringValue : Value
     {
-      public override Type Type { get; } = new PrimitiveType { InternalType = DataType.String };
+      public StringValue(string data) { Data = data; }
+      public override Type Type { get; } = PrimitiveType.String;
       public string Data;
     }
     public class StructValue : Value
@@ -109,7 +134,7 @@ namespace LibForge.RBSong
     }
     public class DrivenProp : Value
     {
-      public override Type Type { get; } = new PrimitiveType { InternalType = DataType.DrivenValue };
+      public override Type Type { get; } = PrimitiveType.DrivenValue;
       public long Unknown1;
       public string ClassName;
       public int Unknown2;

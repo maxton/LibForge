@@ -89,10 +89,29 @@ namespace LibForge.RBSong
           Properties = Arr(ReadPropDef)
         };
       }
-      return new RBSong.PrimitiveType
+      switch (type)
       {
-        InternalType = type
-      };
+        case RBSong.DataType.Float:
+          return RBSong.PrimitiveType.Float;
+        case RBSong.DataType.Int:
+          return RBSong.PrimitiveType.Int;
+        case RBSong.DataType.Byte:
+          return RBSong.PrimitiveType.Byte;
+        case RBSong.DataType.Flag:
+          return RBSong.PrimitiveType.Flag;
+        case RBSong.DataType.Long:
+          return RBSong.PrimitiveType.Long;
+        case RBSong.DataType.Bool:
+          return RBSong.PrimitiveType.Bool;
+        case RBSong.DataType.Symbol:
+          return RBSong.PrimitiveType.Symbol;
+        case RBSong.DataType.String:
+          return RBSong.PrimitiveType.String;
+        case RBSong.DataType.DrivenValue:
+          return RBSong.PrimitiveType.DrivenValue;
+        default:
+          return new RBSong.PrimitiveType(type);
+      }
     }
     private RBSong.Property ReadPropDef()
       => new RBSong.Property
@@ -122,25 +141,25 @@ namespace LibForge.RBSong
           switch (pt.InternalType)
           {
             case RBSong.DataType.Float:
-              return new RBSong.FloatValue { Data = Float() };
+              return new RBSong.FloatValue(Float());
             case RBSong.DataType.Int:
-              return new RBSong.IntValue { Data = Int() };
+              return new RBSong.IntValue(Int());
             case RBSong.DataType.Byte:
-              return new RBSong.ByteValue { Data = Byte() };
+              return new RBSong.ByteValue(Byte());
             case RBSong.DataType.Flag:
-              return new RBSong.FlagValue { Data = Int() };
+              return new RBSong.FlagValue(Int());
             case RBSong.DataType.Long:
-              return new RBSong.EnumValue { Data = Long() };
+              return new RBSong.LongValue(Long());
             case RBSong.DataType.Bool:
-              return new RBSong.BoolValue { Data = Byte() != 0 };
+              return new RBSong.BoolValue(Byte() != 0);
             case RBSong.DataType.Symbol:
               var sym = String();
               if (sym.Length == 0 && Byte() != 0) s.Position -= 1;
-              return new RBSong.SymbolValue { Data = sym };
+              return new RBSong.SymbolValue(sym);
             case RBSong.DataType.String:
               var str = String();
               if (Byte() != 0) s.Position -= 1;
-              return new RBSong.StringValue { Data = str };
+              return new RBSong.StringValue(str);
             case RBSong.DataType.DrivenValue:
               return new RBSong.DrivenProp
               {
