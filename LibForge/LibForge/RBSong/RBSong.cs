@@ -35,7 +35,7 @@ namespace LibForge.RBSong
       Int = 3,
       Byte = 5,
       Flag = 7,
-      Enum = 8,
+      Long = 8,
       Bool = 9,
       Symbol = 0xB,
       String = 0xC,
@@ -79,7 +79,7 @@ namespace LibForge.RBSong
     }
     public class EnumValue : Value
     {
-      public override Type Type { get; } = new PrimitiveType { InternalType = DataType.Enum };
+      public override Type Type { get; } = new PrimitiveType { InternalType = DataType.Long };
       public long Data;
     }
     public class BoolValue : Value
@@ -130,15 +130,15 @@ namespace LibForge.RBSong
     {
       public string ClassName;
       public string Name;
-      public int Type;
-      public long Count;
+      public int Unknown1;
+      public long Unknown2;
       public Property[] Props;
     }
     public class Entity
     {
       public ushort Index0;
       public ushort Index1;
-      public uint Unknown2;
+      // public uint Unknown2; // always 2
       public string Name;
       public Component[] Coms;
     }

@@ -49,8 +49,7 @@ namespace LibForge.RBSong
       => new RBSong.Entity
       {
         Index0 = UShort(),
-        Index1 = UShort(),
-        Unknown2 = UInt(),
+        Index1 = UShort().Then(() => Check(UInt(), 2u)),
         Name = String(),
         Coms = Arr(ReadComponent)
       };
@@ -60,8 +59,8 @@ namespace LibForge.RBSong
       {
         ClassName = String(),
         Name = String(),
-        Type = Int(),
-        Count = Long(),
+        Unknown1 = Int(),
+        Unknown2 = Long(),
         Props = Arr(ReadPropDef)
       };
       foreach(var prop in entity.Props)
@@ -130,7 +129,7 @@ namespace LibForge.RBSong
               return new RBSong.ByteValue { Data = Byte() };
             case RBSong.DataType.Flag:
               return new RBSong.FlagValue { Data = Int() };
-            case RBSong.DataType.Enum:
+            case RBSong.DataType.Long:
               return new RBSong.EnumValue { Data = Long() };
             case RBSong.DataType.Bool:
               return new RBSong.BoolValue { Data = Byte() != 0 };

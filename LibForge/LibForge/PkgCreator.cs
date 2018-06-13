@@ -86,6 +86,89 @@ FILES  </files>
       return Encoding.UTF8.GetBytes(project);
     }
 
+    public static string MakeMoggDta(DataArray array)
+    {
+      var moggDta = new DataArray();
+      var trackArray = new DataArray();
+      trackArray.AddNode(DataSymbol.Symbol("tracks"));
+      var trackSubArray = trackArray.AddNode(new DataArray());
+      foreach (var child in array.Array("song").Array("tracks").Array(1).Children)
+      {
+        trackSubArray.AddNode(child);
+      }
+      var totalTracks = array.Array("song").Array("pans").Array(1).Children.Count;
+      var lastTrack = ((trackSubArray.Children.Last() as DataArray)
+        .Array(1).Children.Last() as DataAtom).Int;
+      var crowdChannel = array.Array("song").Array("crowd_channels")?.Int(1);
+      if (crowdChannel != null)
+      {
+        if (crowdChannel == lastTrack + 2)
+          trackSubArray.AddNode(DTX.FromDtaString($"fake ({lastTrack + 1})"));
+        else if (crowdChannel == lastTrack + 3)
+          trackSubArray.AddNode(DTX.FromDtaString($"fake ({lastTrack + 1} {lastTrack + 2})"));
+        trackSubArray.AddNode(DTX.FromDtaString($"crowd ({crowdChannel} {crowdChannel + 1})"));
+      }
+      else
+      {
+        if (totalTracks == lastTrack + 2)
+          trackSubArray.AddNode(DTX.FromDtaString($"fake ({lastTrack + 1})"));
+        else if (totalTracks == lastTrack + 3)
+          trackSubArray.AddNode(DTX.FromDtaString($"fake ({lastTrack + 1} {lastTrack + 2})"));
+      }
+      var moggDtaStr = new StringBuilder();
+      moggDtaStr.AppendLine(trackArray.ToString());
+      moggDtaStr.AppendLine(array.Array("song").Array("pans").ToString());
+      moggDtaStr.AppendLine(array.Array("song").Array("vols").ToString());
+      return moggDtaStr.ToString();
+    }
+    
+    // TODO: RBSONG
+    public static RBSong.RBSong MakeRBSong(DataArray array)
+    {
+      return new RBSong.RBSong
+      {
+        Object1 = new RBSong.RBSong.ObjectContainer
+        {
+          Unknown1 = 20,
+          Unknown2 = 1,
+          Unknown3 = 20,
+          Unknown4 = 0,
+          Unknown5 = 1,
+          Entities = new[] {
+            new RBSong.RBSong.Entity
+            {
+              Index0 = 0,
+              Index1 = 0,
+              Name = "root",
+              Coms = { }
+            }
+          }
+        },
+        KV = new RBSong.RBSong.KeyValue
+        {
+          Str1 = "PropAnimResource",
+          Str2 = "venue_authoring_data"
+        },
+        Object2 = new RBSong.RBSong.ObjectContainer
+        {
+          Unknown1 = 20,
+          Unknown2 = 1,
+          Unknown3 = 20,
+          Unknown4 = 0,
+          Unknown5 = 21,
+          Entities = new[] {
+            new RBSong.RBSong.Entity
+            {
+              Index0 = 0,
+              Index1 = 0,
+              Name = "root",
+              Coms = { }
+            }
+          }
+        }
+      };
+    }
+
     public static void ConToGp4(string conPath, string buildDir)
     {
       // Phase 1: Reading from CON
@@ -95,7 +178,7 @@ FILES  </files>
         Console.WriteLine("Error: given file was not a CON file");
         return;
       }
-      var dta = DtxCS.DTX.FromPlainTextBytes(con.RootDirectory.GetFileAtPath("songs/songs.dta").GetBytes());
+      var dta = DTX.FromPlainTextBytes(con.RootDirectory.GetFileAtPath("songs/songs.dta").GetBytes());
       if(dta.Count > 1)
       {
         Console.WriteLine("Error: only 1-song CONs are supported at this time");
@@ -120,85 +203,8 @@ FILES  </files>
       // TODO: Catch possible conversion exceptions? i.e. Unsupported milo version
       var milo = MiloFile.ReadFromStream(con.RootDirectory.GetFileAtPath(miloPath).GetStream());
       var lipsync = LipsyncConverter.FromMilo(milo);
-
-      var moggDta = new DataArray();
-      var trackArray = new DataArray();
-      trackArray.AddNode(DataSymbol.Symbol("tracks"));
-      var trackSubArray = trackArray.AddNode(new DataArray());
-      foreach(var child in array.Array("song").Array("tracks").Array(1).Children)
-      {
-        trackSubArray.AddNode(child);
-      }
-      var totalTracks = array.Array("song").Array("pans").Array(1).Children.Count;
-      var lastTrack = ((trackSubArray.Children.Last() as DataArray)
-        .Array(1).Children.Last() as DataAtom).Int;
-      var crowdChannel = array.Array("song").Array("crowd_channels")?.Int(1);
-      if(crowdChannel != null)
-      {
-        if(crowdChannel == lastTrack + 2)
-          trackSubArray.AddNode(DTX.FromDtaString($"fake ({lastTrack + 1})"));
-        else if(crowdChannel == lastTrack + 3)
-          trackSubArray.AddNode(DTX.FromDtaString($"fake ({lastTrack + 1} {lastTrack + 2})"));
-        trackSubArray.AddNode(DTX.FromDtaString($"crowd ({crowdChannel} {crowdChannel + 1})"));
-      } else
-      {
-        if (totalTracks == lastTrack + 2)
-          trackSubArray.AddNode(DTX.FromDtaString($"fake ({lastTrack + 1})"));
-        else if (totalTracks == lastTrack + 3)
-          trackSubArray.AddNode(DTX.FromDtaString($"fake ({lastTrack + 1} {lastTrack + 2})"));
-      }
-      moggDta.AddNode(trackArray);
-      moggDta.AddNode(array.Array("song").Array("pans"));
-      moggDta.AddNode(array.Array("song").Array("vols"));
-      var moggDtaStr = "";
-      foreach (var arr in moggDta.Children)
-        moggDtaStr += arr.ToString() + "\r\n";
-
-      // TODO: RBSONG
-      var rbsong = new LibForge.RBSong.RBSong
-      {
-        Object1 = new RBSong.RBSong.ObjectContainer
-        {
-          Unknown1 = 20,
-          Unknown2 = 1,
-          Unknown3 = 20,
-          Unknown4 = 0,
-          Unknown5 = 1,
-          Entities = new[] {
-            new RBSong.RBSong.Entity
-            {
-              Index0 = 0,
-              Index1 = 0,
-              Unknown2 = 2,
-              Name = "root",
-              Coms = { }
-            }
-          }
-        },
-        KV = new RBSong.RBSong.KeyValue
-        {
-          Str1 = "PropAnimResource",
-          Str2 = "venue_authoring_data"
-        },
-        Object2 = new RBSong.RBSong.ObjectContainer
-        {
-          Unknown1 = 20,
-          Unknown2 = 1,
-          Unknown3 = 20,
-          Unknown4 = 0,
-          Unknown5 = 21,
-          Entities = new[] {
-            new RBSong.RBSong.Entity
-            {
-              Index0 = 0,
-              Index1 = 0,
-              Unknown2 = 2,
-              Name = "root",
-              Coms = { }
-            }
-          }
-        }
-      };
+      var moggDtaStr = MakeMoggDta(array);
+      var rbsong = MakeRBSong(array);
 
       // Phase 2: Writing files
       var songPath = Path.Combine(buildDir, "songs", shortname);
@@ -218,7 +224,7 @@ FILES  </files>
       using (var rbmid = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbmid_ps4")))
         RBMidWriter.WriteStream(RBMidConverter.ToRBMid(mid), rbmid);
       using (var rbsongFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbsong")))
-        new LibForge.RBSong.RBSongWriter(rbsongFile).WriteStream(rbsong);
+        new RBSong.RBSongWriter(rbsongFile).WriteStream(rbsong);
       using (var songdtaFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.songdta_ps4")))
         SongDataWriter.WriteStream(SongDataConverter.ToSongData(array), songdtaFile);
 
