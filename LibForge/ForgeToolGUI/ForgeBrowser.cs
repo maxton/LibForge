@@ -228,30 +228,30 @@ namespace ForgeToolGUI
       }
     }
 
-    void AddForgeVal(string name, RBSong.Value value, TreeNodeCollection nodes)
+    void AddForgeVal(string name, Value value, TreeNodeCollection nodes)
     {
-      if(value is RBSong.StructValue)
+      if(value is StructValue)
       {
         var no = new TreeNode($"{name}: Struct");
-        foreach (var x in (value as RBSong.StructValue).Props)
+        foreach (var x in (value as StructValue).Props)
         {
           AddForgeProp(x, no.Nodes);
         }
         nodes.Add(no);
       }
-      else if(value is RBSong.ArrayValue)
+      else if(value is ArrayValue)
       {
-        var arr = value as RBSong.ArrayValue;
-        var no = new TreeNode($"{name}: {(arr.Type as RBSong.ArrayType).ElementType.InternalType}[] ({arr.Data.Length})");
+        var arr = value as ArrayValue;
+        var no = new TreeNode($"{name}: {(arr.Type as ArrayType).ElementType.InternalType}[] ({arr.Data.Length})");
         for(var i = 0; i < arr.Data.Length; i++)
         {
           AddForgeVal(name + "[" + i + "]", arr.Data[i], no.Nodes);
         }
         nodes.Add(no);
       }
-      else if(value is RBSong.DrivenProp)
+      else if(value is DrivenProp)
       {
-        var driv = value as RBSong.DrivenProp;
+        var driv = value as DrivenProp;
         nodes.Add($"{name}: DrivenProp [{driv.ClassName} {driv.PropertyName}] ({driv.Unknown1},{driv.Unknown2}, {driv.Unknown3})");
       }
       else
@@ -261,7 +261,7 @@ namespace ForgeToolGUI
       }
     }
 
-    void AddForgeProp(RBSong.Property prop, TreeNodeCollection nodes)
+    void AddForgeProp(Property prop, TreeNodeCollection nodes)
     {
       if (prop.Value == null) return;
       AddForgeVal(prop.Name, prop.Value, nodes);
@@ -289,14 +289,14 @@ namespace ForgeToolGUI
           {
             var obj = arr.GetValue(i);
 
-            if (obj is RBSong.Property)
+            if (obj is Property)
             {
-              AddForgeProp(obj as RBSong.Property, node.Nodes);
+              AddForgeProp(obj as Property, node.Nodes);
               continue;
             }
-            if (obj is RBSong.Value)
+            if (obj is Value)
             {
-              AddForgeVal(myName, obj as RBSong.Value, node.Nodes);
+              AddForgeVal(myName, obj as Value, node.Nodes);
               continue;
             }
 

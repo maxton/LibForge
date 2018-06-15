@@ -189,13 +189,13 @@ namespace ForgeTool
           }
           break;
         case "con2gp4":
-          LibForge.PkgCreator.ConToGp4(args[1], args[2]);
+          LibForge.Util.PkgCreator.ConToGp4(args[1], args[2]);
           break;
         case "con2pkg":
           var conFilename = Path.GetFileName(args[2]);
           var tmpDir = Path.Combine(Path.GetTempPath(), conFilename + "_tmp_build");
-          LibForge.PkgCreator.ConToGp4(args[2], tmpDir);
-          LibForge.PkgCreator.BuildPkg(args[1], Path.Combine(tmpDir, "project.gp4"), args[3]);
+          LibForge.Util.PkgCreator.ConToGp4(args[2], tmpDir);
+          LibForge.Util.PkgCreator.BuildPkg(args[1], Path.Combine(tmpDir, "project.gp4"), args[3]);
           Directory.Delete(tmpDir, true);
           break;
         default:

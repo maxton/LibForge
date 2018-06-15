@@ -9,9 +9,10 @@ using GameArchives.STFS;
 using LibForge.Lipsync;
 using LibForge.Midi;
 using LibForge.Milo;
+using LibForge.RBSong;
 using LibForge.SongData;
 
-namespace LibForge
+namespace LibForge.Util
 {
   public static class PkgCreator
   {
@@ -125,10 +126,11 @@ FILES  </files>
     // TODO: RBSONG
     public static RBSong.RBSong MakeRBSong(DataArray array)
     {
-      var drumBank = array.Array("drum_bank").Any(1)
+      var drumBank = array.Array("drum_bank")?.Any(1)
         .Replace("sfx", "fusion/patches")
-        .Replace("_bank.milo", ".fusion");
-      var editorComponent = new RBSong.RBSong.Component
+        .Replace("_bank.milo", ".fusion") 
+        ?? "fusion/patches/kit01.fusion";
+      var editorComponent = new Component
       {
         ClassName = "Editor",
         Name = "Editor",
@@ -136,23 +138,52 @@ FILES  </files>
         Unknown2 = 2,
         Props = new[]
         {
-          new RBSong.RBSong.Property("capabilities", new RBSong.RBSong.FlagValue(50))
+          new Property("capabilities", new FlagValue(50))
         }
       };
-      var entityHeaderComponent = new RBSong.RBSong.Component
+      var vec3 = StructType.FromData(DTX.FromDtaString("define vec3 (props (x float) (y float) (z float))"));
+      var xfm_type = StructType.FromData(DTX.FromDtaString(
+        @"define xfm
+            (props
+              (basis_x vec3)
+              (basis_y vec3)
+              (basis_z vec3)
+              (translate vec3))"));
+      var entityHeaderComponent = new Component
       {
         ClassName = "EntityHeader",
         Name = "EntityHeader",
         Unknown1 = 3,
         Unknown2 = 1,
-        Props =
+        Props = new[]
         {
-          // TODO
+          new Property("copy_on_instance", new BoolValue(true)),
+          new Property("drives_parent", new BoolValue(false)),
+          new Property("static", new BoolValue(false)),
+          new Property("instance_polling_mode", new IntValue(0)),
+          new Property("num_instances", new IntValue(0)),
+          new Property("num_meshes", new IntValue(0)),
+          new Property("num_particles", new IntValue(0)),
+          new Property("num_propanims", new IntValue(0)),
+          new Property("num_lights", new IntValue(0)),
+          new Property("num_verts", new IntValue(0)),
+          new Property("num_faces", new IntValue(0)),
+          new Property("changelist", new IntValue(0)),
+          new Property("icon_cam_initialized", new BoolValue(false)),
+          new Property("icon_cam_near", new FloatValue(0.1f)),
+          new Property("icon_cam_far", new FloatValue(1000f)),
+          new Property("icon_cam_xfm", StructValue.FromData(xfm_type, DTX.FromDtaString(
+            @"(basis_x ((x 1.0) (y 0.0) (z 0.0)))
+              (basis_y ((x 0.0) (y 1.0) (z 0.0)))
+              (basis_z ((x 0.0) (y 0.0) (z 1.0)))
+              (translate ((x 0.0) (y 0.0) (z 0.0)))"))),
+          new Property("icon_data", 
+            new ArrayValue(new ArrayType{ElementType = PrimitiveType.Byte, InternalType = RBSong.DataType.Byte | RBSong.DataType.Array }, new Value[] { }))
         }
       };
       return new RBSong.RBSong
       {
-        Object1 = new RBSong.RBSong.ObjectContainer
+        Object1 = new ObjectContainer
         {
           Unknown1 = 20,
           Unknown2 = 1,
@@ -160,23 +191,57 @@ FILES  </files>
           Unknown4 = 0,
           Unknown5 = 1,
           Entities = new[] {
-            new RBSong.RBSong.Entity
+            new Entity
             {
               Index0 = 0,
               Index1 = 0,
               Name = "root",
-              Coms = new RBSong.RBSong.Component[] {
-                editorComponent
+              Coms = new Component[] {
+                editorComponent,
+                entityHeaderComponent,
+                new Component
+                {
+                  ClassName = "RBSongMetadata",
+                  Name = "RBSongMetadata",
+                  Unknown1 = 3,
+                  Unknown2 = 4,
+                  Props = new[]
+                  {
+                    new Property("tempo", new SymbolValue("medium")),
+                    new Property("vocal_tonic_note", new LongValue(4)),
+                    new Property("vocal_track_scroll_duration_ms", new LongValue(2300)),
+                    new Property("global_tuning_offset", new FloatValue(0)),
+                    new Property("band_fail_sound_event", new SymbolValue("")),
+                    new Property("vocal_percussion_patch", new StringValue("fusion/patches/kit01.fusion")),
+                    new Property("drum_kit_patch", new StringValue(drumBank)),
+                    new Property("improv_solo_patch", new SymbolValue("gtrsolo_amer_03")),
+                    new Property("dynamic_drum_fill_override", new IntValue(10)),
+                    new Property("improv_solo_volume_db", new FloatValue(-9))
+                  }
+                },
+                new Component
+                {
+                  ClassName = "RBVenueAuthoring",
+                  Name = "RBVenueAuthoring",
+                  Unknown1 = 3,
+                  Unknown2 = 0,
+                  Props = new[]
+                  {
+                    new Property("part2_instrument", new IntValue(2)),
+                    new Property("part3_instrument", new IntValue(0)),
+                    new Property("part4_instrument", new IntValue(1))
+                  }
+                }
               }
             }
           }
         },
-        KV = new RBSong.RBSong.KeyValue
+        KV = new KeyValue
         {
           Str1 = "PropAnimResource",
           Str2 = "venue_authoring_data"
         },
-        Object2 = new RBSong.RBSong.ObjectContainer
+        Object2 = new ObjectContainer
         {
           Unknown1 = 20,
           Unknown2 = 1,
@@ -184,12 +249,15 @@ FILES  </files>
           Unknown4 = 0,
           Unknown5 = 21,
           Entities = new[] {
-            new RBSong.RBSong.Entity
+            new Entity
             {
               Index0 = 0,
               Index1 = 0,
               Name = "root",
-              Coms = { }
+              Coms = new[]
+              {
+                editorComponent
+              }
             }
           }
         }
@@ -251,7 +319,7 @@ FILES  </files>
       using (var rbmid = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbmid_ps4")))
         RBMidWriter.WriteStream(RBMidConverter.ToRBMid(mid), rbmid);
       using (var rbsongFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbsong")))
-        new RBSong.RBSongWriter(rbsongFile).WriteStream(rbsong);
+        new RBSongWriter(rbsongFile).WriteStream(rbsong);
       using (var songdtaFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.songdta_ps4")))
         SongDataWriter.WriteStream(SongDataConverter.ToSongData(array), songdtaFile);
 

@@ -13,49 +13,56 @@ namespace LibForge.RBSong
     public override RBSong Read()
     {
       var ret = new RBSong();
-      var version = Check(Int(), 0xE);
+      ret.Version = Int();
       Check(Int(), 1);
       Check(Int(), 0);
-      ret.Object1 = ReadObjectContainer();
-      Check(Int(), 0xE);
+      ret.Object1 = ReadObjectContainer(ret.Version);
+      Check(Int(), ret.Version);
       Check(Int(), 1);
       ret.KV = ReadKeyValue();
-      Check(Int(), 0xE);
+      Check(Int(), ret.Version);
       Check(Int(), 1);
       Check(Int(), 0);
-      ret.Object2 = ReadObjectContainer();
-      Check(Int(), 0xE);
+      ret.Object2 = ReadObjectContainer(ret.Version);
+      Check(Int(), ret.Version);
       Check(Int(), 0);
       return ret;
     }
 
-    private RBSong.KeyValue ReadKeyValue()
-      => new RBSong.KeyValue
+    private KeyValue ReadKeyValue()
+      => new KeyValue
       {
         Str1 = String(),
         Str2 = String()
       };
-    private RBSong.ObjectContainer ReadObjectContainer()
-      => new RBSong.ObjectContainer
-      {
-        Unknown1 = Int(),
-        Unknown2 = Int(),
-        Unknown3 = Int(),
-        Unknown4 = Int(),
-        Unknown5 = Short(),
-        Entities = Arr(ReadEntity)
-      };
-    private RBSong.Entity ReadEntity()
-      => new RBSong.Entity
-      {
-        Index0 = UShort(),
-        Index1 = UShort().Then(() => Check(UInt(), 2u)),
-        Name = String(),
-        Coms = Arr(ReadComponent)
-      };
-    private RBSong.Component ReadComponent()
+    private ObjectContainer ReadObjectContainer(int version)
     {
-      var entity = new RBSong.Component
+      var obj = new ObjectContainer();
+      if (version > 0xE) Int();
+      obj.Unknown1 = Int();
+      obj.Unknown2 = Int();
+      obj.Unknown3 = Int();
+      if (version > 0xE) Int();
+      obj.Unknown4 = Int();
+      obj.Unknown5 = Short();
+      obj.Entities = Arr(ReadEntity);
+      return obj;
+    }
+    private Entity ReadEntity()
+    {
+      var ent = new Entity();
+      ent.Index0 = UShort();
+      ent.Index1 = UShort();
+      if (ent.Index0 == 0xFFFF && ent.Index1 == 0xFFFF)
+        return null;
+      Check(UInt(), 2u);
+      ent.Name = String();
+      ent.Coms = Arr(ReadComponent);
+      return ent;
+    }
+    private Component ReadComponent()
+    {
+      var entity = new Component
       {
         ClassName = String(),
         Name = String(),
@@ -69,20 +76,20 @@ namespace LibForge.RBSong
       }
       return entity;
     }
-    private RBSong.Type ReadType()
+    private Type ReadType()
     {
-      var type = (RBSong.DataType)Int();
-      if (type.HasFlag(RBSong.DataType.Array))
+      var type = (DataType)Int();
+      if (type.HasFlag(DataType.Array))
       {
-        return new RBSong.ArrayType
+        return new ArrayType
         {
           InternalType = type,
           ElementType = ReadType()
         };
       }
-      else if(type.HasFlag(RBSong.DataType.Struct))
+      else if(type.HasFlag(DataType.Struct))
       {
-        return new RBSong.StructType
+        return new StructType
         {
           InternalType = type,
           Refcount = Long(),
@@ -91,77 +98,77 @@ namespace LibForge.RBSong
       }
       switch (type)
       {
-        case RBSong.DataType.Float:
-          return RBSong.PrimitiveType.Float;
-        case RBSong.DataType.Int:
-          return RBSong.PrimitiveType.Int;
-        case RBSong.DataType.Byte:
-          return RBSong.PrimitiveType.Byte;
-        case RBSong.DataType.Flag:
-          return RBSong.PrimitiveType.Flag;
-        case RBSong.DataType.Long:
-          return RBSong.PrimitiveType.Long;
-        case RBSong.DataType.Bool:
-          return RBSong.PrimitiveType.Bool;
-        case RBSong.DataType.Symbol:
-          return RBSong.PrimitiveType.Symbol;
-        case RBSong.DataType.String:
-          return RBSong.PrimitiveType.String;
-        case RBSong.DataType.DrivenValue:
-          return RBSong.PrimitiveType.DrivenValue;
+        case DataType.Float:
+          return PrimitiveType.Float;
+        case DataType.Int:
+          return PrimitiveType.Int;
+        case DataType.Byte:
+          return PrimitiveType.Byte;
+        case DataType.Flag:
+          return PrimitiveType.Flag;
+        case DataType.Long:
+          return PrimitiveType.Long;
+        case DataType.Bool:
+          return PrimitiveType.Bool;
+        case DataType.Symbol:
+          return PrimitiveType.Symbol;
+        case DataType.String:
+          return PrimitiveType.String;
+        case DataType.DrivenValue:
+          return PrimitiveType.DrivenValue;
         default:
-          return new RBSong.PrimitiveType(type);
+          return new PrimitiveType(type);
       }
     }
-    private RBSong.Property ReadPropDef()
-      => new RBSong.Property
+    private Property ReadPropDef()
+      => new Property
       {
         Name = String(),
         Type = ReadType()
       };
-    private RBSong.Value ReadValue(RBSong.Type t)
+    private Value ReadValue(Type t)
     {
       switch (t)
       {
-        case RBSong.ArrayType at:
-          return new RBSong.ArrayValue(at, Arr(() => ReadValue(at.ElementType)));
-        case RBSong.StructType st:
-          var props = new List<RBSong.Property>();
+        case ArrayType at:
+          return new ArrayValue(at, Arr(() => ReadValue(at.ElementType)));
+        case StructType st:
+          var props = new List<Property>();
           foreach(var p in st.Properties)
           {
-            props.Add(new RBSong.Property
+            props.Add(new Property
             {
               Name = p.Name,
               Type = p.Type,
               Value = ReadValue(p.Type)
             });
           }
-          return new RBSong.StructValue(st, props.ToArray());
-        case RBSong.PrimitiveType pt:
+          return new StructValue(st, props.ToArray());
+        case PrimitiveType pt:
           switch (pt.InternalType)
           {
-            case RBSong.DataType.Float:
-              return new RBSong.FloatValue(Float());
-            case RBSong.DataType.Int:
-              return new RBSong.IntValue(Int());
-            case RBSong.DataType.Byte:
-              return new RBSong.ByteValue(Byte());
-            case RBSong.DataType.Flag:
-              return new RBSong.FlagValue(Int());
-            case RBSong.DataType.Long:
-              return new RBSong.LongValue(Long());
-            case RBSong.DataType.Bool:
-              return new RBSong.BoolValue(Byte() != 0);
-            case RBSong.DataType.Symbol:
+            case DataType.Float:
+              return new FloatValue(Float());
+            case DataType.Int:
+              return new IntValue(Int());
+            case DataType.Byte:
+              return new ByteValue(Byte());
+            case DataType.Flag:
+              return new FlagValue(Int());
+            case DataType.Long:
+              return new LongValue(Long());
+            case DataType.Bool:
+              return new BoolValue(Byte() != 0);
+            case DataType.Symbol:
               var sym = String();
               if (sym.Length == 0 && Byte() != 0) s.Position -= 1;
-              return new RBSong.SymbolValue(sym);
-            case RBSong.DataType.String:
+              return new SymbolValue(sym);
+            case DataType.String:
               var str = String();
               if (Byte() != 0) s.Position -= 1;
-              return new RBSong.StringValue(str);
-            case RBSong.DataType.DrivenValue:
-              return new RBSong.DrivenProp
+              return new StringValue(str);
+            case DataType.DrivenValue:
+              return new DrivenProp
               {
                 Unknown1 = Long(),
                 ClassName = String(),
