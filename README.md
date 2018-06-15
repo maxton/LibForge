@@ -16,8 +16,37 @@ It is licensed under the GNU LGPLv3 and includes two frontends at the moment:
 
 ## ForgeTool
 
-This is a command line tool that currently does file conversions from rbmid -> mid, rbmid -> rbmid, mid -> rbmid, and {png|bmp}_{ps4|pc} -> png
+This is a command line tool that does file conversions.
+
+```
+Usage: ForgeTool.exe <verb> [options]
+Verbs:
+  version
+    - Prints the version number and exits
+  rbmid2mid <input.rbmid> <output.mid>
+   - converts a Forge midi to a Standard Midi File
+  reprocess <input.rbmid> <output.rbmid>
+   - converts a Forge midi to a Forge midi
+  mid2rbmid <input.mid> <output.rbmid>
+   - converts a Standard Midi File to a Forge midi
+  tex2png <input.png/bmp_pc/ps4> <output.png>
+   - converts a Forge texture to PNG
+  mesh2obj <input.fbx...> <output.obj>
+   - converts a Forge mesh to OBJ
+  con2gp4 <input_con> <output_dir>
+   - converts a CON custom to a .gp4 project in the given output directory
+  con2pkg <path_to_pub_cmd.exe> <input_con> <output_dir>
+   - converts a CON custom to a PS4 PKG custom in the given output directory
+  milo2lipsync <input.milo_xbox> <output.lipsync>
+   - converts an uncompressed milo archive to forge lipsync file
+```
 
 ## ForgeToolGUI
 
-This has an ark file browser with texture preview, songdta preview, and DTA preview.
+This has an ark/PFS/folder browser with support for previewing the following:
+  - Textures (.png_pc, .png_ps4, .bmp_pc, .bmp_ps4, etc)
+  - Models (not a 3d preview, but you can see the vertices / UVs / faces)
+  - .songdta files
+  - Data (.dta/.dtb/.*_dta_*/.moggsong) files
+  - RBmid files
+  - RBsong files
