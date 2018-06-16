@@ -183,6 +183,7 @@ FILES  </files>
       };
       return new RBSong.RBSong
       {
+        Version = 0xE,
         Object1 = new ObjectContainer
         {
           Unknown1 = 20,
@@ -212,7 +213,7 @@ FILES  </files>
                     new Property("vocal_track_scroll_duration_ms", new LongValue(2300)),
                     new Property("global_tuning_offset", new FloatValue(0)),
                     new Property("band_fail_sound_event", new SymbolValue("")),
-                    new Property("vocal_percussion_patch", new StringValue("fusion/patches/kit01.fusion")),
+                    new Property("vocal_percussion_patch", new StringValue("fusion/patches/vox_perc_tambourine.fusion")),
                     new Property("drum_kit_patch", new StringValue(drumBank)),
                     new Property("improv_solo_patch", new SymbolValue("gtrsolo_amer_03")),
                     new Property("dynamic_drum_fill_override", new IntValue(10)),
@@ -256,7 +257,28 @@ FILES  </files>
               Name = "root",
               Coms = new[]
               {
-                editorComponent
+                editorComponent,
+                entityHeaderComponent,
+                new Component
+                {
+                  ClassName = "PropAnim",
+                  Name = "PropAnim",
+                  Unknown1 = 3,
+                  Unknown2 = 0,
+                  Props = StructValue.FromData(
+                            StructType.FromData(DTX.FromDtaString(
+                              @"(props 
+                                  (frame_range_start float)
+                                  (frame_range_end float)
+                                  (time_units int)
+                                  (is_looping bool))")),
+                            DTX.FromDtaString(
+                              @"(frame_range_start 3.402823E+38)
+                                (frame_range_end -3.402823E+38)
+                                (time_units 0)
+                                (is_looping 0)")).Props
+
+                }
               }
             }
           }
