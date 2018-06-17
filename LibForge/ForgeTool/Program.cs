@@ -5,6 +5,7 @@ using LibForge.Lipsync;
 using LibForge.Mesh;
 using LibForge.Midi;
 using LibForge.Milo;
+using LibForge.RBSong;
 using LibForge.Texture;
 
 namespace ForgeTool
@@ -187,6 +188,55 @@ namespace ForgeTool
             }
             Console.WriteLine($"Summary: {succ} OK, {warn} WARN, {fail} ERROR");
           }
+          break;
+        case "testrbsong":
+          {
+            var dir = args[1];
+            int succ = 0, warn = 0, fail = 0;
+            var files = dir.EndsWith(".rbsong") ?
+              new[] { dir } : Directory.EnumerateFiles(dir, "*.rbsong");
+            foreach (var f in files)
+            {
+              var info = new FileInfo(f);
+              var name = info.Name;
+              using (var fi = File.OpenRead(f))
+              {
+                try
+                {
+                  var rbsong = new RBSongReader(fi).Read();
+                  using (var ms = new MemoryStream((int)fi.Length))
+                  {
+                    new RBSongWriter(ms).WriteStream(rbsong);
+                    ms.Position = 0;
+                    if (ms.Length == fi.Length)
+                    {
+                      succ++;
+                    }
+                    else
+                    {
+                      Console.WriteLine($"[WARN] {name}:");
+                      Console.WriteLine($"  Processed file had different length ({fi.Length} orig, {ms.Length} processed)");
+                      warn++;
+                    }
+                  }
+                }
+                catch (Exception e)
+                {
+                  Console.WriteLine($"[ERROR] {name}:");
+                  Console.WriteLine("  " + e.Message);
+                  fail++;
+                }
+              }
+            }
+            Console.WriteLine($"Summary: {succ} OK, {warn} WARN, {fail} ERROR");
+            if (fail > 0)
+            {
+              Console.WriteLine("(a = converted file, b = original)");
+            }
+          }
+          break;
+        case "rbsong2rbsong":
+          WithIO((i, o) => new RBSongWriter(o).WriteStream(new RBSongReader(i).Read()));
           break;
         case "con2gp4":
           LibForge.Util.PkgCreator.ConToGp4(args[1], args[2]);
