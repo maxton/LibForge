@@ -27,7 +27,7 @@ namespace LibForge.SongData
         Cover = false,
         Fake = false,
         Flags = 0,
-        GameOrigin = "rb3_dlc",
+        GameOrigin = songDta.Array("game_origin")?.Any(1) ?? "ugc_plus",
         Genre = songDta.Array("genre").Symbol(1).ToString(),
         HasFreestyleVocals = false,
         Medium = "",

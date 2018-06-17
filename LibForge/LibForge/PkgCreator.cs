@@ -209,9 +209,9 @@ FILES  </files>
                   Props = new[]
                   {
                     new Property("tempo", new SymbolValue("medium")),
-                    new Property("vocal_tonic_note", new LongValue(4)),
-                    new Property("vocal_track_scroll_duration_ms", new LongValue(2300)),
-                    new Property("global_tuning_offset", new FloatValue(0)),
+                    new Property("vocal_tonic_note", new LongValue(array.Array("vocal_tonic_note").Int(1))),
+                    new Property("vocal_track_scroll_duration_ms", new LongValue(array.Array("song_scroll_speed")?.Int(1) ?? 2300)),
+                    new Property("global_tuning_offset", new FloatValue(array.Array("tuning_offset_cents").Int(1))),
                     new Property("band_fail_sound_event", new SymbolValue("")),
                     new Property("vocal_percussion_patch", new StringValue("fusion/patches/vox_perc_tambourine.fusion")),
                     new Property("drum_kit_patch", new StringValue(drumBank)),
