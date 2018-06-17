@@ -58,14 +58,14 @@ namespace LibForge.RBSong
   public class PrimitiveType : Type
   {
     public static Type Float = new PrimitiveType(DataType.Float);
-    public static Type Int = new PrimitiveType(DataType.Int);
-    public static Type Byte = new PrimitiveType(DataType.Byte);
-    public static Type Flag = new PrimitiveType(DataType.Flag);
-    public static Type Long = new PrimitiveType(DataType.Long);
+    public static Type Int = new PrimitiveType(DataType.Int32);
+    public static Type Byte = new PrimitiveType(DataType.Uint8);
+    public static Type Flag = new PrimitiveType(DataType.Uint32);
+    public static Type Long = new PrimitiveType(DataType.Uint64);
     public static Type Bool = new PrimitiveType(DataType.Bool);
     public static Type Symbol = new PrimitiveType(DataType.Symbol);
-    public static Type String = new PrimitiveType(DataType.String);
-    public static Type DrivenValue = new PrimitiveType(DataType.DrivenValue);
+    public static Type String = new PrimitiveType(DataType.ResourcePath);
+    public static Type PropRef = new PrimitiveType(DataType.PropRef);
     internal PrimitiveType(DataType internalType) { InternalType = internalType; }
   }
   public class StructType : Type
@@ -98,15 +98,25 @@ namespace LibForge.RBSong
   public enum DataType : int
   {
     Float = 0,
-    Int = 3,
-    Byte = 5,
-    Flag = 7,
-    Long = 8,
+    Int8 = 1,
+    Int16 = 2,
+    Int32 = 3,
+    Int64 = 4,
+    Uint8 = 5,
+    Uint16 = 6,
+    Uint32 = 7,
+    Uint64 = 8,
     Bool = 9,
+    GameObjectId = 0xA,
     Symbol = 0xB,
-    String = 0xC,
+    ResourcePath = 0xC,
+    Color = 0xD,
+    // Array = 0xE,
     Struct = 0xF,
-    DrivenValue = 0x10,
+    PropRef = 0x10,
+    Action = 0x11,
+    WaveformFloat = 0x12,
+    WaveformColor = 0x13,
     Array = 0x100
   }
   public class PropertyDef
@@ -136,23 +146,23 @@ namespace LibForge.RBSong
       {
         case DataType.Float:
           return new FloatValue(atom.Float);
-        case DataType.Int:
+        case DataType.Int32:
           return new IntValue(atom.Int);
-        case DataType.Byte:
+        case DataType.Uint8:
           return new ByteValue((byte)atom.Int);
-        case DataType.Flag:
+        case DataType.Uint32:
           return new FlagValue(atom.Int);
-        case DataType.Long:
+        case DataType.Uint64:
           return new LongValue(atom.Int);
         case DataType.Bool:
           return new BoolValue(atom.Int != 0);
         case DataType.Symbol:
           return new SymbolValue(d.ToString());
-        case DataType.String:
+        case DataType.ResourcePath:
           return new StringValue(d.ToString());
         case DataType.Struct:
           return StructValue.FromData(t as StructType, arr);
-        case DataType.DrivenValue:
+        case DataType.PropRef:
         case DataType.Array:
         default:
           throw new Exception("Unhandled case (TODO)");
@@ -226,9 +236,9 @@ namespace LibForge.RBSong
       return new StructValue(t, propVals.ToArray());
     }
   }
-  public class DrivenProp : Value
+  public class PropRef : Value
   {
-    public override Type Type { get; } = PrimitiveType.DrivenValue;
+    public override Type Type { get; } = PrimitiveType.PropRef;
     public long Unknown1;
     public string ClassName;
     public int Unknown2;

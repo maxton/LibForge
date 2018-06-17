@@ -100,22 +100,22 @@ namespace LibForge.RBSong
       {
         case DataType.Float:
           return PrimitiveType.Float;
-        case DataType.Int:
+        case DataType.Int32:
           return PrimitiveType.Int;
-        case DataType.Byte:
+        case DataType.Uint8:
           return PrimitiveType.Byte;
-        case DataType.Flag:
+        case DataType.Uint32:
           return PrimitiveType.Flag;
-        case DataType.Long:
+        case DataType.Uint64:
           return PrimitiveType.Long;
         case DataType.Bool:
           return PrimitiveType.Bool;
         case DataType.Symbol:
           return PrimitiveType.Symbol;
-        case DataType.String:
+        case DataType.ResourcePath:
           return PrimitiveType.String;
-        case DataType.DrivenValue:
-          return PrimitiveType.DrivenValue;
+        case DataType.PropRef:
+          return PrimitiveType.PropRef;
         default:
           return new PrimitiveType(type);
       }
@@ -149,13 +149,13 @@ namespace LibForge.RBSong
           {
             case DataType.Float:
               return new FloatValue(Float());
-            case DataType.Int:
+            case DataType.Int32:
               return new IntValue(Int());
-            case DataType.Byte:
+            case DataType.Uint8:
               return new ByteValue(Byte());
-            case DataType.Flag:
+            case DataType.Uint32:
               return new FlagValue(Int());
-            case DataType.Long:
+            case DataType.Uint64:
               return new LongValue(Long());
             case DataType.Bool:
               return new BoolValue(Byte() != 0);
@@ -163,12 +163,12 @@ namespace LibForge.RBSong
               var sym = String();
               if (sym.Length == 0 && Byte() != 0) s.Position -= 1;
               return new SymbolValue(sym);
-            case DataType.String:
+            case DataType.ResourcePath:
               var str = String();
               if (Byte() != 0) s.Position -= 1;
               return new StringValue(str);
-            case DataType.DrivenValue:
-              return new DrivenProp
+            case DataType.PropRef:
+              return new PropRef
               {
                 Unknown1 = Long(),
                 ClassName = String(),

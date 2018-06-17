@@ -249,9 +249,9 @@ namespace ForgeToolGUI
         }
         nodes.Add(no);
       }
-      else if(value is DrivenProp)
+      else if(value is PropRef)
       {
-        var driv = value as DrivenProp;
+        var driv = value as PropRef;
         nodes.Add($"{name}: DrivenProp [{driv.ClassName} {driv.PropertyName}] ({driv.Unknown1},{driv.Unknown2}, {driv.Unknown3})");
       }
       else

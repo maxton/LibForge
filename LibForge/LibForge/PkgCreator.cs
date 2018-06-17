@@ -178,7 +178,7 @@ FILES  </files>
               (basis_z ((x 0.0) (y 0.0) (z 1.0)))
               (translate ((x 0.0) (y 0.0) (z 0.0)))"))),
           new Property("icon_data", 
-            new ArrayValue(new ArrayType{ElementType = PrimitiveType.Byte, InternalType = RBSong.DataType.Byte | RBSong.DataType.Array }, new Value[] { }))
+            new ArrayValue(new ArrayType{ElementType = PrimitiveType.Byte, InternalType = RBSong.DataType.Uint8 | RBSong.DataType.Array }, new Value[] { }))
         }
       };
       return new RBSong.RBSong

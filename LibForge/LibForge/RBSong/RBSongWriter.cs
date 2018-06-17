@@ -84,9 +84,12 @@ namespace LibForge.RBSong
         case LongValue x: Write(x.Data); break;
         case BoolValue x: Write(x.Data); break;
         // TODO: Look into extra null-terminator?
-        case SymbolValue x: Write(x.Data); break;
+        case SymbolValue x:
+          Write(x.Data);
+          if (x.Data.Length == 0) Write((byte)0);
+          break;
         case StringValue x: Write(x.Data); break;
-        case DrivenProp x:
+        case PropRef x:
           Write(x.Unknown1);
           Write(x.ClassName);
           Write(x.Unknown2);
