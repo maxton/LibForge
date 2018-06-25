@@ -22,7 +22,7 @@ namespace LibForge.Texture
       {
         throw new Exception($"Unknown texture version {version}");
       }
-      s.Position = version == 6 ? 0xB4 : 0xAC;
+      var hdrData = version == 6 ? FixedArr(Byte, 0xB0) : FixedArr(Byte, 0xA8);
       var MipmapLevels = UInt();
       var Mipmaps = FixedArr(() => new Texture.Mipmap
       {
@@ -35,10 +35,13 @@ namespace LibForge.Texture
       {
         Mipmaps[i].Data = Arr(Byte);
       }
+      var footerData = FixedArr(Byte, 0x1C);
       return new Texture
       {
         Version = version,
-        Mipmaps = Mipmaps
+        Mipmaps = Mipmaps,
+        HeaderData = hdrData,
+        FooterData = footerData
       };
     }
   }

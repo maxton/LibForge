@@ -18,6 +18,13 @@ namespace LibForge.Texture
         (((input >> 5) & 0x3F) * 0xFF / 0x3F),
         (((input >> 0) & 0x1F) * 0xFF / 0x1F)).ToArgb();
     }
+    static ushort ARGBToRGB565(Color input)
+    {
+      return (ushort)
+        ((((input.R * 0x1F / 0xFF) & 0x1F) << 11) |
+         (((input.G * 0x3F / 0xFF) & 0x3F) << 5) |
+         (((input.B * 0x1F / 0xFF) & 0x1F)));
+    }
     // TODO: Decode DXT5 alpha channel
     public static Bitmap ToBitmap(Texture t, int mipmap)
     {
@@ -84,7 +91,7 @@ namespace LibForge.Texture
                 (color0.R + color1.R) / 2,
                 (color0.G + color1.G) / 2,
                 (color0.B + color1.B) / 2).ToArgb();
-              colors[3] = 0;
+              colors[3] = Color.Black.ToArgb();
             }
             var offset = y * m.Width + x;
             for (var i = 0; i < 4; i++)
@@ -97,6 +104,129 @@ namespace LibForge.Texture
             }
           }
       }
+    }
+
+    private static int PickColor(Color pixel, Color[] options)
+    {
+      double best = double.MaxValue;
+      int bestColor = 0;
+      for(var i = 0; i < options.Length; i++)
+      {
+        var d1 = options[i].R - pixel.R;
+        var d2 = options[i].G - pixel.G;
+        var d3 = options[i].B - pixel.B;
+        var diff = Math.Sqrt(Math.Pow(d1, 2) + Math.Pow(d2, 2) + Math.Pow(d3, 2));
+        if(diff < best)
+        {
+          best = diff;
+          bestColor = i;
+        }
+      }
+      return bestColor;
+    }
+
+    private static byte[] EncodeDxt(Image image, int mapLevel)
+    {
+      Bitmap img;
+      if (mapLevel == 0)
+      {
+        img = new Bitmap(image);
+      }
+      else
+      {
+        img = new Bitmap(image, new Size(image.Width / (1 << mapLevel), image.Height / (1 << mapLevel)));
+      }
+
+      var data = new byte[img.Width * img.Height / 2];
+      var idx = 0;
+      for(var y = 0; y < img.Height; y += 4)
+        for (var x = 0; x < img.Width; x += 4)
+        {
+          var c1 = img.GetPixel(x, y);
+          var c2 = img.GetPixel(x + 3, y + 3);
+          var colors = new[]
+          {
+            c1, c2,
+            Color.FromArgb(0xFF,
+              (c1.R * 2 + c2.R) / 3,
+              (c1.G * 2 + c2.G) / 3,
+              (c1.B * 2 + c2.B) / 3),
+            Color.FromArgb(0xFF,
+              (c1.R + (c2.R * 2)) / 3,
+              (c1.G + (c2.G * 2)) / 3,
+              (c1.B + (c2.B * 2)) / 3)
+          };
+          var color0 = ARGBToRGB565(colors[0]);
+          var color1 = ARGBToRGB565(colors[1]);
+          Color tmp;
+          
+          if (color0 < color1)
+          {
+            // swap colors
+            color0 ^= color1;
+            color1 ^= color0;
+            color0 ^= color1;
+            tmp = colors[0];
+            colors[0] = colors[1];
+            colors[1] = tmp;
+          }
+          data[idx++] = (byte)(color0 & 0xFF);
+          data[idx++] = (byte)(color0 >> 8);
+          data[idx++] = (byte)(color1 & 0xFF);
+          data[idx++] = (byte)(color1 >> 8);
+
+          for (var j = 0; j < 4; j++, idx++)
+          {
+            for (var i = 0; i < 4; i++)
+            {
+              var pixel = img.GetPixel(i + x, j + y);
+              data[idx] |= (byte)(PickColor(pixel, colors) << (i * 2));
+            }
+          }
+        }
+      return data;
+    }
+
+    static byte[] HeaderData256x256 = new byte[]
+    {
+      0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00,
+      0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x04, 0x00, 0x00, 0x00,
+      0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+
+    static byte[] FooterData256x256 = new byte[]
+    {
+      0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x0F, 0xC2, 0x73, 0x3D, 0x1C, 0x99, 0x4B, 0x3D,
+      0x05, 0xC1, 0x0D, 0x3E, 0x00, 0x00, 0x80, 0x3F, 0x08, 0x00, 0x00, 0x00
+    };
+
+  public static Texture ToTexture(Image image)
+    {
+      Texture.Mipmap[] maps = new Texture.Mipmap[7];
+      for(var i = 0; i < maps.Length; i++)
+      {
+        maps[i] = new Texture.Mipmap
+        {
+          Width = image.Width / (1 << i),
+          Height = image.Height / (1 << i),
+          Data = EncodeDxt(image, i)
+        };
+      }
+      return new Texture
+      {
+        HeaderData = HeaderData256x256,
+        FooterData = FooterData256x256,
+        Version = 6,
+        Mipmaps = maps
+      };
     }
   }
 }

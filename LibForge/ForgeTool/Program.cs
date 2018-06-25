@@ -59,6 +59,14 @@ namespace ForgeTool
             bitmap.Save(fo, System.Drawing.Imaging.ImageFormat.Png);
           });
           break;
+        case "png2tex":
+          WithIO((fi, fo) =>
+          {
+            var img = System.Drawing.Image.FromStream(fi);
+            var tex = TextureConverter.ToTexture(img);
+            TextureWriter.WriteStream(tex, fo);
+          });
+          break;
         case "mesh2obj":
           {
             var input = args[1];
