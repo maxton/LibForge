@@ -141,7 +141,7 @@ namespace LibForge.Texture
         for (var x = 0; x < img.Width; x += 4)
         {
           // Pick the farthest-apart colors in this block as the endpoints
-          int i0 = 0, j0 = 0;
+          int i0 = 0, j0 = 1;
           var blockColors = EnumerateBlockColors(img, x, y).ToArray();
           double highest = 0;
           for (var i = 0; i < 16; i++)
@@ -184,6 +184,11 @@ namespace LibForge.Texture
             tmp = colors[0];
             colors[0] = colors[1];
             colors[1] = tmp;
+          }
+          if(color0 == color1)
+          {
+            // The square is uniform, so just tell the later code not to use color3
+            colors[3] = Color.Black;
           }
           data[idx++] = (byte)(color0 & 0xFF);
           data[idx++] = (byte)(color0 >> 8);
