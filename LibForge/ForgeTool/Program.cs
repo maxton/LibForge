@@ -67,6 +67,13 @@ namespace ForgeTool
             TextureWriter.WriteStream(tex, fo);
           });
           break;
+        case "milopng2tex":
+          WithIO((fi, fo) =>
+          {
+            var tex = TextureConverter.MiloPngToTexture(fi);
+            TextureWriter.WriteStream(tex, fo);
+          });
+          break;
         case "mesh2obj":
           {
             var input = args[1];

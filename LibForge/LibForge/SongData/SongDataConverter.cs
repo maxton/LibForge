@@ -12,7 +12,7 @@ namespace LibForge.SongData
     {
       return new SongData
       {
-        AlbumArt = false,
+        AlbumArt = songDta.Array("album_art").Int(1) != 0,
         AlbumName = songDta.Array("album_name").String(1),
         AlbumTrackNumber = (short)songDta.Array("album_track_number").Int(1),
         AlbumYear = songDta.Array("year_released").Int(1),

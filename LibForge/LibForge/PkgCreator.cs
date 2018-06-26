@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -73,7 +74,7 @@ FILES  </files>
       return param;
     }
 
-    public static byte[] MakeGp4(string pkgId, string shortname, string[] files)
+    public static byte[] MakeGp4(string pkgId, string shortname, List<string> files)
     {
       var fileSb = new StringBuilder();
       foreach(var f in files)
@@ -322,6 +323,7 @@ FILES  </files>
       var lipsync = LipsyncConverter.FromMilo(milo);
       var moggDtaStr = MakeMoggDta(array);
       var rbsong = MakeRBSong(array);
+      var songDta = SongDataConverter.ToSongData(array);
 
       // Phase 2: Writing files
       var songPath = Path.Combine(buildDir, "songs", shortname);
@@ -343,19 +345,28 @@ FILES  </files>
       using (var rbsongFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbsong")))
         new RBSongWriter(rbsongFile).WriteStream(rbsong);
       using (var songdtaFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.songdta_ps4")))
-        SongDataWriter.WriteStream(SongDataConverter.ToSongData(array), songdtaFile);
+        SongDataWriter.WriteStream(songDta, songdtaFile);
+      if (songDta.AlbumArt)
+      {
+        var albumArt = Texture.TextureConverter.MiloPngToTexture(con.RootDirectory.GetFileAtPath(artPath).GetStream());
+        using (var artFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.png_ps4")))
+          Texture.TextureWriter.WriteStream(albumArt, artFile);
+      }
 
       // Phase 3: Create project file
-      string[] files = {
+      var files = new List<string> {
         $"songs/{shortname}/{shortname}.lipsync_ps4",
         $"songs/{shortname}/{shortname}.mogg",
         $"songs/{shortname}/{shortname}.mogg.dta",
         $"songs/{shortname}/{shortname}.moggsong",
-        //$"songs/{shortname}/{shortname}.png_ps4",
         $"songs/{shortname}/{shortname}.rbmid_ps4",
         $"songs/{shortname}/{shortname}.rbsong",
         $"songs/{shortname}/{shortname}.songdta_ps4",
       };
+      if (songDta.AlbumArt)
+      {
+        files.Add($"songs/{shortname}/{shortname}.png_ps4");
+      }
       File.WriteAllBytes(Path.Combine(buildDir,"project.gp4"), MakeGp4(pkgId, shortname, files));
     }
 

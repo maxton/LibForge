@@ -230,15 +230,45 @@ namespace LibForge.Texture
       0x05, 0xC1, 0x0D, 0x3E, 0x00, 0x00, 0x80, 0x3F, 0x08, 0x00, 0x00, 0x00
     };
 
-  public static Texture ToTexture(Image image)
+    // TODO: Copy texture data with mipmaps directly instead of re-encoding
+    public static Texture MiloPngToTexture(Stream s)
+    {
+      if (s.ReadUInt24BE() != 0x010818) throw new ArgumentException("Stream was not a supported png_xbox");
+      s.Position += 4;
+      var width = s.ReadInt16LE();
+      var height = s.ReadInt16LE();
+      s.Position = 32;
+      var m = new Texture.Mipmap
+      {
+        Width = width,
+        Height = height,
+        Data = s.ReadBytes(width * height)
+      };
+      for (var i = 0; i < m.Data.Length; i += 2)
+      {
+        var tmp = m.Data[i];
+        m.Data[i] = m.Data[i + 1];
+        m.Data[i + 1] = tmp;
+      }
+      Console.WriteLine($"Dimensions: {width}x{height}");
+      var output = new Bitmap(m.Width, m.Height, PixelFormat.Format32bppArgb);
+      int[] imageData = new int[m.Width * m.Height];
+      DecodeDXT(m, imageData, true);
+      var data = output.LockBits(new Rectangle(0, 0, m.Width, m.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+      System.Runtime.InteropServices.Marshal.Copy(imageData, 0, data.Scan0, imageData.Length);
+      output.UnlockBits(data);
+      return ToTexture(output);
+    }
+
+    public static Texture ToTexture(Image image)
     {
       Texture.Mipmap[] maps = new Texture.Mipmap[7];
       for(var i = 0; i < maps.Length; i++)
       {
         maps[i] = new Texture.Mipmap
         {
-          Width = image.Width / (1 << i),
-          Height = image.Height / (1 << i),
+          Width = 256 / (1 << i),
+          Height = 256 / (1 << i),
           Data = EncodeDxt(image, i)
         };
       }
