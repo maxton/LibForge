@@ -31,11 +31,11 @@ namespace LibForge.Texture
       var m = t.Mipmaps[mipmap];
       var output = new Bitmap(m.Width, m.Height, PixelFormat.Format32bppArgb);
       int[] imageData = new int[m.Width * m.Height];
-      if(m.Data.Length == (imageData.Length * 4))
+      if (m.Data.Length == (imageData.Length * 4))
       {
         Buffer.BlockCopy(m.Data, 0, imageData, 0, m.Data.Length);
       }
-      else if(m.Data.Length == imageData.Length)
+      else if (m.Data.Length == imageData.Length)
       {
         DecodeDXT(m, imageData, true);
       }
@@ -106,23 +106,21 @@ namespace LibForge.Texture
       }
     }
 
-    private static int PickColor(Color pixel, Color[] options)
+    private static double ColorDist(Color c1, Color c2)
     {
-      double best = double.MaxValue;
-      int bestColor = 0;
-      for(var i = 0; i < options.Length; i++)
-      {
-        var d1 = options[i].R - pixel.R;
-        var d2 = options[i].G - pixel.G;
-        var d3 = options[i].B - pixel.B;
-        var diff = Math.Sqrt(Math.Pow(d1, 2) + Math.Pow(d2, 2) + Math.Pow(d3, 2));
-        if(diff < best)
-        {
-          best = diff;
-          bestColor = i;
-        }
-      }
-      return bestColor;
+      // According to Wikipedia, these coefficients should produce an OK delta
+      return Math.Sqrt(
+          2 * Math.Pow(c1.R - c2.R, 2) 
+        + 4 * Math.Pow(c1.G - c2.G, 2) 
+        + 3 * Math.Pow(c1.B - c2.B, 2));
+    }
+
+
+    private static IEnumerable<Color> EnumerateBlockColors(Bitmap img, int x, int y)
+    {
+      for (var y0 = 0; y0< 4; y0++)
+        for (var x0 = 0; x0< 4; x0++)
+          yield return img.GetPixel(x + x0, y + y0);
     }
 
     private static byte[] EncodeDxt(Image image, int mapLevel)
@@ -142,8 +140,25 @@ namespace LibForge.Texture
       for(var y = 0; y < img.Height; y += 4)
         for (var x = 0; x < img.Width; x += 4)
         {
-          var c1 = img.GetPixel(x, y);
-          var c2 = img.GetPixel(x + 3, y + 3);
+          // Pick the farthest-apart colors in this block as the endpoints
+          int i0 = 0, j0 = 0;
+          var blockColors = EnumerateBlockColors(img, x, y).ToArray();
+          double highest = 0;
+          for (var i = 0; i < 16; i++)
+          {
+            for(var j = i + 1; j < 16; j++)
+            {
+              var d = ColorDist(blockColors[i], blockColors[j]);
+              if (d >= highest)
+              {
+                i0 = i;
+                j0 = j;
+                highest = d;
+              }
+            }
+          }
+          var c1 = blockColors[i0];
+          var c2 = blockColors[j0];
           var colors = new[]
           {
             c1, c2,
@@ -179,8 +194,19 @@ namespace LibForge.Texture
           {
             for (var i = 0; i < 4; i++)
             {
-              var pixel = img.GetPixel(i + x, j + y);
-              data[idx] |= (byte)(PickColor(pixel, colors) << (i * 2));
+              var pixel = blockColors[i + 4 * j];
+              double lowest = double.MaxValue;
+              int bestColor = 0;
+              for (var k = 0; k < colors.Length; k++)
+              {
+                var diff = ColorDist(colors[k], pixel);
+                if (diff < lowest)
+                {
+                  lowest = diff;
+                  bestColor = k;
+                }
+              }
+              data[idx] |= (byte)(bestColor << (i * 2));
             }
           }
         }
