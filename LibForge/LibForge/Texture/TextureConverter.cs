@@ -230,7 +230,6 @@ namespace LibForge.Texture
       0x05, 0xC1, 0x0D, 0x3E, 0x00, 0x00, 0x80, 0x3F, 0x08, 0x00, 0x00, 0x00
     };
 
-    // TODO: Copy texture data with mipmaps directly instead of re-encoding
     public static Texture MiloPngToTexture(Stream s)
     {
       if (s.ReadUInt24BE() != 0x010818) throw new ArgumentException("Stream was not a supported png_xbox");
@@ -238,25 +237,48 @@ namespace LibForge.Texture
       var width = s.ReadInt16LE();
       var height = s.ReadInt16LE();
       s.Position = 32;
-      var m = new Texture.Mipmap
+      if(width == 512)
       {
-        Width = width,
-        Height = height,
-        Data = s.ReadBytes(width * height)
-      };
-      for (var i = 0; i < m.Data.Length; i += 2)
-      {
-        var tmp = m.Data[i];
-        m.Data[i] = m.Data[i + 1];
-        m.Data[i + 1] = tmp;
+        s.Position += (512 * 512);
+        width = 256;
+        height = 256;
       }
-      var output = new Bitmap(m.Width, m.Height, PixelFormat.Format32bppArgb);
-      int[] imageData = new int[m.Width * m.Height];
-      DecodeDXT(m, imageData, true);
-      var data = output.LockBits(new Rectangle(0, 0, m.Width, m.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-      System.Runtime.InteropServices.Marshal.Copy(imageData, 0, data.Scan0, imageData.Length);
-      output.UnlockBits(data);
-      return ToTexture(output);
+      if(width != 256 || height != 256)
+      {
+        throw new Exception("Texture was not 512x512 or 256x256");
+      }
+      var mipmaps = new Texture.Mipmap[7];
+      for(var i = 0; i < mipmaps.Length; i++)
+      {
+        var m = mipmaps[i] = new Texture.Mipmap
+        {
+          Width = width,
+          Height = height,
+          Data = new byte[width * height / 2]
+        };
+        var bytes = s.ReadBytes(width * height);
+        for (int x = 0, y = 0; x < bytes.Length; x += 16)
+        {
+          m.Data[y] = bytes[x + 9];
+          m.Data[y + 1] = bytes[x + 8];
+          m.Data[y + 2] = bytes[x + 11];
+          m.Data[y + 3] = bytes[x + 10];
+          m.Data[y + 4] = bytes[x + 13];
+          m.Data[y + 5] = bytes[x + 12];
+          m.Data[y + 6] = bytes[x + 15];
+          m.Data[y + 7] = bytes[x + 14];
+          y += 8;
+        }
+        width /= 2;
+        height /= 2;
+      }
+      return new Texture
+      {
+        HeaderData = HeaderData256x256,
+        FooterData = FooterData256x256,
+        Version = 6,
+        Mipmaps = mipmaps
+      };
     }
 
     public static Texture ToTexture(Image image)
