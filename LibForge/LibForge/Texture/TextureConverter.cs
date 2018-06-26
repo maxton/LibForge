@@ -250,7 +250,6 @@ namespace LibForge.Texture
         m.Data[i] = m.Data[i + 1];
         m.Data[i + 1] = tmp;
       }
-      Console.WriteLine($"Dimensions: {width}x{height}");
       var output = new Bitmap(m.Width, m.Height, PixelFormat.Format32bppArgb);
       int[] imageData = new int[m.Width * m.Height];
       DecodeDXT(m, imageData, true);
