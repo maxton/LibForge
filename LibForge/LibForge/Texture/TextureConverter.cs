@@ -14,9 +14,9 @@ namespace LibForge.Texture
     static int RGB565ToARGB(ushort input)
     {
       return Color.FromArgb(0xFF,
-        (((input >> 11) & 0x1F) * 0xFF / 0x1F),
-        (((input >> 5) & 0x3F) * 0xFF / 0x3F),
-        (((input >> 0) & 0x1F) * 0xFF / 0x1F)).ToArgb();
+        ((input >> 11) & 0x1F) << 3 | ((input >> 11) & 0x1F) >> 2,
+        ((input >> 5) & 0x3F) << 2 | ((input >> 5) & 0x3F) >> 4,
+        (input & 0x1F) << 3 | (input & 0x1F) >> 2).ToArgb();
     }
     static ushort ARGBToRGB565(Color input)
     {
