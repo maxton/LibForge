@@ -123,18 +123,9 @@ namespace LibForge.Texture
           yield return img.GetPixel(x + x0, y + y0);
     }
 
-    private static byte[] EncodeDxt(Image image, int mapLevel)
+    private static byte[] EncodeDxt(Image image, int mapLevel, int nominalSize = 256)
     {
-      Bitmap img;
-      if (mapLevel == 0)
-      {
-        img = new Bitmap(image);
-      }
-      else
-      {
-        img = new Bitmap(image, new Size(image.Width / (1 << mapLevel), image.Height / (1 << mapLevel)));
-      }
-
+      var img = new Bitmap(image, new Size(nominalSize >> mapLevel, nominalSize >> mapLevel));
       var data = new byte[img.Width * img.Height / 2];
       var idx = 0;
       for(var y = 0; y < img.Height; y += 4)
