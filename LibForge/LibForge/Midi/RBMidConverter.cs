@@ -212,7 +212,7 @@ namespace LibForge.Midi
           Unknown = new uint[6],
           FinalTickMinusOne = FinalTick,
           UnknownFloats = new float[4] { -1, -1, -1, -1 },
-          MidiTrackNames = MidiTrackNames.ToArray(),
+          MidiTrackNames = mf.Tracks.Select(t => t.Name).ToArray(),
           PreviewStartMillis = PreviewStart,
           PreviewEndMillis = PreviewEnd,
           UnknownTwo = 2,
