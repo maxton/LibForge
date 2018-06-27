@@ -45,7 +45,7 @@ namespace LibForge.RBSong
         case "symbol":
           return PrimitiveType.Symbol;
         case "string":
-          return PrimitiveType.String;
+          return PrimitiveType.ResourcePath;
         case "array":
           return new ArrayType { ElementType = FromData(n.Array("item")) };
         default:
@@ -64,7 +64,7 @@ namespace LibForge.RBSong
     public static Type Long = new PrimitiveType(DataType.Uint64);
     public static Type Bool = new PrimitiveType(DataType.Bool);
     public static Type Symbol = new PrimitiveType(DataType.Symbol);
-    public static Type String = new PrimitiveType(DataType.ResourcePath);
+    public static Type ResourcePath = new PrimitiveType(DataType.ResourcePath);
     public static Type PropRef = new PrimitiveType(DataType.PropRef);
     internal PrimitiveType(DataType internalType) { InternalType = internalType; }
   }
@@ -159,7 +159,7 @@ namespace LibForge.RBSong
         case DataType.Symbol:
           return new SymbolValue(d.ToString());
         case DataType.ResourcePath:
-          return new StringValue(d.ToString());
+          return new ResourcePathValue(d.ToString());
         case DataType.Struct:
           return StructValue.FromData(t as StructType, arr);
         case DataType.PropRef:
@@ -207,15 +207,17 @@ namespace LibForge.RBSong
   }
   public class SymbolValue : Value
   {
-    public SymbolValue(string data) { Data = data; }
+    public SymbolValue(string data, bool nullTerm = false) { Data = data; NullTerminated = nullTerm; }
     public override Type Type { get; } = PrimitiveType.Symbol;
     public string Data;
+    public bool NullTerminated;
   }
-  public class StringValue : Value
+  public class ResourcePathValue : Value
   {
-    public StringValue(string data) { Data = data; }
-    public override Type Type { get; } = PrimitiveType.String;
+    public ResourcePathValue(string data, bool nullTerm = false) { Data = data; NullTerminated = nullTerm; }
+    public override Type Type { get; } = PrimitiveType.ResourcePath;
     public string Data;
+    public bool NullTerminated;
   }
   public class StructValue : Value
   {

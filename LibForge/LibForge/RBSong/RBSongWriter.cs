@@ -86,9 +86,12 @@ namespace LibForge.RBSong
         // TODO: Look into extra null-terminator?
         case SymbolValue x:
           Write(x.Data);
-          if (x.Data.Length == 0) Write((byte)0);
+          if (x.NullTerminated) Write((byte)0);
           break;
-        case StringValue x: Write(x.Data); break;
+        case ResourcePathValue x:
+          Write(x.Data);
+          if (x.NullTerminated) Write((byte)0);
+          break;
         case PropRef x:
           Write(x.Unknown1);
           Write(x.ClassName);

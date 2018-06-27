@@ -210,12 +210,12 @@ FILES  </files>
                   Props = new[]
                   {
                     new Property("tempo", new SymbolValue("medium")),
-                    new Property("vocal_tonic_note", new LongValue(array.Array("vocal_tonic_note").Int(1))),
+                    new Property("vocal_tonic_note", new LongValue(array.Array("vocal_tonic_note")?.Int(1) ?? 0)),
                     new Property("vocal_track_scroll_duration_ms", new LongValue(array.Array("song_scroll_speed")?.Int(1) ?? 2300)),
-                    new Property("global_tuning_offset", new FloatValue(array.Array("tuning_offset_cents").Int(1))),
-                    new Property("band_fail_sound_event", new SymbolValue("")),
-                    new Property("vocal_percussion_patch", new StringValue("fusion/patches/vox_perc_tambourine.fusion")),
-                    new Property("drum_kit_patch", new StringValue(drumBank)),
+                    new Property("global_tuning_offset", new FloatValue(array.Array("tuning_offset_cents")?.Int(1) ?? 0)),
+                    new Property("band_fail_sound_event", new SymbolValue("", true)),
+                    new Property("vocal_percussion_patch", new ResourcePathValue("fusion/patches/vox_perc_tambourine.fusion", true)),
+                    new Property("drum_kit_patch", new ResourcePathValue(drumBank)),
                     new Property("improv_solo_patch", new SymbolValue("gtrsolo_amer_03")),
                     new Property("dynamic_drum_fill_override", new IntValue(10)),
                     new Property("improv_solo_volume_db", new FloatValue(-9))
@@ -249,7 +249,7 @@ FILES  </files>
           Unknown2 = 1,
           Unknown3 = 20,
           Unknown4 = 0,
-          Unknown5 = 21,
+          Unknown5 = 1,
           Entities = new[] {
             new Entity
             {

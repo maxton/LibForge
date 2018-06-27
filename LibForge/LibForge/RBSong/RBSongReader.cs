@@ -113,7 +113,7 @@ namespace LibForge.RBSong
         case DataType.Symbol:
           return PrimitiveType.Symbol;
         case DataType.ResourcePath:
-          return PrimitiveType.String;
+          return PrimitiveType.ResourcePath;
         case DataType.PropRef:
           return PrimitiveType.PropRef;
         default:
@@ -128,6 +128,7 @@ namespace LibForge.RBSong
       };
     private Value ReadValue(Type t)
     {
+      bool null_term;
       switch (t)
       {
         case ArrayType at:
@@ -161,12 +162,26 @@ namespace LibForge.RBSong
               return new BoolValue(Byte() != 0);
             case DataType.Symbol:
               var sym = String();
-              if (sym.Length == 0 && Byte() != 0) s.Position -= 1;
-              return new SymbolValue(sym);
+              null_term = false;
+              if (sym.Length == 0)
+              {
+                null_term = true;
+                if (Byte() != 0)
+                {
+                  null_term = false;
+                  s.Position -= 1;
+                }
+              }
+              return new SymbolValue(sym, null_term);
             case DataType.ResourcePath:
               var str = String();
-              if (Byte() != 0) s.Position -= 1;
-              return new StringValue(str);
+              null_term = true;
+              if (Byte() != 0)
+              {
+                null_term = false;
+                s.Position -= 1;
+              }
+              return new ResourcePathValue(str, null_term);
             case DataType.PropRef:
               return new PropRef
               {
