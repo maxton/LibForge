@@ -145,7 +145,39 @@ namespace LibForge.Midi
           if (lastMeasureTick2 >= FinalTick) break;
           MeasureTicks.Add(lastMeasureTick2);
         }
-        processedTracks.ForEach(ProcessTrack);
+        var trackNames = new[] {
+          processedTracks[0].Name,
+          "PART DRUMS",
+          "PART BASS",
+          "PART REAL_BASS",
+          "PART GUITAR",
+          "PART REAL_GUITAR",
+          // TODO: Allow these in release builds when shit's no longer borked
+#if DEBUG
+          "PART KEYS",
+          "PART REAL_KEYS_X",
+          "PART REAL_KEYS_H",
+          "PART REAL_KEYS_M",
+          "PART REAL_KEYS_E",
+          "PART KEYS_ANIM_RH",
+          "PART KEYS_ANIM_LH",
+#endif
+          "PART VOCALS",
+          "HARM1",
+          "HARM2",
+          "HARM3",
+          "EVENTS",
+          "BEAT",
+          "MARKUP",
+        };
+        foreach(var trackname in trackNames)
+        {
+          var track = processedTracks.Where(x => x.Name == trackname).FirstOrDefault();
+          if(track != null)
+          {
+            ProcessTrack(track);
+          }
+        }
         VocalRanges.Add(theVocalRange);
         rb = new RBMid
         {
@@ -514,6 +546,7 @@ namespace LibForge.Midi
       const byte TremoloMarker = 126;
       const byte LeftHandEnd = 59;
       const byte LeftHandStart = 40;
+      const int HOPOThreshold = 170;
       private void HandleGuitarBass(MidiTrackProcessed track)
       {
         var drumfills = new List<RBMid.DRUMFILLS.FILL>();
@@ -574,7 +607,7 @@ namespace LibForge.Midi
             bool hopo = false;
             if(chords[diff] != null)
             {
-              if(e.StartTicks - chords[diff].StartTicks <= 120)
+              if(e.StartTicks - chords[diff].StartTicks <= HOPOThreshold)
               {
                 hopo = true;
               }
