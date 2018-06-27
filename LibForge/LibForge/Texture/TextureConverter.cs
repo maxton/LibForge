@@ -232,7 +232,9 @@ namespace LibForge.Texture
 
     public static Texture MiloPngToTexture(Stream s)
     {
-      if (s.ReadUInt24BE() != 0x010818) throw new ArgumentException("Stream was not a supported png_xbox");
+      var version = s.ReadUInt24BE();
+      if (version != 0x010818 && version != 0x010408)
+        throw new ArgumentException("Stream was not a supported png_xbox");
       s.Position += 4;
       var width = s.ReadInt16LE();
       var height = s.ReadInt16LE();
@@ -256,8 +258,8 @@ namespace LibForge.Texture
           Height = height,
           Data = new byte[width * height / 2]
         };
-        var bytes = s.ReadBytes(width * height);
-        for (int x = 0, y = 0; x < bytes.Length; x += 16)
+        var bytes = s.ReadBytes(width * height / (version == 0x010818 ? 1 : 2));
+        for (int x = (version == 0x010818 ? 0 : -8), y = 0; y < m.Data.Length; x += (version == 0x010818 ? 16 : 8))
         {
           m.Data[y] = bytes[x + 9];
           m.Data[y + 1] = bytes[x + 8];

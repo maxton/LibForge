@@ -310,7 +310,11 @@ FILES  </files>
       var artPath = $"songs/{shortname}/gen/{shortname}_keep.png_xbox";
       var miloPath = $"songs/{shortname}/gen/{shortname}.milo_xbox";
       var pkgName = shortname.ToUpper().Substring(0, Math.Min(shortname.Length, 10)).PadRight(10, 'X');
-      var pkgNum = (array.Array("song_id").Int(1) % 10000).ToString().PadLeft(4, '0');
+      var songId = array.Array("song_id").Node(1);
+      string pkgNum = ((songId.Type == DtxCS.DataTypes.DataType.INT 
+        ? (songId as DataAtom).Int 
+        : (songId as DataAtom).String.GetHashCode()
+        ) % 10000).ToString().PadLeft(4, '0');
       var pkgId = $"UP8802-CUSA02084_00-RB{pkgName}{pkgNum}";
       var name = array.Array("name").String(1);
       var artist = array.Array("artist").String(1);

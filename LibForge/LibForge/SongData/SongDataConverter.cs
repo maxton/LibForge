@@ -10,12 +10,13 @@ namespace LibForge.SongData
   {
     public static SongData ToSongData(DataArray songDta)
     {
+      var songId = songDta.Array("song_id");
       return new SongData
       {
         AlbumArt = songDta.Array("album_art").Int(1) != 0,
-        AlbumName = songDta.Array("album_name").String(1),
-        AlbumTrackNumber = (short)songDta.Array("album_track_number").Int(1),
-        AlbumYear = songDta.Array("year_released").Int(1),
+        AlbumName = songDta.Array("album_name")?.String(1) ?? "",
+        AlbumTrackNumber = (short)(songDta.Array("album_track_number")?.Int(1) ?? 0),
+        AlbumYear = songDta.Array("year_released")?.Int(1) ?? 0,
         Artist = songDta.Array("artist").String(1),
         BandRank = songDta.Array("rank").Array("band").Int(1),
         BassRank = songDta.Array("rank").Array("bass").Int(1),
@@ -36,10 +37,10 @@ namespace LibForge.SongData
         Tutorial = false,
         Type = 11,
         Version = -1,
-        VocalGender = (byte)(songDta.Array("vocal_gender").Any(1) == "male" ? 1 : 2),
-        VocalParts = songDta.Array("song").Array("vocal_parts").Int(1),
+        VocalGender = (byte)((songDta.Array("vocal_gender")?.Any(1) ?? "male") == "male" ? 1 : 2),
+        VocalParts = songDta.Array("song").Array("vocal_parts")?.Int(1) ?? 1,
         Shortname = songDta.Symbol(0).ToString().ToLower(),
-        SongId = (uint)songDta.Array("song_id").Int(1),
+        SongId = (uint)(songId.Children[1].Type == DataType.INT ? songId.Int(1) : songId.Any(1).GetHashCode()),
         SongLength = songDta.Array("song_length").Int(1),
         PreviewStart = songDta.Array("preview").Int(1),
         PreviewEnd = songDta.Array("preview").Int(2),
