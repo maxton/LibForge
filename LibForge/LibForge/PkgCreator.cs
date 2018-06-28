@@ -311,13 +311,13 @@ FILES  </files>
       var shortname = path.Split('/').Last();
       var artPath = $"songs/{shortname}/gen/{shortname}_keep.png_xbox";
       var miloPath = $"songs/{shortname}/gen/{shortname}.milo_xbox";
-      var pkgName = new Regex("[^a-zA-Z0-9 -]").Replace(shortname, "")
+      var pkgName = new Regex("[^a-zA-Z0-9]").Replace(shortname, "")
         .ToUpper().Substring(0, Math.Min(shortname.Length, 10)).PadRight(10, 'X');
       var songId = array.Array("song_id").Node(1);
-      string pkgNum = ((songId.Type == DtxCS.DataTypes.DataType.INT 
+      string pkgNum = new Regex("[^a-zA-Z0-9]").Replace(((songId.Type == DtxCS.DataTypes.DataType.INT 
         ? (songId as DataAtom).Int 
         : songId.ToString().GetHashCode()
-        ) % 10000).ToString().PadLeft(4, '0');
+        ) % 10000).ToString(), "").ToUpper().PadLeft(4, '0');
       var pkgId = $"UP8802-CUSA02084_00-RB{pkgName}{pkgNum}";
       var name = array.Array("name").String(1);
       var artist = array.Array("artist").String(1);
