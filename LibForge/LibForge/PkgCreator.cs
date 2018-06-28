@@ -314,7 +314,7 @@ FILES  </files>
       var songId = array.Array("song_id").Node(1);
       string pkgNum = ((songId.Type == DtxCS.DataTypes.DataType.INT 
         ? (songId as DataAtom).Int 
-        : (songId as DataAtom).String.GetHashCode()
+        : songId.ToString().GetHashCode()
         ) % 10000).ToString().PadLeft(4, '0');
       var pkgId = $"UP8802-CUSA02084_00-RB{pkgName}{pkgNum}";
       var name = array.Array("name").String(1);
