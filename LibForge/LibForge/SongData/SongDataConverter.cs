@@ -39,7 +39,7 @@ namespace LibForge.SongData
         Version = -1,
         VocalGender = (byte)((songDta.Array("vocal_gender")?.Any(1) ?? "male") == "male" ? 1 : 2),
         VocalParts = songDta.Array("song").Array("vocal_parts")?.Int(1) ?? 1,
-        Shortname = songDta.Symbol(0).ToString().ToLower(),
+        Shortname = songDta.Array("song").Array("name").String(1).Split('/').Last(),
         SongId = (uint)(songId.Children[1].Type == DataType.INT ? songId.Int(1) : songId.Any(1).GetHashCode()),
         SongLength = songDta.Array("song_length").Int(1),
         PreviewStart = songDta.Array("preview").Int(1),
