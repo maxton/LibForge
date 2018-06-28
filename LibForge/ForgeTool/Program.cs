@@ -254,14 +254,37 @@ namespace ForgeTool
           WithIO((i, o) => new RBSongWriter(o).WriteStream(new RBSongReader(i).Read()));
           break;
         case "con2gp4":
-          LibForge.Util.PkgCreator.ConToGp4(args[1], args[2]);
+          {
+            var i = 1;
+            bool eu = false;
+            if (args[i] == "--scee")
+            {
+              i++;
+              eu = true;
+            }
+            var con = args[i++];
+            var dest = args[i++];
+            LibForge.Util.PkgCreator.ConToGp4(con, dest, eu);
+          }
           break;
         case "con2pkg":
-          var conFilename = Path.GetFileName(args[2]);
-          var tmpDir = Path.Combine(Path.GetTempPath(), conFilename + "_tmp_build");
-          LibForge.Util.PkgCreator.ConToGp4(args[2], tmpDir);
-          LibForge.Util.PkgCreator.BuildPkg(args[1], Path.Combine(tmpDir, "project.gp4"), args[3]);
-          Directory.Delete(tmpDir, true);
+          {
+            var i = 1;
+            bool eu = false;
+            if (args[i] == "--scee")
+            {
+              i++;
+              eu = true;
+            }
+            var cmd = args[i++];
+            var con = args[i++];
+            var dest = args[i++];
+            var conFilename = Path.GetFileName(con);
+            var tmpDir = Path.Combine(Path.GetTempPath(), conFilename + "_tmp_build");
+            LibForge.Util.PkgCreator.ConToGp4(con, tmpDir, eu);
+            LibForge.Util.PkgCreator.BuildPkg(cmd, Path.Combine(tmpDir, "project.gp4"), dest);
+            Directory.Delete(tmpDir, true);
+          }
           break;
         default:
           Usage();
@@ -285,9 +308,9 @@ namespace ForgeTool
       Console.WriteLine("   - converts a Forge texture to PNG");
       Console.WriteLine("  mesh2obj <input.fbx...> <output.obj>");
       Console.WriteLine("   - converts a Forge mesh to OBJ");
-      Console.WriteLine("  con2gp4 <input_con> <output_dir>");
+      Console.WriteLine("  con2gp4 [--scee] <input_con> <output_dir>");
       Console.WriteLine("   - converts a CON custom to a .gp4 project in the given output directory");
-      Console.WriteLine("  con2pkg <path_to_pub_cmd.exe> <input_con> <output_dir>");
+      Console.WriteLine("  con2pkg [--scee] <path_to_pub_cmd.exe> <input_con> <output_dir>");
       Console.WriteLine("   - converts a CON custom to a PS4 PKG custom in the given output directory");
       Console.WriteLine("  milo2lipsync <input.milo_xbox> <output.lipsync>");
       Console.WriteLine("   - converts an uncompressed milo archive to forge lipsync file");

@@ -72,6 +72,7 @@ FILES  </files>
       var param = paramSFO.ToArray();
       Array.Copy(idBytes, 0, param, 200, 36);
       Array.Copy(descBytes, 0, param, 252, Math.Min(descBytes.Length, 128));
+      Array.Copy(idBytes, 7, param, 380, 9); // overwrite SKU
       return param;
     }
 
@@ -288,7 +289,7 @@ FILES  </files>
       };
     }
 
-    public static void ConToGp4(string conPath, string buildDir)
+    public static void ConToGp4(string conPath, string buildDir, bool eu = false)
     {
       // Phase 1: Reading from CON
       var con = STFSPackage.OpenFile(GameArchives.Util.LocalFile(conPath));
@@ -318,7 +319,7 @@ FILES  </files>
         ? (songId as DataAtom).Int 
         : songId.ToString().GetHashCode()
         ) % 10000).ToString(), "").ToUpper().PadLeft(4, '0');
-      var pkgId = $"UP8802-CUSA02084_00-RB{pkgName}{pkgNum}";
+      var pkgId = eu ? $"EP8802-CUSA02901_00-RB{pkgName}{pkgNum}" : $"UP8802-CUSA02084_00-RB{pkgName}{pkgNum}";
       var name = array.Array("name").String(1);
       var artist = array.Array("artist").String(1);
       var pkgDesc = $"Custom: \"{name} - {artist}\"";
