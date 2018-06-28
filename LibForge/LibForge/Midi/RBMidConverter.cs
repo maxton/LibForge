@@ -601,6 +601,11 @@ namespace LibForge.Midi
           if (chords[diff] != null && chords[diff].StartTicks == e.StartTicks)
           { // additional gem in a chord
             chords[diff].Lanes |= (1 << lane);
+
+            // In case the HOPO marker was not the same length
+            chords[diff].LengthMillis = (ushort)(e.Length * 1000);
+            chords[diff].LengthTicks = (ushort)e.LengthTicks;
+            chords[diff].NoTail = e.LengthTicks <= 120 || (chords[diff].IsHopo && e.LengthTicks <= 160);
           }
           else
           { // new chord
