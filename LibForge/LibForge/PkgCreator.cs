@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using DtxCS;
 using DtxCS.DataTypes;
 using GameArchives.STFS;
@@ -310,7 +311,8 @@ FILES  </files>
       var shortname = path.Split('/').Last();
       var artPath = $"songs/{shortname}/gen/{shortname}_keep.png_xbox";
       var miloPath = $"songs/{shortname}/gen/{shortname}.milo_xbox";
-      var pkgName = shortname.ToUpper().Substring(0, Math.Min(shortname.Length, 10)).PadRight(10, 'X');
+      var pkgName = new Regex("[^a-zA-Z0-9 -]").Replace(shortname, "")
+        .ToUpper().Substring(0, Math.Min(shortname.Length, 10)).PadRight(10, 'X');
       var songId = array.Array("song_id").Node(1);
       string pkgNum = ((songId.Type == DtxCS.DataTypes.DataType.INT 
         ? (songId as DataAtom).Int 
