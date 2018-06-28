@@ -304,6 +304,7 @@ FILES  </files>
       }
       var array = dta.Array(0);
       var path = array.Array("song").Array("name").String(1);
+      var hopoThreshold = array.Array("song").Array("hopo_threshold")?.Int(1) ?? 170;
       var midPath = path + ".mid";
       var moggPath = path + ".mogg";
       var shortname = path.Split('/').Last();
@@ -345,7 +346,7 @@ FILES  </files>
       File.WriteAllText(Path.Combine(songPath, shortname + ".moggsong"),
         $"(mogg_path \"{shortname}.mogg\")\r\n(midi_path \"{shortname}.rbmid\")\r\n");
       using (var rbmid = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbmid_ps4")))
-        RBMidWriter.WriteStream(RBMidConverter.ToRBMid(mid), rbmid);
+        RBMidWriter.WriteStream(RBMidConverter.ToRBMid(mid, hopoThreshold), rbmid);
       using (var rbsongFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbsong")))
         new RBSongWriter(rbsongFile).WriteStream(rbsong);
       using (var songdtaFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.songdta_ps4")))

@@ -47,7 +47,7 @@ namespace ForgeTool
           WithIO((fi, fo) =>
           {
             var rbmid = RBMidReader.ReadStream(fi);
-            var processed = RBMidConverter.ToRBMid(RBMidConverter.ToMid(rbmid));
+            var processed = RBMidConverter.ToRBMid(RBMidConverter.ToMid(rbmid), rbmid.HopoThreshold);
             RBMidWriter.WriteStream(processed, fo);
           });
           break;
@@ -120,7 +120,7 @@ namespace ForgeTool
                 {
                   var rbmid = RBMidReader.ReadStream(fi);
                   var midi = RBMidConverter.ToMid(rbmid);
-                  var rbmid2 = RBMidConverter.ToRBMid(midi);
+                  var rbmid2 = RBMidConverter.ToRBMid(midi, rbmid.HopoThreshold);
                   using (var ms = new MemoryStream((int)fi.Length))
                   {
                     // TODO: Switch this to rbmid2 once we are generating all events

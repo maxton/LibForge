@@ -7,9 +7,9 @@ namespace LibForge.Midi
 {
   public class RBMidConverter
   {
-    public static RBMid ToRBMid(MidiFile mf)
+    public static RBMid ToRBMid(MidiFile mf, int hopoThreshold = 170)
     {
-      return (new MidiConverter(mf)).ToRBMid();
+      return new MidiConverter(mf, hopoThreshold).ToRBMid();
     }
     public static MidiFile ToMid(RBMid m)
     {
@@ -50,11 +50,13 @@ namespace LibForge.Midi
       private float PreviewEnd;
       private uint LastMarkupTick;
       private uint FinalTick;
+      private int hopoThreshold;
       private List<uint> MeasureTicks = new List<uint>() { 0U };
 
-      public MidiConverter(MidiFile mf)
+      public MidiConverter(MidiFile mf, int hopoThreshold = 170)
       {
         this.mf = mf;
+        this.hopoThreshold = hopoThreshold;
         processedTracks = new MidiHelper().ProcessTracks(mf);
         trackHandlers = new Dictionary<string, Action<MidiTrackProcessed>>
         {
@@ -224,8 +226,7 @@ namespace LibForge.Midi
           UnknownOne = 1,
           UnknownZeroByte = 0,
           UnknownZero = 0,
-          // TODO: When should this not be 0xAA?
-          Unknown6 = 0xAA,
+          HopoThreshold = hopoThreshold,
         };
         return rb;
       }
@@ -546,7 +547,6 @@ namespace LibForge.Midi
       const byte TremoloMarker = 126;
       const byte LeftHandEnd = 59;
       const byte LeftHandStart = 40;
-      const int HOPOThreshold = 170;
       private void HandleGuitarBass(MidiTrackProcessed track)
       {
         var drumfills = new List<RBMid.DRUMFILLS.FILL>();
@@ -599,15 +599,24 @@ namespace LibForge.Midi
 
           if (gem_tracks[diff] == null) gem_tracks[diff] = new List<RBMid.GEMTRACK.GEM>();
           if (chords[diff] != null && chords[diff].StartTicks == e.StartTicks)
-          {
+          { // additional gem in a chord
             chords[diff].Lanes |= (1 << lane);
           }
           else
-          {
+          { // new chord
+
+            //check old chord for bad HOPO
+            var count = gem_tracks[diff].Count;
+            if(count > 1 && gem_tracks[diff][count - 2].Lanes == gem_tracks[diff][count - 1].Lanes)
+            {
+              // Identical chords cannot be hopos
+              gem_tracks[diff][count - 1].IsHopo = false;
+            }
+
             bool hopo = false;
             if(chords[diff] != null)
             {
-              if(e.StartTicks - chords[diff].StartTicks <= HOPOThreshold)
+              if(e.StartTicks - chords[diff].StartTicks <= hopoThreshold)
               {
                 hopo = true;
               }

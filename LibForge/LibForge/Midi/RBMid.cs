@@ -342,7 +342,7 @@ namespace LibForge.Midi
     public UNKSTRUCT1[] Unknown4;
     public VocalTrackRange[] VocalRange;
     // Takes values 90, 92, 125, 130, 170, 250
-    public int Unknown6;
+    public int HopoThreshold;
     public uint NumPlayableTracks;
     public uint FinalEventTick;
     public uint UnkVrTick;
@@ -605,7 +605,7 @@ namespace LibForge.Midi
            ?? Check(their.StartTicks, my.StartTicks, nameof(my.StartTicks))
            ?? Check(their.LowNote, my.LowNote, nameof(my.LowNote))
            ?? Check(their.HighNote, my.HighNote, nameof(my.HighNote)))
-      ?? Check(other.Unknown6, Unknown6, nameof(Unknown6))
+      ?? Check(other.HopoThreshold, HopoThreshold, nameof(HopoThreshold))
       ?? Check(other.NumPlayableTracks, NumPlayableTracks, nameof(NumPlayableTracks))
       ?? Check(other.FinalEventTick, FinalEventTick, nameof(FinalEventTick))
       ?? Check(other.UnknownZeroByte, UnknownZeroByte, nameof(UnknownZeroByte))

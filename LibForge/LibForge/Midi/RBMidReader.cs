@@ -42,7 +42,7 @@ namespace LibForge.Midi
       r.UnknownHundred = Check(Float(), 100f);
       r.Unknown4 = Arr(ReadUnkstruct1);
       r.VocalRange = Arr(ReadVocalTrackRange);
-      r.Unknown6 = Int();
+      r.HopoThreshold = Int();
       r.NumPlayableTracks = Check(UInt(), numTracks);
       r.FinalEventTick = UInt();
       if(r.Format == RBMid.FORMAT_RBVR)

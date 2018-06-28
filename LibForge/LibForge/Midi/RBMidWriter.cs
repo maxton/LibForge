@@ -32,7 +32,7 @@ namespace LibForge.Midi
       Write(r.UnknownHundred);
       Write(r.Unknown4, WriteUnkstruct1);
       Write(r.VocalRange, WriteVocalRange);
-      Write(r.Unknown6);
+      Write(r.HopoThreshold);
       Write(r.NumPlayableTracks);
       Write(r.FinalEventTick);
       if(r.Format == RBMid.FORMAT_RBVR)
