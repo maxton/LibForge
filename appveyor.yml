@@ -13,6 +13,9 @@ assembly_info:
   assembly_file_version: '{version}.0'
   assembly_informational_version: '{version}.0'
 
+before_build:
+- cmd: nuget restore
+
 build:
   project: LibForge/LibForge.sln
   parallel: true
