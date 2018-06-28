@@ -547,6 +547,11 @@ namespace LibForge.Midi
       const byte TremoloMarker = 126;
       const byte LeftHandEnd = 59;
       const byte LeftHandStart = 40;
+      struct Hopo {
+        public uint EndTick;
+        public enum State { NormalOff, NormalOn, ForcedOn, ForcedOff }
+        public State state;
+      };
       private void HandleGuitarBass(MidiTrackProcessed track)
       {
         var drumfills = new List<RBMid.DRUMFILLS.FILL>();
@@ -561,6 +566,8 @@ namespace LibForge.Midi
         var solo_markers = new List<RBMid.SECTIONS.SECTION>();
         var tremolos = new List<RBMid.LANEMARKER.MARKER>();
         var strummaps = new List<RBMid.MAP>();
+        var hopoState = new Hopo { EndTick = uint.MaxValue, state = Hopo.State.NormalOff };
+
         bool AddGem(MidiNote e)
         {
           var key = e.Key;
@@ -600,8 +607,19 @@ namespace LibForge.Midi
           if (gem_tracks[diff] == null) gem_tracks[diff] = new List<RBMid.GEMTRACK.GEM>();
           if (chords[diff] != null && chords[diff].StartTicks == e.StartTicks)
           { // additional gem in a chord
+            if (chords[diff].Lanes != 0 && hopoState.state != Hopo.State.ForcedOn || hopoState.EndTick < e.StartTicks)
+            {
+              // chords are not automatically HOPO'd
+              chords[diff].IsHopo = false;
+            }
             chords[diff].Lanes |= (1 << lane);
 
+            if (gem_tracks[diff].Count > 0
+              && 0 != (gem_tracks[diff].Last().Lanes & chords[diff].Lanes)
+              && (Hopo.State.ForcedOn != hopoState.state || hopoState.EndTick < e.StartTicks))
+            {
+              chords[diff].IsHopo = false;
+            }
             // In case the HOPO marker was not the same length
             chords[diff].LengthMillis = (ushort)(e.Length * 1000);
             chords[diff].LengthTicks = (ushort)e.LengthTicks;
@@ -612,18 +630,22 @@ namespace LibForge.Midi
 
             //check old chord for bad HOPO
             var count = gem_tracks[diff].Count;
-            if(count > 1 && gem_tracks[diff][count - 2].Lanes == gem_tracks[diff][count - 1].Lanes)
+            if(count > 1 && (gem_tracks[diff][count - 2].Lanes & gem_tracks[diff][count - 1].Lanes) != 0)
             {
-              // Identical chords cannot be hopos
-              gem_tracks[diff][count - 1].IsHopo = false;
+              if(hopoState.state != Hopo.State.ForcedOn && hopoState.EndTick >= gem_tracks[diff][count - 1].StartTicks)
+              {
+                // Identical notes cannot be hopos
+                gem_tracks[diff][count - 1].IsHopo = false;
+              }
             }
 
             bool hopo = false;
             if(chords[diff] != null)
             {
-              if(e.StartTicks - chords[diff].StartTicks <= hopoThreshold)
+              if(e.StartTicks - chords[diff].StartTicks <= hopoThreshold && ((1 << lane) & chords[diff].Lanes) == 0)
               {
-                hopo = true;
+                if(hopoState.state != Hopo.State.ForcedOff || hopoState.EndTick < e.StartTicks)
+                  hopo = true;
               }
               // TODO: Swing notes have different HOPO rules?
             }
@@ -651,23 +673,28 @@ namespace LibForge.Midi
           {
             case ExpertHopoOff:
               diff = 3;
+              hopoState.state = Hopo.State.ForcedOff;
               force = false;
               break;
             case ExpertHopoOn:
               diff = 3;
               force = true;
+              hopoState.state = Hopo.State.ForcedOn;
               break;
             case HardHopoOff:
               diff = 2;
               force = false;
+              hopoState.state = Hopo.State.ForcedOff;
               break;
             case HardHopoOn:
               diff = 2;
               force = true;
+              hopoState.state = Hopo.State.ForcedOn;
               break;
             default:
               return false;
           }
+          hopoState.EndTick = e.StartTicks + e.LengthTicks;
           if(chords[diff] != null)
           {
             if(chords[diff].StartTicks == e.StartTicks)
