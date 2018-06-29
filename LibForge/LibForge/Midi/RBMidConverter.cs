@@ -768,7 +768,7 @@ namespace LibForge.Midi
                 {
                   StartTick = e.StartTicks,
                   EndTick = e.StartTicks + e.LengthTicks,
-                  Flags = (RBMid.LANEMARKER.MARKER.Flag)4
+                  Flags = (RBMid.LANEMARKER.MARKER.Flag)(1 | 2 | 4 | 8 | 16)
                 });
               }
               else if(e.Key >= LeftHandStart && e.Key <= LeftHandEnd)
