@@ -86,7 +86,7 @@ FILES  </files>
       var project = gp4.Replace("UP8802-CUSA02084_00-RBCUSTOMXXXX5000", pkgId)
                        .Replace("custom00001", shortname)
                        .Replace("FILES", fileSb.ToString())
-                       .Replace("2018-01-01 00:00:00", DateTime.UtcNow.ToString());
+                       .Replace("2018-01-01 00:00:00", DateTime.UtcNow.ToString("s").Replace('T', ' '));
       return Encoding.UTF8.GetBytes(project);
     }
 
