@@ -9,11 +9,13 @@ using System.Windows.Forms;
 
 namespace ForgeToolGUI
 {
-  public partial class SongDataInspector : UserControl
+  public partial class SongDataInspector : Inspector
   {
-    public SongDataInspector()
+    public SongDataInspector(LibForge.SongData.SongData data)
     {
       InitializeComponent();
+      if(data != null)
+        UpdateValues(data);
     }
     public void UpdateValues(LibForge.SongData.SongData data)
     {

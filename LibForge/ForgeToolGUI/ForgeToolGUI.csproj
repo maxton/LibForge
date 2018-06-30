@@ -58,16 +58,53 @@
     <Compile Include="ForgeBrowser.Designer.cs">
       <DependentUpon>ForgeBrowser.cs</DependentUpon>
     </Compile>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SongDataInspector.cs">
+    <Compile Include="Inspectors\GemTrackInspector.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="SongDataInspector.Designer.cs">
+    <Compile Include="Inspectors\GemTrackInspector.Designer.cs">
+      <DependentUpon>GemTrackInspector.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Inspectors\Inspector.cs" />
+    <Compile Include="Inspectors\ObjectInspector.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Inspectors\ObjectInspector.Designer.cs">
+      <DependentUpon>ObjectInspector.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Inspectors\StringInspector.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Inspectors\StringInspector.Designer.cs">
+      <DependentUpon>StringInspector.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Inspectors\TextureInspector.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Inspectors\TextureInspector.Designer.cs">
+      <DependentUpon>TextureInspector.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Inspectors\SongDataInspector.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Inspectors\SongDataInspector.Designer.cs">
       <DependentUpon>SongDataInspector.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="ForgeBrowser.resx">
       <DependentUpon>ForgeBrowser.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Inspectors\GemTrackInspector.resx">
+      <DependentUpon>GemTrackInspector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Inspectors\ObjectInspector.resx">
+      <DependentUpon>ObjectInspector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Inspectors\StringInspector.resx">
+      <DependentUpon>StringInspector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Inspectors\TextureInspector.resx">
+      <DependentUpon>TextureInspector.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -78,7 +115,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="SongDataInspector.resx">
+    <EmbeddedResource Include="Inspectors\SongDataInspector.resx">
       <DependentUpon>SongDataInspector.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
