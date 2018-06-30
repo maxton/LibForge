@@ -30,6 +30,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>anvil.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="DtxCS">
       <HintPath>..\..\Dependencies\DtxCS.dll</HintPath>
@@ -133,6 +136,9 @@
       <Project>{3684b7e6-0978-487a-895c-d0ed8f6b7b9a}</Project>
       <Name>LibForge</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="anvil.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
