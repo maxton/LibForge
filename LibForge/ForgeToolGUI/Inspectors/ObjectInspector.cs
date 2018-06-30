@@ -33,7 +33,7 @@ namespace ForgeToolGUI
       var inspector = InspectorFactory.GetInspector(track);
       if(inspector != null)
       {
-        fb.OpenTab(inspector, "Gems: " + Parent.Name);
+        fb.OpenTab(inspector, "Gems: " + Parent.Text);
         (inspector as GemTrackInspector).PreviewGemTrack(track);
       }
     }

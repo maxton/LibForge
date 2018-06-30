@@ -12,11 +12,12 @@ namespace ForgeToolGUI
 {
   public partial class GemTrackInspector : Inspector
   {
-    public GemTrackInspector()
+    public GemTrackInspector(RBMid.GEMTRACK track)
     {
       InitializeComponent();
       difficultySelector.SelectedIndex = 3;
       gemDisplay.Image = new Bitmap(gemDisplay.Width, gemDisplay.Height);
+      PreviewGemTrack(track);
     }
     
     public void PreviewGemTrack(RBMid.GEMTRACK track)
