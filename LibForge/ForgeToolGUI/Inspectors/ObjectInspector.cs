@@ -21,7 +21,7 @@ namespace ForgeToolGUI
 
     private void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
     {
-      if (treeView1.SelectedNode.Tag is RBMid.GEMTRACK)
+      if (treeView1.SelectedNode?.Tag is RBMid.GEMTRACK)
       {
         PreviewGemTrack((RBMid.GEMTRACK)treeView1.SelectedNode.Tag);
       }

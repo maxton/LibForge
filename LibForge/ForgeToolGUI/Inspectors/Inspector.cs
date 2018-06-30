@@ -22,8 +22,8 @@ namespace ForgeToolGUI
     {
       switch (obj)
       {
-        case System.Drawing.Image i:
-          return new ImageInspector(i);
+        case Texture i:
+          return new ImageInspector(TextureConverter.ToBitmap(i, 0));
         case string s:
           return new StringInspector(s);
         case SongData d:
@@ -45,8 +45,7 @@ namespace ForgeToolGUI
         {
           try
           {
-            var tex = TextureReader.ReadStream(s);
-            return TextureConverter.ToBitmap(tex, 0);
+            return TextureReader.ReadStream(s);
           }
           catch (Exception ex)
           {

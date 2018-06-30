@@ -102,7 +102,14 @@ namespace ForgeToolGUI
         case null:
           break;
         case GameArchives.IFile i:
-          OpenFile(i);
+          try
+          {
+            OpenFile(i);
+          }
+          catch(Exception ex)
+          {
+            MessageBox.Show("Couldn't load file: " + ex.Message);
+          }
           break;
       }
     }
@@ -113,8 +120,8 @@ namespace ForgeToolGUI
       if (inspector != null)
       {
         OpenTab(inspector, i.Name);
+        fileTreeView.Select();
       }
-      fileTreeView.Select();
     }
 
     public void OpenTab(Inspector c, string name)
