@@ -57,7 +57,7 @@ namespace LibForge.Midi
       public int Unknown3;
     }
 
-    public struct CYMBALMARKER
+    public struct TOMMARKER
     {
       public class MARKER
       {
@@ -329,7 +329,7 @@ namespace LibForge.Midi
     public LYRICS[] Lyrics;
     public DRUMFILLS[] DrumFills;
     public ANIM[] Anims;
-    public CYMBALMARKER[] ProMarkers;
+    public TOMMARKER[] ProMarkers;
     public LANEMARKER[] LaneMarkers;
     public GTRTRILLS[] TrillMarkers;
     public DRUMMIXES[] DrumMixes;

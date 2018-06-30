@@ -126,12 +126,12 @@ namespace LibForge.Midi
       }),
       Unknown3 = Int()
     };
-    private RBMid.CYMBALMARKER ReadMarkers() => new RBMid.CYMBALMARKER
+    private RBMid.TOMMARKER ReadMarkers() => new RBMid.TOMMARKER
     {
-      Markers = Arr(() => new RBMid.CYMBALMARKER.MARKER
+      Markers = Arr(() => new RBMid.TOMMARKER.MARKER
       {
         Tick = UInt(),
-        Flags = (RBMid.CYMBALMARKER.MARKER.FLAGS)Int()
+        Flags = (RBMid.TOMMARKER.MARKER.FLAGS)Int()
       }),
       Unknown1 = Int(),
       Unknown2 = Int()

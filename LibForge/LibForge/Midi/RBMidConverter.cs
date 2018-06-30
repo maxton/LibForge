@@ -25,7 +25,7 @@ namespace LibForge.Midi
       private List<RBMid.LYRICS> Lyrics;
       private List<RBMid.DRUMFILLS> DrumFills;
       private List<RBMid.ANIM> Anims;
-      private List<RBMid.CYMBALMARKER> ProMarkers;
+      private List<RBMid.TOMMARKER> ProMarkers;
       private List<RBMid.LANEMARKER> LaneMarkers;
       private List<RBMid.GTRTRILLS> TrillMarkers;
       private List<RBMid.DRUMMIXES> DrumMixes;
@@ -82,7 +82,7 @@ namespace LibForge.Midi
         Lyrics = new List<RBMid.LYRICS>();
         DrumFills = new List<RBMid.DRUMFILLS>();
         Anims = new List<RBMid.ANIM>();
-        ProMarkers = new List<RBMid.CYMBALMARKER>();
+        ProMarkers = new List<RBMid.TOMMARKER>();
         LaneMarkers = new List<RBMid.LANEMARKER>();
         TrillMarkers = new List<RBMid.GTRTRILLS>();
         DrumMixes = new List<RBMid.DRUMMIXES>();
@@ -271,43 +271,64 @@ namespace LibForge.Midi
       {
         var drumfills = new List<RBMid.DRUMFILLS.FILL>();
         var fills_unk = new List<RBMid.DRUMFILLS.FILL_LANES>();
-        var cymbal_markers = new SortedDictionary<uint, RBMid.CYMBALMARKER.MARKER>();
+        var tom_markers = new SortedDictionary<uint, RBMid.TOMMARKER.MARKER>();
         var overdrive_markers = new List<RBMid.SECTIONS.SECTION>();
         var solo_markers = new List<RBMid.SECTIONS.SECTION>();
         var gem_tracks = new List<RBMid.GEMTRACK.GEM>[4];
         var rolls = new List<RBMid.LANEMARKER.MARKER>();
 
-        cymbal_markers[0] = new RBMid.CYMBALMARKER.MARKER
+        tom_markers[0] = new RBMid.TOMMARKER.MARKER
         {
           Tick = 0, Flags = 0
         };
         var marker_ends = new uint[3];
-        var endmarkers = new RBMid.CYMBALMARKER.MARKER[3];
         var mixes = new List<RBMid.TICKTEXT>[4];
         for (var i = 0; i < 4; i++)
         {
           mixes[i] = new List<RBMid.TICKTEXT>();
         }
-        RBMid.CYMBALMARKER.MARKER.FLAGS GetFlag(byte key)
+        void SetMarkerOn(uint tick, RBMid.TOMMARKER.MARKER.FLAGS flag)
+        {
+          if (tom_markers.ContainsKey(tick))
+          {
+            tom_markers[tick].Flags |= flag;
+          }
+          else
+          {
+            tom_markers[tick] = new RBMid.TOMMARKER.MARKER
+            {
+              Tick = tick,
+              Flags = flag
+            };
+          }
+        }
+        void SetMarkerOff(uint tick, RBMid.TOMMARKER.MARKER.FLAGS flag)
+        {
+          if (tom_markers.ContainsKey(tick))
+          {
+            tom_markers[tick].Flags &= ~flag;
+          }
+          else
+          {
+            tom_markers[tick] = new RBMid.TOMMARKER.MARKER
+            {
+              Tick = tick,
+              Flags = 0
+            };
+          }
+        }
+        RBMid.TOMMARKER.MARKER.FLAGS GetFlag(byte key)
         {
           switch (key)
           {
             case ProYellow:
-              return RBMid.CYMBALMARKER.MARKER.FLAGS.ProYellow;
+              return RBMid.TOMMARKER.MARKER.FLAGS.ProYellow;
             case ProBlue:
-              return RBMid.CYMBALMARKER.MARKER.FLAGS.ProBlue;
+              return RBMid.TOMMARKER.MARKER.FLAGS.ProBlue;
             case ProGreen:
-              return RBMid.CYMBALMARKER.MARKER.FLAGS.ProGreen;
+              return RBMid.TOMMARKER.MARKER.FLAGS.ProGreen;
           }
           return 0;
-        }
-        bool MarkerSet(int lane, uint startTicks)
-        {
-          if(endmarkers[lane - 2] == null)
-          {
-            return true;
-          }
-          return endmarkers[lane - 2].Tick < startTicks;
         }
         bool AddGem(MidiNote e)
         {
@@ -341,28 +362,31 @@ namespace LibForge.Midi
 
           if (gem_tracks[diff] == null) gem_tracks[diff] = new List<RBMid.GEMTRACK.GEM>();
           var lastOverdrive = overdrive_markers.LastOrDefault();
-          var lanes = 1 << lane;
+          var proCymbal = (lane > 1 && marker_ends[lane - 2] <= e.StartTicks) ? 1 : 0;
           gem_tracks[diff].Add(new RBMid.GEMTRACK.GEM
           {
             StartMillis = (float)e.StartTime * 1000,
             StartTicks = e.StartTicks,
             LengthMillis = (ushort)(e.Length * 1000),
             LengthTicks = (ushort)e.LengthTicks,
-            Lanes = lanes,
+            Lanes = 1 << lane,
             IsHopo = false,
             NoTail = true,
             // TODO: Sometimes this is not zero
-            ProCymbal = (lanes > 2 && MarkerSet(lane, e.StartTicks)) ? 1 : 0
+            ProCymbal = proCymbal
           });
           return true;
         }
-        // If shorter notes come first we get better output for arabella
+        // 
         var itemsOrdered = track.Items.OrderBy(x => {
-          // Sort modifiers to come before gems
-          var key = 127 - (x as MidiNote)?.Key ?? 0;
-          if (key <= ExpertEnd) key = 0;
-          return key;
-          }).OrderBy(x => (x as MidiNote)?.LengthTicks ?? 0).OrderBy(x => x.StartTicks);
+            // Sort modifiers to come before gems
+            var key = (x as MidiNote)?.Key ?? 0;
+            if (key <= ExpertEnd) key = 127;
+            return key;
+          })
+          // If shorter notes come first we get better output for arabella (seems to be breaking things)
+          // .OrderBy(x => (x as MidiNote)?.LengthTicks ?? 0)
+          .OrderBy(x => x.StartTicks);
         foreach (var item in itemsOrdered)
         {
           var ticks = item.StartTicks;
@@ -403,35 +427,10 @@ namespace LibForge.Midi
               }
               else if (e.Key == ProYellow || e.Key == ProBlue || e.Key == ProGreen)
               {
-                var startMarker = cymbal_markers.ContainsKey(ticks) ? cymbal_markers[ticks]
-                                                               : new RBMid.CYMBALMARKER.MARKER { Tick = ticks };
-                startMarker.Flags |= GetFlag(e.Key);
-                for (var i = 0; i < 3; i++)
-                {
-                  if (endmarkers[i] != null && endmarkers[i].Tick > e.StartTicks)
-                  {
-                    startMarker.Flags |= GetFlag((byte)(i + 110));
-                    endmarkers[i].Flags |= GetFlag(e.Key);
-                  }
-                }
-                cymbal_markers[ticks] = startMarker;
-
-                var endTicks = ticks + e.LengthTicks;
-                var endMarker = cymbal_markers.ContainsKey(endTicks) ? cymbal_markers[endTicks]
-                                                                     : new RBMid.CYMBALMARKER.MARKER { Tick = endTicks };
-                for (var i = 0; i < 3; i++)
-                {
-                  if (endmarkers[i] != null && endmarkers[i].Tick >= endTicks)
-                  {
-                    if (endmarkers[i].Tick != endTicks)
-                    {
-                      endMarker.Flags |= GetFlag((byte)(i + 110));
-                    }
-                    endmarkers[i].Flags &= ~GetFlag(e.Key);
-                  }
-                }
-                endmarkers[e.Key - 110] = endMarker;
-                cymbal_markers[endTicks] = endMarker;
+                // Pro Tom Markers
+                SetMarkerOn(e.StartTicks, GetFlag(e.Key));
+                SetMarkerOff(e.StartTicks + e.LengthTicks, GetFlag(e.Key));
+                marker_ends[e.Key - ProYellow] = e.StartTicks + e.LengthTicks;
               }
               else if (AddGem(e)) { }  // everything is handled in AddGem
               else if (e.Key >= DrumAnimStart && e.Key <= DrumAnimEnd)
@@ -492,9 +491,9 @@ namespace LibForge.Midi
           Fills = drumfills.ToArray(),
           Lanes = fills_unk.ToArray()
         });
-        ProMarkers.Add(new RBMid.CYMBALMARKER
+        ProMarkers.Add(new RBMid.TOMMARKER
         {
-          Markers = cymbal_markers.Values.ToArray()
+          Markers = tom_markers.Values.ToArray()
         });
         LaneMarkers.Add(new RBMid.LANEMARKER
         {
@@ -867,11 +866,11 @@ namespace LibForge.Midi
           Fills = drumfills.ToArray(),
           Lanes = fills_unk.ToArray()
         });
-        ProMarkers.Add(new RBMid.CYMBALMARKER
+        ProMarkers.Add(new RBMid.TOMMARKER
         {
-          Markers = new RBMid.CYMBALMARKER.MARKER[]
+          Markers = new RBMid.TOMMARKER.MARKER[]
           {
-            new RBMid.CYMBALMARKER.MARKER
+            new RBMid.TOMMARKER.MARKER
             {
               Tick = 0,
               Flags = 0
@@ -951,11 +950,11 @@ namespace LibForge.Midi
           Fills = new RBMid.DRUMFILLS.FILL[0],
           Lanes = new RBMid.DRUMFILLS.FILL_LANES[0]
         });
-        ProMarkers.Add(new RBMid.CYMBALMARKER
+        ProMarkers.Add(new RBMid.TOMMARKER
         {
-          Markers = new RBMid.CYMBALMARKER.MARKER[]
+          Markers = new RBMid.TOMMARKER.MARKER[]
           {
-            new RBMid.CYMBALMARKER.MARKER
+            new RBMid.TOMMARKER.MARKER
             {
               Tick = 0,
               Flags = 0
@@ -1244,11 +1243,11 @@ namespace LibForge.Midi
           Unknown3 = 0
         });
         DrumFills.Add(new RBMid.DRUMFILLS());
-        ProMarkers.Add(new RBMid.CYMBALMARKER
+        ProMarkers.Add(new RBMid.TOMMARKER
         {
-          Markers = new RBMid.CYMBALMARKER.MARKER[]
+          Markers = new RBMid.TOMMARKER.MARKER[]
           {
-            new RBMid.CYMBALMARKER.MARKER
+            new RBMid.TOMMARKER.MARKER
             {
               Tick = 0,
               Flags = 0

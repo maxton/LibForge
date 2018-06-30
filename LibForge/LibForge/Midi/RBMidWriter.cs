@@ -116,7 +116,7 @@ namespace LibForge.Midi
       });
       Write(obj.Unknown3);
     }
-    private void WriteProCymbalMarkers(RBMid.CYMBALMARKER obj)
+    private void WriteProCymbalMarkers(RBMid.TOMMARKER obj)
     {
       Write(obj.Markers, o =>
       {
