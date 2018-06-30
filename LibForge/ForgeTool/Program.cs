@@ -158,7 +158,7 @@ namespace ForgeTool
               }
             }
             Console.WriteLine($"Summary: {succ} OK, {warn} WARN, {fail} ERROR");
-            if (fail > 0)
+            if (warn > 0)
             {
               Console.WriteLine("(a = converted file, b = original)");
             }
