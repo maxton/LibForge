@@ -11,9 +11,10 @@ namespace LibForge.SongData
     public static SongData ToSongData(DataArray songDta)
     {
       var songId = songDta.Array("song_id");
+      var art = songDta.Array("album_art").Any(1);
       return new SongData
       {
-        AlbumArt = songDta.Array("album_art").Int(1) != 0,
+        AlbumArt = art == "1" || art == "TRUE",
         AlbumName = songDta.Array("album_name")?.String(1) ?? "",
         AlbumTrackNumber = (short)(songDta.Array("album_track_number")?.Int(1) ?? 0),
         AlbumYear = songDta.Array("year_released")?.Int(1) ?? 0,
