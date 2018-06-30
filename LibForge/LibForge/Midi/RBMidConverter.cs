@@ -579,7 +579,12 @@ namespace LibForge.Midi
         var solo_markers = new List<RBMid.SECTIONS.SECTION>();
         var tremolos = new List<RBMid.LANEMARKER.MARKER>();
         var strummaps = new List<RBMid.MAP>();
-        var hopoState = new Hopo { EndTick = uint.MaxValue, state = Hopo.State.NormalOff };
+        var hopoState = new Hopo[]{
+          new Hopo { EndTick = uint.MaxValue, state = Hopo.State.NormalOff },
+          new Hopo { EndTick = uint.MaxValue, state = Hopo.State.NormalOff },
+          new Hopo { EndTick = uint.MaxValue, state = Hopo.State.NormalOff },
+          new Hopo { EndTick = uint.MaxValue, state = Hopo.State.NormalOff },
+        };
 
         bool AddGem(MidiNote e)
         {
@@ -620,7 +625,7 @@ namespace LibForge.Midi
           if (gem_tracks[diff] == null) gem_tracks[diff] = new List<RBMid.GEMTRACK.GEM>();
           if (chords[diff] != null && chords[diff].StartTicks == e.StartTicks)
           { // additional gem in a chord
-            if (chords[diff].Lanes != 0 && hopoState.state != Hopo.State.ForcedOn || hopoState.EndTick < e.StartTicks)
+            if (chords[diff].Lanes != 0 && hopoState[diff].state != Hopo.State.ForcedOn || hopoState[diff].EndTick < e.StartTicks)
             {
               // chords are not automatically HOPO'd
               chords[diff].IsHopo = false;
@@ -629,7 +634,7 @@ namespace LibForge.Midi
 
             if (gem_tracks[diff].Count > 0
               && 0 != (gem_tracks[diff].Last().Lanes & chords[diff].Lanes)
-              && (Hopo.State.ForcedOn != hopoState.state || hopoState.EndTick < e.StartTicks))
+              && (Hopo.State.ForcedOn != hopoState[diff].state || hopoState[diff].EndTick < e.StartTicks))
             {
               chords[diff].IsHopo = false;
             }
@@ -646,7 +651,7 @@ namespace LibForge.Midi
             var count = gem_tracks[diff].Count;
             if(count > 1 && (gem_tracks[diff][count - 2].Lanes & gem_tracks[diff][count - 1].Lanes) != 0)
             {
-              if(hopoState.state != Hopo.State.ForcedOn && hopoState.EndTick >= gem_tracks[diff][count - 1].StartTicks)
+              if(hopoState[diff].state != Hopo.State.ForcedOn && hopoState[diff].EndTick >= gem_tracks[diff][count - 1].StartTicks)
               {
                 // Identical notes cannot be hopos
                 gem_tracks[diff][count - 1].IsHopo = false;
@@ -658,12 +663,12 @@ namespace LibForge.Midi
             {
               if(e.StartTicks - chords[diff].StartTicks <= hopoThreshold && ((1 << lane) & chords[diff].Lanes) == 0)
               {
-                if(hopoState.state != Hopo.State.ForcedOff || hopoState.EndTick <= e.StartTicks)
+                if(hopoState[diff].state != Hopo.State.ForcedOff || hopoState[diff].EndTick <= e.StartTicks)
                   hopo = true;
               }
               // TODO: Swing notes have different HOPO rules?
             }
-            if (hopoState.state == Hopo.State.ForcedOn && hopoState.EndTick >= e.StartTicks)
+            if (hopoState[diff].state == Hopo.State.ForcedOn && hopoState[diff].EndTick >= e.StartTicks)
               hopo = true;
             var chord = new RBMid.GEMTRACK.GEM
             {
@@ -672,7 +677,7 @@ namespace LibForge.Midi
               LengthMillis = (ushort)(e.Length * 1000),
               LengthTicks = (ushort)e.LengthTicks,
               Lanes = 1 << lane,
-              IsHopo = hopo,
+              IsHopo = diff > 1 ? hopo : false,
               NoTail = e.LengthTicks <= 120 || (hopo && e.LengthTicks <= 160),
               ProCymbal = lane > 1 ? 1 : 0
             };
@@ -690,28 +695,28 @@ namespace LibForge.Midi
           {
             case ExpertHopoOff:
               diff = 3;
-              hopoState.state = Hopo.State.ForcedOff;
+              hopoState[diff].state = Hopo.State.ForcedOff;
               force = false;
               break;
             case ExpertHopoOn:
               diff = 3;
               force = true;
-              hopoState.state = Hopo.State.ForcedOn;
+              hopoState[diff].state = Hopo.State.ForcedOn;
               break;
             case HardHopoOff:
               diff = 2;
               force = false;
-              hopoState.state = Hopo.State.ForcedOff;
+              hopoState[diff].state = Hopo.State.ForcedOff;
               break;
             case HardHopoOn:
               diff = 2;
               force = true;
-              hopoState.state = Hopo.State.ForcedOn;
+              hopoState[diff].state = Hopo.State.ForcedOn;
               break;
             default:
               return false;
           }
-          hopoState.EndTick = e.StartTicks + e.LengthTicks;
+          hopoState[diff].EndTick = e.StartTicks + e.LengthTicks;
           if(chords[diff] != null)
           {
             if(chords[diff].StartTicks == e.StartTicks)
