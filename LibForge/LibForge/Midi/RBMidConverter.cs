@@ -292,14 +292,22 @@ namespace LibForge.Midi
         {
           switch (key)
           {
-            case ProBlue:
-              return RBMid.CYMBALMARKER.MARKER.FLAGS.ProBlue;
             case ProYellow:
               return RBMid.CYMBALMARKER.MARKER.FLAGS.ProYellow;
+            case ProBlue:
+              return RBMid.CYMBALMARKER.MARKER.FLAGS.ProBlue;
             case ProGreen:
               return RBMid.CYMBALMARKER.MARKER.FLAGS.ProGreen;
           }
           return 0;
+        }
+        bool MarkerSet(int lane, uint startTicks)
+        {
+          if(endmarkers[lane - 2] == null)
+          {
+            return true;
+          }
+          return endmarkers[lane - 2].Tick < startTicks;
         }
         bool AddGem(MidiNote e)
         {
@@ -333,22 +341,28 @@ namespace LibForge.Midi
 
           if (gem_tracks[diff] == null) gem_tracks[diff] = new List<RBMid.GEMTRACK.GEM>();
           var lastOverdrive = overdrive_markers.LastOrDefault();
+          var lanes = 1 << lane;
           gem_tracks[diff].Add(new RBMid.GEMTRACK.GEM
           {
             StartMillis = (float)e.StartTime * 1000,
             StartTicks = e.StartTicks,
             LengthMillis = (ushort)(e.Length * 1000),
             LengthTicks = (ushort)e.LengthTicks,
-            Lanes = 1 << lane,
+            Lanes = lanes,
             IsHopo = false,
             NoTail = true,
             // TODO: Sometimes this is not zero
-            Unknown = (lastOverdrive.StartTicks + lastOverdrive.LengthTicks == e.StartTicks) ? 1 : 0
+            ProCymbal = (lanes > 2 && MarkerSet(lane, e.StartTicks)) ? 1 : 0
           });
           return true;
         }
         // If shorter notes come first we get better output for arabella
-        var itemsOrdered = track.Items.OrderBy(x => (x as MidiNote)?.LengthTicks ?? 0).OrderBy(x => x.StartTicks);
+        var itemsOrdered = track.Items.OrderBy(x => {
+          // Sort modifiers to come before gems
+          var key = 127 - (x as MidiNote)?.Key ?? 0;
+          if (key <= ExpertEnd) key = 0;
+          return key;
+          }).OrderBy(x => (x as MidiNote)?.LengthTicks ?? 0).OrderBy(x => x.StartTicks);
         foreach (var item in itemsOrdered)
         {
           var ticks = item.StartTicks;
@@ -500,7 +514,7 @@ namespace LibForge.Midi
         GemTracks.Add(new RBMid.GEMTRACK
         {
           Gems = gem_tracks.Select(g => g.ToArray()).ToArray(),
-          Unknown = 0xAA
+          HopoThreshold = hopoThreshold
         });
         var sections = new RBMid.SECTIONS.SECTION[6][] {
           overdrive_markers.ToArray(),
@@ -624,6 +638,7 @@ namespace LibForge.Midi
             chords[diff].LengthMillis = (ushort)(e.Length * 1000);
             chords[diff].LengthTicks = (ushort)e.LengthTicks;
             chords[diff].NoTail = e.LengthTicks <= 120 || (chords[diff].IsHopo && e.LengthTicks <= 160);
+            chords[diff].ProCymbal = (chords[diff].Lanes & 3) != 0 ? 0 : 1;
           }
           else
           { // new chord
@@ -649,6 +664,8 @@ namespace LibForge.Midi
               }
               // TODO: Swing notes have different HOPO rules?
             }
+            if (hopoState.state == Hopo.State.ForcedOn && hopoState.EndTick >= e.StartTicks)
+              hopo = true;
             var chord = new RBMid.GEMTRACK.GEM
             {
               StartMillis = (float)e.StartTime * 1000,
@@ -716,7 +733,8 @@ namespace LibForge.Midi
                 LengthTicks = (ushort)e.LengthTicks,
                 Lanes = 0,
                 IsHopo = force,
-                NoTail = e.LengthTicks < 120
+                NoTail = e.LengthTicks < 120,
+                ProCymbal = 1
               };
               gem_tracks[diff].Add(chords[diff]);
             }
@@ -888,7 +906,7 @@ namespace LibForge.Midi
         GemTracks.Add(new RBMid.GEMTRACK
         {
           Gems = gem_tracks.Select(g => g.ToArray()).ToArray(),
-          Unknown = 0xAA
+          HopoThreshold = hopoThreshold
         });
         var sections = new RBMid.SECTIONS.SECTION[6][] {
           overdrive_markers.ToArray(),
@@ -958,7 +976,8 @@ namespace LibForge.Midi
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
-          Gems = new RBMid.GEMTRACK.GEM[0][]
+          Gems = new RBMid.GEMTRACK.GEM[0][],
+          HopoThreshold = hopoThreshold
         });
         OverdriveSoloSections.Add(new RBMid.SECTIONS
         {
@@ -1247,7 +1266,7 @@ namespace LibForge.Midi
         GemTracks.Add(new RBMid.GEMTRACK
         {
           Gems = new RBMid.GEMTRACK.GEM[4][] { emptyGems, emptyGems, emptyGems, emptyGems },
-          Unknown = 0xAA
+          HopoThreshold = hopoThreshold
         });
         var overdriveSections = new RBMid.SECTIONS.SECTION[6][]
         {

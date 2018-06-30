@@ -126,10 +126,10 @@ namespace LibForge.Midi
         public int Lanes;
         public bool IsHopo;
         public bool NoTail;
-        public int Unknown;
+        public int ProCymbal;
       }
       public GEM[][] Gems;
-      public int Unknown;
+      public int HopoThreshold;
     }
     public struct SECTIONS
     {
@@ -524,12 +524,11 @@ namespace LibForge.Midi
                 ?? CheckFloats(their2.LengthMillis, my2.LengthMillis, nameof(my2.LengthMillis), 1.5f) // who ever cared about a couple ms
                 ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
                 ?? Check(their2.Lanes, my2.Lanes, nameof(my2.Lanes))
-                // TODO: Swing notes...
-                //?? Check(their2.IsHopo, my2.IsHopo, nameof(my2.IsHopo))
+                ?? Check(their2.IsHopo, my2.IsHopo, nameof(my2.IsHopo))
                 ?? Check(their2.NoTail, my2.NoTail, nameof(my2.NoTail))
-                // TODO
-                //?? Check(their2.Unknown, my2.Unknown, nameof(my2.Unknown))
-                ))
+                ?? Check(their2.ProCymbal, my2.ProCymbal, nameof(my2.ProCymbal))
+                )
+            ?? Check(their.HopoThreshold, my.HopoThreshold, nameof(my.HopoThreshold)))
       ?? Check(other.OverdriveSoloSections, OverdriveSoloSections, nameof(OverdriveSoloSections), (their, my)
            => Check(their.Sections, my.Sections, nameof(my.Sections), (their2, my2)
                 => Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))

@@ -17,10 +17,10 @@ namespace LibForgeTests
     {
       var rbmid = RBMidConverter.ToRBMid(MidiFileReader.FromStream(GetFile("hopos.mid")));
       var expected =
-        "nnnnnynynynnnynnnynynnnynnnynynnynnnnnnn" +
+        "nnnnnynynynnnynnnynynnnynnnynynnynyyyynn" +
         "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn" +
         "nnnnnnnnnnnnnnnnnnnnnnnnnnnynnynnynnynnn" +
-        "nnnnnnnnnnnnnnyynyn";
+        "nnnnnnnnnnnnnnyynynnnnn";
       var actual = new string(rbmid.GemTracks[1].Gems[3].Select(g => g.IsHopo ? 'y' : 'n').ToArray());
       Assert.AreEqual(expected, actual);
     }

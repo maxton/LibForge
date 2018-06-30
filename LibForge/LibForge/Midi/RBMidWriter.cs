@@ -163,10 +163,10 @@ namespace LibForge.Midi
           Write(x.Lanes);
           Write(x.IsHopo);
           Write(x.NoTail);
-          Write(x.Unknown);
+          Write(x.ProCymbal);
         });
       });
-      Write(obj.Unknown);
+      Write(obj.HopoThreshold);
     }
     private void WriteSectionMarkers(RBMid.SECTIONS obj)
     {

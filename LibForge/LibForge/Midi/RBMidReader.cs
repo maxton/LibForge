@@ -170,9 +170,9 @@ namespace LibForge.Midi
         Lanes = Int(),
         IsHopo = Bool(),
         NoTail = Bool(),
-        Unknown = Int()
+        ProCymbal = Int()
       }))),
-      Unknown = Int()
+      HopoThreshold = Int()
     };
     private RBMid.SECTIONS ReadOverdrives() => new RBMid.SECTIONS
     {

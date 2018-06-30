@@ -195,12 +195,14 @@ namespace ForgeToolGUI
       }
     }
 
+    object previewObj;
     void ObjectPreview(object obj)
     {
       treeView1.Nodes.Clear();
       AddObjectNodes(obj, treeView1.Nodes);
       tabControl1.SelectTab(4);
       fileTreeView.Select();
+      previewObj = obj;
     }
 
     /// <summary>
@@ -390,7 +392,7 @@ namespace ForgeToolGUI
           var width = gem.LengthMillis * scale;
           for (var lane = 0; lane < 5; lane++)
           {
-            var brush = gem.Unknown == 0 ? Brushes.Blue : Brushes.Red;
+            var brush = gem.ProCymbal == 0 ? Brushes.Blue : Brushes.Red;
             if (((1 << lane) & gem.Lanes) != 0)
             {
               g.FillRectangle(brush, left, 75 - lane * 15, width, 10);
