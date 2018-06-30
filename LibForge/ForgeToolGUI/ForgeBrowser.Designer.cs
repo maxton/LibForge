@@ -28,6 +28,7 @@
     /// </summary>
     private void InitializeComponent()
     {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ForgeBrowser));
             this.fileTreeView = new System.Windows.Forms.TreeView();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -160,11 +161,11 @@
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.fileTreeView);
             this.Controls.Add(this.menuStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
             this.MinimumSize = new System.Drawing.Size(828, 542);
             this.Name = "ForgeBrowser";
-            this.ShowIcon = false;
             this.Text = "Forge Browser";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
