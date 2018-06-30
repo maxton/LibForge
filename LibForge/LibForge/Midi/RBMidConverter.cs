@@ -668,7 +668,7 @@ namespace LibForge.Midi
               }
               // TODO: Swing notes have different HOPO rules?
             }
-            if (hopoState[diff].state == Hopo.State.ForcedOn && hopoState[diff].EndTick >= e.StartTicks)
+            if (hopoState[diff].state == Hopo.State.ForcedOn && hopoState[diff].EndTick > e.StartTicks)
               hopo = true;
             var chord = new RBMid.GEMTRACK.GEM
             {
