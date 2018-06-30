@@ -673,7 +673,8 @@ namespace LibForge.Midi
               LengthTicks = (ushort)e.LengthTicks,
               Lanes = 1 << lane,
               IsHopo = hopo,
-              NoTail = e.LengthTicks <= 120 || (hopo && e.LengthTicks <= 160)
+              NoTail = e.LengthTicks <= 120 || (hopo && e.LengthTicks <= 160),
+              ProCymbal = lane > 1 ? 1 : 0
             };
             chords[diff] = chord;
             gem_tracks[diff].Add(chord);

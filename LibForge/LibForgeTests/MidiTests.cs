@@ -42,5 +42,20 @@ namespace LibForgeTests
       var actual = new string(rbmid.GemTracks[0].Gems[3].Select(g => g.ProCymbal == 1 ? 'C' : 'T').ToArray());
       Assert.AreEqual(expected, actual);
     }
+    
+    [TestMethod]
+    public void TestProMarkersGuitar()
+    {
+      // These are probably useless on guitar, but let's just test it for completion's sake
+      var rbmid = GetMid("pro_markers.mid");
+      var expected =
+        "TTCCC" +
+        "TTCC" +
+        "TTC" +
+        "TTC" +
+        "TT";
+      var actual = new string(rbmid.GemTracks[1].Gems[3].Select(g => g.ProCymbal == 1 ? 'C' : 'T').ToArray());
+      Assert.AreEqual(expected, actual);
+    }
   }
 }
