@@ -659,7 +659,7 @@ namespace LibForge.Midi
             {
               if(e.StartTicks - chords[diff].StartTicks <= hopoThreshold && ((1 << lane) & chords[diff].Lanes) == 0)
               {
-                if(hopoState.state != Hopo.State.ForcedOff || hopoState.EndTick < e.StartTicks)
+                if(hopoState.state != Hopo.State.ForcedOff || hopoState.EndTick <= e.StartTicks)
                   hopo = true;
               }
               // TODO: Swing notes have different HOPO rules?

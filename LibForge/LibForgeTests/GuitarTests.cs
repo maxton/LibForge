@@ -20,7 +20,7 @@ namespace LibForgeTests
         "nnnnnynynynnnynnnynynnnynnnynynnynyyyynn" +
         "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn" +
         "nnnnnnnnnnnnnnnnnnnnnnnnnnnynnynnynnynnn" +
-        "nnnnnnnnnnnnnnyynynnnnn";
+        "nnnnnnnnnnnnnnyynynnnnnny";
       var actual = new string(rbmid.GemTracks[1].Gems[3].Select(g => g.IsHopo ? 'y' : 'n').ToArray());
       Assert.AreEqual(expected, actual);
     }
