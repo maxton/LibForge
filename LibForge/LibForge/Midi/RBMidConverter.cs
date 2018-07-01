@@ -649,7 +649,7 @@ namespace LibForge.Midi
           if (gem_tracks[diff] == null) gem_tracks[diff] = new List<RBMid.GEMTRACK.GEM>();
           if (chords[diff] != null && chords[diff].StartTicks == e.StartTicks)
           { // additional gem in a chord
-            if (chords[diff].Lanes != 0 && hopoState[diff].state != Hopo.State.ForcedOn || hopoState[diff].EndTick < e.StartTicks)
+            if (chords[diff].Lanes != 0 && hopoState[diff].state != Hopo.State.ForcedOn || hopoState[diff].EndTick <= e.StartTicks)
             {
               // chords are not automatically HOPO'd
               chords[diff].IsHopo = false;
@@ -690,7 +690,6 @@ namespace LibForge.Midi
                 if(hopoState[diff].state != Hopo.State.ForcedOff || hopoState[diff].EndTick <= e.StartTicks)
                   hopo = true;
               }
-              // TODO: Swing notes have different HOPO rules?
             }
             if (hopoState[diff].state == Hopo.State.ForcedOn && hopoState[diff].EndTick > e.StartTicks)
               hopo = true;
