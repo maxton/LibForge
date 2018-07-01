@@ -141,8 +141,8 @@ namespace LibForge.Midi
       {
         Write(o.StartTick);
         Write(o.EndTick);
-        Write(o.LowFret);
-        Write(o.HighFret);
+        Write(o.FirstFret);
+        Write(o.SecondFret);
       }));
     }
     private void WriteDrumMixes(RBMid.DRUMMIXES obj)

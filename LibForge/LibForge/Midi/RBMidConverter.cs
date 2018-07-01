@@ -639,11 +639,16 @@ namespace LibForge.Midi
           {
             lane = key - ExpertStart;
             diff = 3;
-            if (trill.EndTick >= e.StartTicks)
+            if (trill.EndTick > e.StartTicks)
             {
-              var note = e.Key - ExpertStart;
-              if (note < trill.LowFret) trill.LowFret = note;
-              if (note > trill.HighFret) trill.HighFret = note;
+              if (trill.FirstFret == -1)
+              {
+                trill.FirstFret = lane;
+              }
+              else if (trill.SecondFret == -1)
+              {
+                trill.SecondFret = lane;
+              }
             }
           }
           else
@@ -677,17 +682,6 @@ namespace LibForge.Midi
           else
           { // new chord
 
-            //check old chord for bad HOPO
-            var count = gem_tracks[diff].Count;
-            if(count > 1 && (gem_tracks[diff][count - 2].Lanes & gem_tracks[diff][count - 1].Lanes) != 0)
-            {
-              if(hopoState[diff].state != Hopo.State.ForcedOn && hopoState[diff].EndTick >= gem_tracks[diff][count - 1].StartTicks)
-              {
-                // Identical notes cannot be hopos
-                gem_tracks[diff][count - 1].IsHopo = false;
-              }
-            }
-
             bool hopo = false;
             if(chords[diff] != null)
             {
@@ -707,7 +701,7 @@ namespace LibForge.Midi
               LengthTicks = (ushort)e.LengthTicks,
               Lanes = 1 << lane,
               IsHopo = diff > 1 ? hopo : false,
-              NoTail = e.LengthTicks <= 120 || (hopo && e.LengthTicks <= 160),
+              NoTail = e.LengthTicks <= 120 || (hopo && e.LengthTicks <= 160) || (diff <= 2 && e.LengthTicks <= 160),
               ProCymbal = lane > 1 ? 1 : 0
             };
             chords[diff] = chord;
@@ -752,7 +746,9 @@ namespace LibForge.Midi
           }
           return true;
         }
-        foreach (var item in track.Items)
+        foreach (var item in track.Items
+          .OrderBy(e => 127 - (e as MidiNote)?.Key ?? 0)
+          .OrderBy(e => e.StartTicks))
         {
           switch (item)
           {
@@ -779,15 +775,17 @@ namespace LibForge.Midi
                 if (trills.Count > 0)
                 {
                   var lastTrill = trills.Last();
-                  if (lastTrill.HighFret < lastTrill.LowFret)
+                  if (lastTrill.FirstFret == -1)
                     trills.RemoveAt(trills.Count - 1);
+                  else if (lastTrill.SecondFret == -1)
+                    lastTrill.SecondFret = lastTrill.FirstFret;
                 }
                 trill = new RBMid.GTRTRILLS.TRILL
                 {
                   StartTick = e.StartTicks,
                   EndTick = e.StartTicks + e.LengthTicks,
-                  LowFret = 4,
-                  HighFret = 0
+                  FirstFret = -1,
+                  SecondFret = -1
                 };
                 trills.Add(trill);
               }
@@ -855,13 +853,6 @@ namespace LibForge.Midi
               }
               break;
           }
-        }
-        // In case the last trill was an invalid one, remove it
-        if (trills.Count > 0)
-        {
-          var lastTrill = trills.Last();
-          if (lastTrill.HighFret < lastTrill.LowFret)
-            trills.RemoveAt(trills.Count - 1);
         }
 
         int Unk = track.Name == "PART BASS" ? 2 : 1;

@@ -94,8 +94,8 @@ namespace LibForge.Midi
       {
         public uint StartTick;
         public uint EndTick;
-        public int LowFret;
-        public int HighFret;
+        public int FirstFret;
+        public int SecondFret;
       }
       // First dimension: difficulty
       public TRILL[][] Trills;
@@ -396,12 +396,12 @@ namespace LibForge.Midi
       else if (b == null)
         return $"{n} was null in b";
 
-      //if (a.Length != b.Length)
-      //  return $"{n}.Length: a={a.Length}, b={b.Length}";
+      if (a.Length != b.Length)
+        return $"{n}.Length: a={a.Length}, b={b.Length}";
       for (var i = 0; i < Math.Min(a.Length, b.Length); i++)
       {
-        //if (a[i].Length != b[i].Length)
-        //  return $"{n}[{i}].Length: a={a[i].Length}, b={b[i].Length}";
+        if (a[i].Length != b[i].Length)
+          return $"{n}[{i}].Length: a={a[i].Length}, b={b[i].Length}";
         for (var j = 0; j < Math.Min(a[i].Length, b[i].Length); j++)
         {
           var r = f(a[i][j], b[i][j]);
@@ -505,8 +505,8 @@ namespace LibForge.Midi
            => Check(their.Trills, my.Trills, nameof(my.Trills), (their2, my2)
                 => Check(their2.StartTick, my2.StartTick, nameof(my2.StartTick))
                 ?? Check(their2.EndTick, my2.EndTick, nameof(my2.EndTick))
-                ?? Check(their2.LowFret, my2.LowFret, nameof(my2.LowFret))
-                ?? Check(their2.HighFret, my2.HighFret, nameof(my2.HighFret))))
+                ?? Check(their2.FirstFret, my2.FirstFret, nameof(my2.FirstFret))
+                ?? Check(their2.SecondFret, my2.SecondFret, nameof(my2.SecondFret))))
       ?? Check(other.DrumMixes, DrumMixes, nameof(DrumMixes), (their, my)
            => Check(their.Mixes, my.Mixes, nameof(my.Mixes), (t,m)=>Check(t,m,"",CheckTickText)))
       ?? Check(other.GemTracks, GemTracks, nameof(GemTracks), (their, my)
@@ -555,9 +555,9 @@ namespace LibForge.Midi
                 // => CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 0.2f)
                 //?? CheckFloats(their2.EndMillis, my2.EndMillis, nameof(my2.EndMillis), 2f)
                 // )
-           ?? Check(their.FakePhraseMarkers, my.FakePhraseMarkers, nameof(my.FakePhraseMarkers), (their2, my2)
-                => // TODO: Fix first phrase marker. It seems to start earlier than authored!?
-                  null // CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
+           //?? Check(their.FakePhraseMarkers, my.FakePhraseMarkers, nameof(my.FakePhraseMarkers), (their2, my2)
+           //     => // TODO: Fix first phrase marker. It seems to start earlier than authored!?
+           //       null // CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
                 // TODO: why is this wrong?
                 // ?? CheckFloats(their2.Length, my2.Length, nameof(my2.Length), 1f)
                 // ?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
@@ -568,20 +568,21 @@ namespace LibForge.Midi
                 // ?? Check(their2.IsOverdrive, my2.IsOverdrive, nameof(my2.IsOverdrive))
                 // ?? Check(their2.StartNoteIdx, my2.StartNoteIdx, nameof(my2.StartNoteIdx))
                 // ?? Check(their2.EndNoteIdx, my2.EndNoteIdx, nameof(my2.EndNoteIdx))
-                )
-           ?? Check(their.AuthoredPhraseMarkers, my.AuthoredPhraseMarkers, nameof(my.AuthoredPhraseMarkers), (their2, my2)
-                => CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
-                ?? CheckFloats(their2.Length, my2.Length, nameof(my2.Length), 1f)
-                ?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
-                ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
-                ?? Check(their2.IsPhrase, my2.IsPhrase, nameof(my2.IsPhrase))
+                //)
+           //?? Check(their.AuthoredPhraseMarkers, my.AuthoredPhraseMarkers, nameof(my.AuthoredPhraseMarkers), (their2, my2)
+           //     => CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
+           //     ?? CheckFloats(their2.Length, my2.Length, nameof(my2.Length), 1f)
+           //     ?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
+           //     ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
+           //     ?? Check(their2.IsPhrase, my2.IsPhrase, nameof(my2.IsPhrase))
                 // TODO...
                 // ?? Check(their2.IsOverdrive, my2.IsOverdrive, nameof(my2.IsOverdrive))
                 // ?? Check(their2.StartNoteIdx, my2.StartNoteIdx, nameof(my2.StartNoteIdx))
                 // ?? Check(their2.EndNoteIdx, my2.EndNoteIdx, nameof(my2.EndNoteIdx))
                 // ?? Check(their2.UnknownCount, my2.UnknownCount, nameof(my2.UnknownCount))
                 // ?? Check(their2.UnknownFlag, my2.UnknownFlag, nameof(my2.UnknownFlag))
-                ))
+                //)
+                )
       ?? Check(other.UnknownOne, UnknownOne, nameof(UnknownOne))
       ?? Check(other.UnknownNegOne, UnknownNegOne, nameof(UnknownNegOne))
       ?? Check(other.UnknownHundred, UnknownHundred, nameof(UnknownHundred))
@@ -591,11 +592,11 @@ namespace LibForge.Midi
            // ?? Check(their.FloatData, my.FloatData, nameof(my.FloatData))
            null
            )
-      ?? Check(other.VocalRange, VocalRange, nameof(VocalRange), (their, my)
-           => Check(their.StartMillis, my.StartMillis, nameof(my.StartMillis))
-           ?? Check(their.StartTicks, my.StartTicks, nameof(my.StartTicks))
-           ?? Check(their.LowNote, my.LowNote, nameof(my.LowNote))
-           ?? Check(their.HighNote, my.HighNote, nameof(my.HighNote)))
+      //?? Check(other.VocalRange, VocalRange, nameof(VocalRange), (their, my)
+      //     => Check(their.StartMillis, my.StartMillis, nameof(my.StartMillis))
+      //     ?? Check(their.StartTicks, my.StartTicks, nameof(my.StartTicks))
+      //     ?? Check(their.LowNote, my.LowNote, nameof(my.LowNote))
+      //     ?? Check(their.HighNote, my.HighNote, nameof(my.HighNote)))
       ?? Check(other.HopoThreshold, HopoThreshold, nameof(HopoThreshold))
       ?? Check(other.NumPlayableTracks, NumPlayableTracks, nameof(NumPlayableTracks))
       ?? Check(other.FinalEventTick, FinalEventTick, nameof(FinalEventTick))
@@ -609,7 +610,8 @@ namespace LibForge.Midi
            => CheckFloats(their.StartTime, my.StartTime, nameof(my.StartTime), 0.0002f)
            ?? CheckFloats(their.Length, my.Length, nameof(my.Length), 0.2f)
            ?? Check(their.Position, my.Position, nameof(my.Position))
-           ?? Check(their.Unknown, my.Unknown, nameof(my.Unknown)))
+           //?? Check(their.Unknown, my.Unknown, nameof(my.Unknown))
+           )
       ?? Check(other.StrumMaps, StrumMaps, nameof(StrumMaps), (their, my)
                 => CheckFloats(their.StartTime, my.StartTime, nameof(my.StartTime))
                 ?? Check(their.Map, my.Map, nameof(my.Map)))
@@ -631,7 +633,7 @@ namespace LibForge.Midi
                 => Check(their2.DeltaTime, my2.DeltaTime, nameof(my2.DeltaTime))
                 ?? Check(their2.PrettyString, my2.PrettyString, "<pretty_string>")))
       ?? Check(other.FinalTick, FinalTick, nameof(FinalTick))
-      ?? Check(other.Measures, Measures, nameof(Measures))
+      //?? Check(other.Measures, Measures, nameof(Measures))
       ?? Check(other.Unknown, Unknown, nameof(Unknown), Check)
       ?? Check(other.FinalTickMinusOne, FinalTickMinusOne, nameof(FinalTickMinusOne))
       // TODO: Floats are sometimes 0xABCDABCD ???

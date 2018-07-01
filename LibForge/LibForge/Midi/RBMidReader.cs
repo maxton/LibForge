@@ -151,8 +151,8 @@ namespace LibForge.Midi
       {
         StartTick = UInt(),
         EndTick = UInt(),
-        LowFret = Int(),
-        HighFret = Int()
+        FirstFret = Int(),
+        SecondFret = Int()
       }))
     };
     private RBMid.DRUMMIXES ReadDrumMixes() => new RBMid.DRUMMIXES
