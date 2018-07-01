@@ -310,6 +310,17 @@ namespace LibForge.Midi
               Flags = flag
             };
           }
+          // HACK for superunknownrb4 which has a badly quantized PRO marker
+          for(var diff = 2; diff < 4; diff++)
+          {
+            var count = gem_tracks[diff]?.Count ?? 0;
+            if (count > 0 
+              && tick - gem_tracks[diff][count - 1].StartTicks < 5
+              && (gem_tracks[diff][count - 1].Lanes & (int)flag) != 0)
+            {
+              gem_tracks[diff][count - 1].ProCymbal = 0;
+            }
+          }
         }
         void SetMarkerOff(uint tick, RBMid.TOMMARKER.MARKER.FLAGS flag)
         {
