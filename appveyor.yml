@@ -1,11 +1,14 @@
 version: 0.1.{build}
 
+branches:
+  only:
+    - master
+
 image: Visual Studio 2017
 
 configuration: Release
 
 platform: Any CPU
-
 assembly_info:
   patch: true
   file: '**\AssemblyInfo.*'
