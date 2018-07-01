@@ -397,14 +397,15 @@ namespace LibForge.Midi
           return true;
         }
         // 
-        var itemsOrdered = track.Items.OrderBy(x => {
+        var itemsOrdered = track.Items
+          // If shorter notes come first we get better output for arabella (seems to be breaking things)
+          .OrderBy(x => (x as MidiNote)?.LengthTicks ?? 0)
+          .OrderBy(x => {
             // Sort modifiers to come before gems
             var key = (x as MidiNote)?.Key ?? 0;
             if (key <= ExpertEnd) key = 127;
             return key;
           })
-          // If shorter notes come first we get better output for arabella (seems to be breaking things)
-          // .OrderBy(x => (x as MidiNote)?.LengthTicks ?? 0)
           .OrderBy(x => x.StartTicks);
         foreach (var item in itemsOrdered)
         {
@@ -647,7 +648,7 @@ namespace LibForge.Midi
           }
 
           if (gem_tracks[diff] == null) gem_tracks[diff] = new List<RBMid.GEMTRACK.GEM>();
-          if (chords[diff] != null && chords[diff].StartTicks == e.StartTicks)
+          if (chords[diff] != null && e.StartTicks - chords[diff].StartTicks < 5)
           { // additional gem in a chord
             if (chords[diff].Lanes != 0 && hopoState[diff].state != Hopo.State.ForcedOn || hopoState[diff].EndTick <= e.StartTicks)
             {
@@ -662,10 +663,6 @@ namespace LibForge.Midi
             {
               chords[diff].IsHopo = false;
             }
-            // In case the HOPO marker was not the same length
-            chords[diff].LengthMillis = (ushort)(e.Length * 1000);
-            chords[diff].LengthTicks = (ushort)e.LengthTicks;
-            chords[diff].NoTail = e.LengthTicks <= 120 || (chords[diff].IsHopo && e.LengthTicks <= 160);
             chords[diff].ProCymbal = (chords[diff].Lanes & 3) != 0 ? 0 : 1;
           }
           else
