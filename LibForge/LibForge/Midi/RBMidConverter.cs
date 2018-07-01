@@ -740,32 +740,9 @@ namespace LibForge.Midi
               return false;
           }
           hopoState[diff].EndTick = e.StartTicks + e.LengthTicks;
-          if(chords[diff] != null)
+          if(chords[diff] != null && chords[diff].StartTicks == e.StartTicks)
           {
-            if(chords[diff].StartTicks == e.StartTicks)
-            {
-              chords[diff].IsHopo = force;
-            }
-            if(chords[diff].StartTicks + chords[diff].LengthTicks > e.StartTicks)
-            {
-              // Still the One has an invalid HOPO force (doesn't line up with the note)
-              return true;
-            }
-            else
-            {
-              chords[diff] = new RBMid.GEMTRACK.GEM
-              {
-                StartMillis = (float)e.StartTime * 1000,
-                StartTicks = e.StartTicks,
-                LengthMillis = (ushort)(e.Length * 1000),
-                LengthTicks = (ushort)e.LengthTicks,
-                Lanes = 0,
-                IsHopo = force,
-                NoTail = e.LengthTicks < 120,
-                ProCymbal = 1
-              };
-              gem_tracks[diff].Add(chords[diff]);
-            }
+            chords[diff].IsHopo = force;
           }
           return true;
         }
