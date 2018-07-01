@@ -41,6 +41,10 @@ namespace LibForgeTests
         "TTCTTCCTC";
       var actual = new string(rbmid.GemTracks[0].Gems[3].Select(g => g.ProCymbal == 1 ? 'C' : 'T').ToArray());
       Assert.AreEqual(expected, actual);
+
+      var expected_2 = "012436571313260";
+      var actual_2 = rbmid.ProMarkers[0].Markers.Select(m => ((int)m.Flags / 4).ToString()).Aggregate(string.Concat);
+      Assert.AreEqual(expected_2, actual_2);
     }
     
     [TestMethod]

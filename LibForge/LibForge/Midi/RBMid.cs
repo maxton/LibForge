@@ -86,8 +86,8 @@ namespace LibForge.Midi
         public enum Flag : uint
         {
           Glissando = 1,
-          Unknown = 2,
-          Roll_1Lane = 4,
+          Roll_1Lane = 2,
+          Unknown = 4,
           Roll_2Lane = 8
         }
         public Flag Flags;

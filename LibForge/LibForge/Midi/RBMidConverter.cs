@@ -295,6 +295,15 @@ namespace LibForge.Midi
           }
           else
           {
+            var active_flag = 4;
+            foreach(var end in marker_ends)
+            {
+              if (end > tick)
+              {
+                flag |= (RBMid.TOMMARKER.MARKER.FLAGS)active_flag;
+              }
+              active_flag <<= 1;
+            }
             tom_markers[tick] = new RBMid.TOMMARKER.MARKER
             {
               Tick = tick,
@@ -310,10 +319,20 @@ namespace LibForge.Midi
           }
           else
           {
+            RBMid.TOMMARKER.MARKER.FLAGS new_flag = 0;
+            var active_flag = 4;
+            foreach (var end in marker_ends)
+            {
+              if (end > tick)
+              {
+                new_flag |= (RBMid.TOMMARKER.MARKER.FLAGS)active_flag;
+              }
+              active_flag <<= 1;
+            }
             tom_markers[tick] = new RBMid.TOMMARKER.MARKER
             {
               Tick = tick,
-              Flags = 0
+              Flags = new_flag
             };
           }
         }
@@ -428,9 +447,14 @@ namespace LibForge.Midi
               else if (e.Key == ProYellow || e.Key == ProBlue || e.Key == ProGreen)
               {
                 // Pro Tom Markers
-                SetMarkerOn(e.StartTicks, GetFlag(e.Key));
-                SetMarkerOff(e.StartTicks + e.LengthTicks, GetFlag(e.Key));
+                var flag = GetFlag(e.Key);
+                SetMarkerOn(e.StartTicks, flag);
+                SetMarkerOff(e.StartTicks + e.LengthTicks, flag);
                 marker_ends[e.Key - ProYellow] = e.StartTicks + e.LengthTicks;
+                foreach(var x in tom_markers.Values.Where(k => k.Tick >= e.StartTicks && k.Tick < e.StartTicks + e.LengthTicks))
+                {
+                  x.Flags |= flag;
+                }
               }
               else if (AddGem(e)) { }  // everything is handled in AddGem
               else if (e.Key >= DrumAnimStart && e.Key <= DrumAnimEnd)
