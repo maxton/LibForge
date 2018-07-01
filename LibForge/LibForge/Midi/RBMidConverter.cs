@@ -379,6 +379,12 @@ namespace LibForge.Midi
             return false;
           }
 
+          if (diff == 3 && rolls.Count > 0 && rolls[rolls.Count - 1].EndTick > e.StartTicks)
+          {
+            var tmp = rolls[rolls.Count - 1];
+            tmp.Lanes |= 1 << lane;
+            rolls[rolls.Count - 1] = tmp;
+          }
           if (gem_tracks[diff] == null) gem_tracks[diff] = new List<RBMid.GEMTRACK.GEM>();
           var lastOverdrive = overdrive_markers.LastOrDefault();
           var proCymbal = (lane > 1 && marker_ends[lane - 2] <= e.StartTicks) ? 1 : 0;
@@ -468,9 +474,7 @@ namespace LibForge.Midi
                 {
                   StartTick = e.StartTicks,
                   EndTick = e.StartTicks + e.LengthTicks,
-                  Flags = e.Key == Roll1 ?
-                      RBMid.LANEMARKER.MARKER.Flag.Roll_1Lane
-                    : RBMid.LANEMARKER.MARKER.Flag.Roll_2Lane
+                  Lanes = 0
                 });
               }
               else if (e.Key == 105 || e.Key == 106 || e.Key == 12 || e.Key == 13 || e.Key == 14 || e.Key == 15)
@@ -646,7 +650,12 @@ namespace LibForge.Midi
           {
             return false;
           }
-
+          if(diff == 3 && tremolos.Count > 0 && tremolos[tremolos.Count - 1].EndTick > e.StartTicks)
+          {
+            var tmp = tremolos[tremolos.Count - 1];
+            tmp.Lanes |= 1 << lane;
+            tremolos[tremolos.Count - 1] = tmp;
+          }
           if (gem_tracks[diff] == null) gem_tracks[diff] = new List<RBMid.GEMTRACK.GEM>();
           if (chords[diff] != null && e.StartTicks - chords[diff].StartTicks < 5)
           { // additional gem in a chord
@@ -788,7 +797,7 @@ namespace LibForge.Midi
                 {
                   StartTick = e.StartTicks,
                   EndTick = e.StartTicks + e.LengthTicks,
-                  Flags = (RBMid.LANEMARKER.MARKER.Flag)(1 | 2 | 4 | 8 | 16)
+                  Lanes = 0
                 });
               }
               else if(e.Key >= LeftHandStart && e.Key <= LeftHandEnd)

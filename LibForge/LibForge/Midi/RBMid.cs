@@ -82,15 +82,7 @@ namespace LibForge.Midi
       public struct MARKER {
         public uint StartTick;
         public uint EndTick;
-        [Flags]
-        public enum Flag : uint
-        {
-          Glissando = 1,
-          Roll_1Lane = 2,
-          Unknown = 4,
-          Roll_2Lane = 8
-        }
-        public Flag Flags;
+        public int Lanes;
       }
       // First dimension: difficulty
       public MARKER[][] Markers;
@@ -404,13 +396,13 @@ namespace LibForge.Midi
       else if (b == null)
         return $"{n} was null in b";
 
-      if (a.Length != b.Length)
-        return $"{n}.Length: a={a.Length}, b={b.Length}";
-      for (var i = 0; i < a.Length; i++)
+      //if (a.Length != b.Length)
+      //  return $"{n}.Length: a={a.Length}, b={b.Length}";
+      for (var i = 0; i < Math.Min(a.Length, b.Length); i++)
       {
-        if (a[i].Length != b[i].Length)
-          return $"{n}[{i}].Length: a={a[i].Length}, b={b[i].Length}";
-        for (var j = 0; j < a[i].Length; j++)
+        //if (a[i].Length != b[i].Length)
+        //  return $"{n}[{i}].Length: a={a[i].Length}, b={b[i].Length}";
+        for (var j = 0; j < Math.Min(a[i].Length, b[i].Length); j++)
         {
           var r = f(a[i][j], b[i][j]);
           if (r != null)
@@ -508,7 +500,7 @@ namespace LibForge.Midi
            => Check(their.Markers, my.Markers, nameof(my.Markers), (their2, my2)
                 => Check(their2.StartTick, my2.StartTick, nameof(my2.StartTick))
                 ?? Check(their2.EndTick, my2.EndTick, nameof(my2.EndTick))
-                ?? Check(their2.Flags, my2.Flags, nameof(my2.Flags))))
+                ?? Check(their2.Lanes, my2.Lanes, nameof(my2.Lanes))))
       ?? Check(other.TrillMarkers, TrillMarkers, nameof(TrillMarkers), (their, my) 
            => Check(their.Trills, my.Trills, nameof(my.Trills), (their2, my2)
                 => Check(their2.StartTick, my2.StartTick, nameof(my2.StartTick))

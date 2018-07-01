@@ -132,7 +132,7 @@ namespace LibForge.Midi
       {
         Write(marker.StartTick);
         Write(marker.EndTick);
-        Write((uint)marker.Flags);
+        Write((uint)marker.Lanes);
       }));
     }
     private void WriteTrillMarkers(RBMid.GTRTRILLS obj)

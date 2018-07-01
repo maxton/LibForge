@@ -142,7 +142,7 @@ namespace LibForge.Midi
       {
         StartTick = UInt(),
         EndTick = UInt(),
-        Flags = (RBMid.LANEMARKER.MARKER.Flag)UInt()
+        Lanes = Int()
       }))
     };
     private RBMid.GTRTRILLS ReadUnktrack2() => new RBMid.GTRTRILLS
