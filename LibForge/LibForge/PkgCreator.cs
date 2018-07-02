@@ -59,7 +59,7 @@ FILES  </files>
   <rootdir>
     <dir targ_name=""sce_sys""/>
     <dir targ_name=""songs"">
-      <dir targ_name=""custom00001""/>
+SHORTNAMES
     </dir>
   </rootdir>
 </psproject>";
@@ -76,21 +76,26 @@ FILES  </files>
       return param;
     }
 
-    public static byte[] MakeGp4(string pkgId, string shortname, List<string> files)
+    public static byte[] MakeGp4(string pkgId, IList<string> shortnames, List<string> files)
     {
       var fileSb = new StringBuilder();
       foreach(var f in files)
       {
         fileSb.AppendLine($"    <file targ_path=\"{f}\" orig_path=\"{f.Replace('/', '\\')}\"/>");
       }
+      var shortname_dirs = new StringBuilder();
+      foreach(var shortname in shortnames)
+      {
+        shortname_dirs.AppendLine($"      <dir targ_name=\"{shortname}\"/>");
+      }
       var project = gp4.Replace("UP8802-CUSA02084_00-RBCUSTOMXXXX5000", pkgId)
-                       .Replace("custom00001", shortname)
+                       .Replace("SHORTNAMES", shortname_dirs.ToString())
                        .Replace("FILES", fileSb.ToString())
                        .Replace("2018-01-01 00:00:00", DateTime.UtcNow.ToString("s").Replace('T', ' '));
       return Encoding.UTF8.GetBytes(project);
     }
 
-    public static string MakeMoggDta(DataArray array)
+    public static DataArray MakeMoggDta(DataArray array)
     {
       var moggDta = new DataArray();
       var trackArray = new DataArray();
@@ -119,11 +124,10 @@ FILES  </files>
         else if (totalTracks == lastTrack + 3)
           trackSubArray.AddNode(DTX.FromDtaString($"fake ({lastTrack + 1} {lastTrack + 2})"));
       }
-      var moggDtaStr = new StringBuilder();
-      moggDtaStr.AppendLine(trackArray.ToString());
-      moggDtaStr.AppendLine(array.Array("song").Array("pans").ToString());
-      moggDtaStr.AppendLine(array.Array("song").Array("vols").ToString());
-      return moggDtaStr.ToString();
+      moggDta.AddNode(trackArray);
+      moggDta.AddNode(array.Array("song").Array("pans"));
+      moggDta.AddNode(array.Array("song").Array("vols"));
+      return moggDta;
     }
     
     // TODO: RBSONG
@@ -289,6 +293,140 @@ FILES  </files>
       };
     }
 
+    public static DLCSong ConvertDLCSong(DataArray songDta, GameArchives.IDirectory songRoot)
+    {
+      var path = songDta.Array("song").Array("name").String(1);
+      var hopoThreshold = songDta.Array("song").Array("hopo_threshold")?.Int(1) ?? 170;
+      var shortname = path.Split('/').Last();
+      var midPath = shortname + ".mid";
+      var artPath = $"gen/{shortname}_keep.png_xbox";
+      var miloPath = $"gen/{shortname}.milo_xbox";
+      var songId = songDta.Array("song_id").Node(1);
+      var name = songDta.Array("name").String(1);
+      var artist = songDta.Array("artist").String(1);
+      var mid = MidiCS.MidiFileReader.FromBytes(songRoot.GetFileAtPath(midPath).GetBytes());
+
+      // TODO: Catch possible conversion exceptions? i.e. Unsupported milo version
+      var milo = MiloFile.ReadFromStream(songRoot.GetFileAtPath(miloPath).GetStream());
+      var songData = SongDataConverter.ToSongData(songDta);
+
+      Texture.Texture artwork = null;
+      if (songData.AlbumArt)
+      {
+        artwork = Texture.TextureConverter.MiloPngToTexture(songRoot.GetFileAtPath(artPath).GetStream());
+      }
+      return new DLCSong
+      {
+        SongData = songData,
+        Lipsync = LipsyncConverter.FromMilo(milo),
+        Mogg = songRoot.GetFile(shortname + ".mogg"),
+        MoggDta = MakeMoggDta(songDta),
+        MoggSong = DTX.FromDtaString($"(mogg_path \"{shortname}.mogg\")\r\n(midi_path \"{shortname}.rbmid\")\r\n"),
+        RBMidi = RBMidConverter.ToRBMid(mid, hopoThreshold),
+        Artwork = artwork,
+        RBSong = MakeRBSong(songDta)
+      };
+    }
+
+    /// <summary>
+    /// Converts an RB3 DLC songs folder into RB4 DLC songs
+    /// </summary>
+    /// <param name="dlcRoot"></param>
+    /// <returns></returns>
+    public static List<DLCSong> ConvertDLCPackage(GameArchives.IDirectory dlcRoot)
+    {
+      var dlcSongs = new List<DLCSong>();
+      var dta = DTX.FromPlainTextBytes(dlcRoot.GetFile("songs.dta").GetBytes());
+      DataArray arr;
+      for(int i = 0; i < dta.Count; i++)
+      {
+        arr = dta.Array(i);
+        dlcSongs.Add(ConvertDLCSong(arr, dlcRoot.GetDirectory(arr.Any(0))));
+      }
+      return dlcSongs;
+    }
+
+    /// <summary>
+    /// Writes the DLCSong to disk within the given directory.
+    /// For example given a song called "custom" and a directory called J:\customs,
+    /// you'll end up with J:\customs\custom\custom.mogg, J:\customs\custom\custom.rbsong, etc
+    /// </summary>
+    /// <param name="song">The song to write</param>
+    /// <param name="dir">The parent directory of the song directory</param>
+    public static void WriteDLCSong(DLCSong song, string dir)
+    {
+      var shortname = song.SongData.Shortname;
+      var songPath = Path.Combine(dir, "songs", shortname);
+      Directory.CreateDirectory(songPath);
+      using (var lipsyncFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.lipsync_ps4")))
+      {
+        new LipsyncWriter(lipsyncFile).WriteStream(song.Lipsync);
+      }
+      using (var mogg = File.OpenWrite(Path.Combine(songPath, $"{shortname}.mogg")))
+      using (var conMogg = song.Mogg.GetStream())
+      {
+        conMogg.CopyTo(mogg);
+      }
+      File.WriteAllText(Path.Combine(songPath, $"{shortname}.mogg.dta"), song.MoggDta.ToFileString());
+      File.WriteAllText(Path.Combine(songPath, shortname + ".moggsong"), song.MoggSong.ToFileString());
+      using (var rbmid = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbmid_ps4")))
+        RBMidWriter.WriteStream(song.RBMidi, rbmid);
+      using (var rbsongFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbsong")))
+        new RBSongWriter(rbsongFile).WriteStream(song.RBSong);
+      using (var songdtaFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.songdta_ps4")))
+        SongDataWriter.WriteStream(song.SongData, songdtaFile);
+      if (song.SongData.AlbumArt)
+      {
+        using (var artFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.png_ps4")))
+          Texture.TextureWriter.WriteStream(song.Artwork, artFile);
+      }
+    }
+
+    /// <summary>
+    /// Writes all the songs and creates a Publishing Tools .gp4 project in the given directory
+    /// </summary>
+    /// <param name="songs">Songs to include</param>
+    /// <param name="pkgId">36-character package ID</param>
+    /// <param name="pkgDesc">User-visible name of the package</param>
+    /// <param name="buildDir">Directory in which to put the project and files</param>
+    public static void DLCSongsToGP4(IList<DLCSong> songs, string pkgId, string pkgDesc, string buildDir)
+    {
+      var shortnames = new List<string>(songs.Count);
+      var files = new List<string>(songs.Count * 8);
+      foreach (var song in songs)
+      {
+        var shortname = song.SongData.Shortname;
+        files.AddRange(new[] {
+          $"songs/{shortname}/{shortname}.lipsync_ps4",
+          $"songs/{shortname}/{shortname}.mogg",
+          $"songs/{shortname}/{shortname}.mogg.dta",
+          $"songs/{shortname}/{shortname}.moggsong",
+          $"songs/{shortname}/{shortname}.rbmid_ps4",
+          $"songs/{shortname}/{shortname}.rbsong",
+          $"songs/{shortname}/{shortname}.songdta_ps4",
+        });
+        if (song.Artwork != null)
+            files.Add($"songs/{shortname}/{shortname}.png_ps4");
+        shortnames.Add(shortname);
+      }
+      
+      var paramSfo = MakeParamSfo(pkgId, pkgDesc);
+
+      // Write all the files
+      foreach(var song in songs)
+      {
+        WriteDLCSong(song, buildDir);
+      }
+      File.WriteAllBytes(Path.Combine(buildDir, "param.sfo"), paramSfo);
+      File.WriteAllBytes(Path.Combine(buildDir, "project.gp4"), MakeGp4(pkgId, shortnames, files));
+    }
+
+    /// <summary>
+    /// Does the whole process of converting a CON to a GP4 project
+    /// </summary>
+    /// <param name="conPath">Path to CON file</param>
+    /// <param name="buildDir">Output directory for project and files</param>
+    /// <param name="eu">If true then an SCEE project is made (otherwise, SCEA)</param>
     public static void ConToGp4(string conPath, string buildDir, bool eu = false)
     {
       // Phase 1: Reading from CON
@@ -298,84 +436,14 @@ FILES  </files>
         Console.WriteLine("Error: given file was not a CON file");
         return;
       }
-      var dta = DTX.FromPlainTextBytes(con.RootDirectory.GetFileAtPath("songs/songs.dta").GetBytes());
-      if(dta.Count > 1)
-      {
-        Console.WriteLine("Error: only 1-song CONs are supported at this time");
-        return;
-      }
-      var array = dta.Array(0);
-      var path = array.Array("song").Array("name").String(1);
-      var hopoThreshold = array.Array("song").Array("hopo_threshold")?.Int(1) ?? 170;
-      var midPath = path + ".mid";
-      var moggPath = path + ".mogg";
-      var shortname = path.Split('/').Last();
-      var artPath = $"songs/{shortname}/gen/{shortname}_keep.png_xbox";
-      var miloPath = $"songs/{shortname}/gen/{shortname}.milo_xbox";
+      var songs = ConvertDLCPackage(con.RootDirectory.GetDirectory("songs"));
+      var shortname = songs[0].SongData.Shortname;
       var pkgName = new Regex("[^a-zA-Z0-9]").Replace(shortname, "")
         .ToUpper().Substring(0, Math.Min(shortname.Length, 10)).PadRight(10, 'X');
-      var songId = array.Array("song_id").Node(1);
-      string pkgNum = new Regex("[^a-zA-Z0-9]").Replace(((songId.Type == DtxCS.DataTypes.DataType.INT 
-        ? (songId as DataAtom).Int 
-        : songId.ToString().GetHashCode()
-        ) % 10000).ToString(), "").ToUpper().PadLeft(4, '0');
+      string pkgNum = (songs[0].SongData.SongId % 10000).ToString().PadLeft(4, '0');
       var pkgId = eu ? $"EP8802-CUSA02901_00-RB{pkgName}{pkgNum}" : $"UP8802-CUSA02084_00-RB{pkgName}{pkgNum}";
-      var name = array.Array("name").String(1);
-      var artist = array.Array("artist").String(1);
-      var pkgDesc = $"Custom: \"{name} - {artist}\"";
-      var mid = MidiCS.MidiFileReader.FromBytes(con.RootDirectory.GetFileAtPath(midPath).GetBytes());
-      var paramSfo = MakeParamSfo(pkgId, pkgDesc);
-
-      // TODO: Catch possible conversion exceptions? i.e. Unsupported milo version
-      var milo = MiloFile.ReadFromStream(con.RootDirectory.GetFileAtPath(miloPath).GetStream());
-      var lipsync = LipsyncConverter.FromMilo(milo);
-      var moggDtaStr = MakeMoggDta(array);
-      var rbsong = MakeRBSong(array);
-      var songDta = SongDataConverter.ToSongData(array);
-
-      // Phase 2: Writing files
-      var songPath = Path.Combine(buildDir, "songs", shortname);
-      Directory.CreateDirectory(songPath);
-      File.WriteAllBytes(Path.Combine(buildDir, "param.sfo"), paramSfo);
-      using (var lipsyncFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.lipsync_ps4")))
-        new LipsyncWriter(lipsyncFile).WriteStream(lipsync);
-      using (var mogg = File.OpenWrite(Path.Combine(songPath, $"{shortname}.mogg")))
-      using (var conMogg = con.RootDirectory.GetFileAtPath(moggPath).GetStream())
-      {
-        conMogg.CopyTo(mogg);
-      }
-
-      File.WriteAllText(Path.Combine(songPath, $"{shortname}.mogg.dta"), moggDtaStr);
-      File.WriteAllText(Path.Combine(songPath, shortname + ".moggsong"),
-        $"(mogg_path \"{shortname}.mogg\")\r\n(midi_path \"{shortname}.rbmid\")\r\n");
-      using (var rbmid = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbmid_ps4")))
-        RBMidWriter.WriteStream(RBMidConverter.ToRBMid(mid, hopoThreshold), rbmid);
-      using (var rbsongFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbsong")))
-        new RBSongWriter(rbsongFile).WriteStream(rbsong);
-      using (var songdtaFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.songdta_ps4")))
-        SongDataWriter.WriteStream(songDta, songdtaFile);
-      if (songDta.AlbumArt)
-      {
-        var albumArt = Texture.TextureConverter.MiloPngToTexture(con.RootDirectory.GetFileAtPath(artPath).GetStream());
-        using (var artFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.png_ps4")))
-          Texture.TextureWriter.WriteStream(albumArt, artFile);
-      }
-
-      // Phase 3: Create project file
-      var files = new List<string> {
-        $"songs/{shortname}/{shortname}.lipsync_ps4",
-        $"songs/{shortname}/{shortname}.mogg",
-        $"songs/{shortname}/{shortname}.mogg.dta",
-        $"songs/{shortname}/{shortname}.moggsong",
-        $"songs/{shortname}/{shortname}.rbmid_ps4",
-        $"songs/{shortname}/{shortname}.rbsong",
-        $"songs/{shortname}/{shortname}.songdta_ps4",
-      };
-      if (songDta.AlbumArt)
-      {
-        files.Add($"songs/{shortname}/{shortname}.png_ps4");
-      }
-      File.WriteAllBytes(Path.Combine(buildDir,"project.gp4"), MakeGp4(pkgId, shortname, files));
+      var pkgDesc = $"Custom: \"{songs[0].SongData.Name} - {songs[0].SongData.Artist}\"";
+      DLCSongsToGP4(songs, pkgId, pkgDesc, buildDir);
     }
 
     public static void BuildPkg(string cmdExe, string proj, string outPath)
@@ -393,6 +461,19 @@ FILES  </files>
       p.Start();
       p.WaitForExit();
       Console.Write(p.StandardOutput.ReadToEnd());
+    }
+  }
+
+  public static class DataArrayExtension
+  {
+    /// <summary>
+    /// Renders a DataArray that represents a DTA file.
+    /// Basically, DataArray to string without parens.
+    /// </summary>
+    public static string ToFileString(this DataArray d)
+    {
+      var ret = d.ToString();
+      return ret.Substring(1, ret.Length - 2);
     }
   }
 }

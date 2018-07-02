@@ -88,6 +88,7 @@
     <Compile Include="SongData\SongDataConverter.cs" />
     <Compile Include="SongData\SongDataReader.cs" />
     <Compile Include="SongData\SongDataWriter.cs" />
+    <Compile Include="DLCSong.cs" />
     <Compile Include="StreamExtensions.cs" />
     <Compile Include="Texture\Texture.cs" />
     <Compile Include="Texture\TextureConverter.cs" />
