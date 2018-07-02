@@ -18,26 +18,7 @@ namespace ForgeToolGUI
       InitializeComponent();
       ObjectPreview(obj);
     }
-
-    private void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
-    {
-      if (treeView1.SelectedNode?.Tag is RBMid.GEMTRACK)
-      {
-        PreviewGemTrack((RBMid.GEMTRACK)treeView1.SelectedNode.Tag);
-      }
-    }
-
-    private void PreviewGemTrack(RBMid.GEMTRACK track)
-    {
-      if (fb == null) return;
-      var inspector = InspectorFactory.GetInspector(track);
-      if(inspector != null)
-      {
-        fb.OpenTab(inspector, "Gems: " + Parent.Text);
-        (inspector as GemTrackInspector).PreviewGemTrack(track);
-      }
-    }
-
+    
     object previewObj;
     void ObjectPreview(object obj)
     {
@@ -153,10 +134,6 @@ namespace ForgeToolGUI
             var n = new TreeNode(myName);
             var item = arr.GetValue(i);
             AddObjectNodes(item, n.Nodes);
-            if (item is RBMid.GEMTRACK)
-            {
-              n.Tag = item;
-            }
             node.Nodes.Add(n);
           }
         }

@@ -28,8 +28,8 @@ namespace ForgeToolGUI
           return new StringInspector(s);
         case SongData d:
           return new SongDataInspector(d);
-        case RBMid.GEMTRACK g:
-          return new GemTrackInspector(g);
+        case RBMid m:
+          return new RBMidiInspector(m);
         case object o:
           return new ObjectInspector(obj);
       }

@@ -28,27 +28,26 @@
     /// </summary>
     private void InitializeComponent()
     {
-      this.treeView1 = new System.Windows.Forms.TreeView();
-      this.SuspendLayout();
-      // 
-      // treeView1
-      // 
-      this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.treeView1.HideSelection = false;
-      this.treeView1.Location = new System.Drawing.Point(0, 0);
-      this.treeView1.Name = "treeView1";
-      this.treeView1.Size = new System.Drawing.Size(531, 502);
-      this.treeView1.TabIndex = 1;
-      this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseDoubleClick);
-      // 
-      // ObjectView
-      // 
-      this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-      this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.Controls.Add(this.treeView1);
-      this.Name = "ObjectView";
-      this.Size = new System.Drawing.Size(531, 502);
-      this.ResumeLayout(false);
+            this.treeView1 = new System.Windows.Forms.TreeView();
+            this.SuspendLayout();
+            // 
+            // treeView1
+            // 
+            this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeView1.HideSelection = false;
+            this.treeView1.Location = new System.Drawing.Point(0, 0);
+            this.treeView1.Name = "treeView1";
+            this.treeView1.Size = new System.Drawing.Size(531, 502);
+            this.treeView1.TabIndex = 1;
+            // 
+            // ObjectInspector
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.treeView1);
+            this.Name = "ObjectInspector";
+            this.Size = new System.Drawing.Size(531, 502);
+            this.ResumeLayout(false);
 
     }
 

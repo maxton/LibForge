@@ -61,11 +61,11 @@
     <Compile Include="ForgeBrowser.Designer.cs">
       <DependentUpon>ForgeBrowser.cs</DependentUpon>
     </Compile>
-    <Compile Include="Inspectors\GemTrackInspector.cs">
+    <Compile Include="Inspectors\RBMidiInspector.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Inspectors\GemTrackInspector.Designer.cs">
-      <DependentUpon>GemTrackInspector.cs</DependentUpon>
+    <Compile Include="Inspectors\RBMidiInspector.Designer.cs">
+      <DependentUpon>RBMidiInspector.cs</DependentUpon>
     </Compile>
     <Compile Include="Inspectors\Inspector.cs" />
     <Compile Include="Inspectors\ObjectInspector.cs">
@@ -97,8 +97,8 @@
     <EmbeddedResource Include="ForgeBrowser.resx">
       <DependentUpon>ForgeBrowser.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Inspectors\GemTrackInspector.resx">
-      <DependentUpon>GemTrackInspector.cs</DependentUpon>
+    <EmbeddedResource Include="Inspectors\RBMidiInspector.resx">
+      <DependentUpon>RBMidiInspector.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Inspectors\ObjectInspector.resx">
       <DependentUpon>ObjectInspector.cs</DependentUpon>
