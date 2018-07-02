@@ -85,7 +85,7 @@ namespace LibForge.RBSong
       var ret = new StructType { InternalType = DataType.Struct, Properties = propList.ToArray() };
       if(array.Any(0) == "define")
       {
-        TypeDefinitions.Add(array.Any(1), ret);
+        TypeDefinitions[array.Any(1)] = ret;
       }
       return ret;
     }

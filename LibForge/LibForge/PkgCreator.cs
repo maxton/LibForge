@@ -341,7 +341,7 @@ SHORTNAMES
       for(int i = 0; i < dta.Count; i++)
       {
         arr = dta.Array(i);
-        dlcSongs.Add(ConvertDLCSong(arr, dlcRoot.GetDirectory(arr.Any(0))));
+        dlcSongs.Add(ConvertDLCSong(arr, dlcRoot.GetDirectory(arr.Array("song").Array("name").String(1).Split('/').Last())));
       }
       return dlcSongs;
     }
@@ -427,7 +427,7 @@ SHORTNAMES
     /// <param name="conPath">Path to CON file</param>
     /// <param name="buildDir">Output directory for project and files</param>
     /// <param name="eu">If true then an SCEE project is made (otherwise, SCEA)</param>
-    public static void ConToGp4(string conPath, string buildDir, bool eu = false)
+    public static void ConToGp4(string conPath, string buildDir, bool eu = false, string id = null, string desc = null)
     {
       // Phase 1: Reading from CON
       var con = STFSPackage.OpenFile(GameArchives.Util.LocalFile(conPath));
@@ -437,17 +437,59 @@ SHORTNAMES
         return;
       }
       var songs = ConvertDLCPackage(con.RootDirectory.GetDirectory("songs"));
+      if(songs.Count > 1)
+      {
+        if ((id?.Length ?? 0) < 16)
+        {
+          throw new Exception("You must provide a 16 char ID if you are building a custom package with multiple songs");
+        }
+      }
       var shortname = songs[0].SongData.Shortname;
       var pkgName = new Regex("[^a-zA-Z0-9]").Replace(shortname, "")
         .ToUpper().Substring(0, Math.Min(shortname.Length, 10)).PadRight(10, 'X');
       string pkgNum = (songs[0].SongData.SongId % 10000).ToString().PadLeft(4, '0');
-      var pkgId = eu ? $"EP8802-CUSA02901_00-RB{pkgName}{pkgNum}" : $"UP8802-CUSA02084_00-RB{pkgName}{pkgNum}";
+      var identifier = id ?? ("RB" + pkgName + pkgNum);
+      var pkgId = eu ? $"EP8802-CUSA02901_00-{identifier}" : $"UP8802-CUSA02084_00-{identifier}";
       var pkgDesc = $"Custom: \"{songs[0].SongData.Name} - {songs[0].SongData.Artist}\"";
-      DLCSongsToGP4(songs, pkgId, pkgDesc, buildDir);
+      DLCSongsToGP4(songs, pkgId, desc ?? pkgDesc, buildDir);
+    }
+
+    public static void ConsToGp4(string conPath, string buildDir, bool eu, string id, string desc)
+    {
+      var songs = new List<DLCSong>();
+      foreach (var conFilename in Directory.EnumerateFiles(conPath))
+      {
+        var file = GameArchives.Util.LocalFile(conFilename);
+        var stfs = STFSPackage.IsSTFS(file);
+        STFSPackage conFile;
+        if (stfs != GameArchives.PackageTestResult.YES
+          || null == (conFile = STFSPackage.OpenFile(file))
+          || conFile.Type != STFSType.CON)
+        {
+          Console.WriteLine($"Skipping \"{conFilename}\": not a CON file");
+          continue;
+        }
+        songs.AddRange(ConvertDLCPackage(conFile.RootDirectory.GetDirectory("songs")));
+      }
+
+      if (songs.Count > 1)
+      {
+        if ((id?.Length ?? 0) < 16)
+        {
+          throw new Exception("You must provide a 16 char ID if you are building a custom package with multiple songs");
+        }
+      }
+      var pkgId = eu ? $"EP8802-CUSA02901_00-{id}" : $"UP8802-CUSA02084_00-{id}";
+      DLCSongsToGP4(songs, pkgId, desc ?? "", buildDir);
     }
 
     public static void BuildPkg(string cmdExe, string proj, string outPath)
     {
+      outPath = outPath.Replace('\\', '/');
+      if (outPath[outPath.Length - 1] == '/')
+      {
+        outPath = outPath.Substring(0, outPath.Length - 1);
+      }
       var p = new Process
       {
         StartInfo = new ProcessStartInfo
