@@ -75,7 +75,7 @@ namespace ForgeToolGUI
       var scale = scale_factor * previewState.zoom;
       using (var g = Graphics.FromImage(gemDisplay.Image))
       {
-        g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
         g.Clear(previewState.clearColor);
         var brushes = previewState.brushes;
         foreach (var gem in previewState.gems)
