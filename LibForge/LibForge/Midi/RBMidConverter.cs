@@ -1094,7 +1094,7 @@ namespace LibForge.Midi
                 });
                 if(last_phrase_1?.StartTicks == e.StartTicks)
                 {
-                  last_phrase_1.IsOverdrive = 1;
+                  last_phrase_1.HasUnpitchedVox = 1;
                 }
               }
               else if (e.Key == Percussion)
@@ -1114,8 +1114,8 @@ namespace LibForge.Midi
                     LengthTicks = e.StartTicks,
                     StartNoteIdx = -1,
                     EndNoteIdx = -1,
-                    IsPhrase = 0,
-                    IsOverdrive = 0,
+                    HasPitchedVox = 0,
+                    HasUnpitchedVox = 0,
                     LowNote = theVocalRange.LowNote,
                     HighNote = theVocalRange.HighNote
                   });
@@ -1136,14 +1136,14 @@ namespace LibForge.Midi
                   Length = (float)e.Length * 1000,
                   LengthTicks = e.LengthTicks,
                   StartNoteIdx = notes.Count,
-                  IsPhrase = 1,
-                  IsOverdrive = 0,
+                  HasPitchedVox = 1,
+                  HasUnpitchedVox = 0,
                   LowNote = float.MaxValue,
                   HighNote = float.MinValue
                 };
                 if(overdrive_markers.LastOrDefault().StartTicks == e.StartTicks)
                 {
-                  last_phrase_1.IsOverdrive = 1;
+                  last_phrase_1.HasUnpitchedVox = 1;
                 }
                 phrase_markers_1.Add(last_phrase_1);
                 last_phrase_2 = new RBMid.VOCALTRACK.PHRASE_MARKER
@@ -1153,8 +1153,8 @@ namespace LibForge.Midi
                   StartTicks = e.StartTicks,
                   LengthTicks = e.LengthTicks,
                   StartNoteIdx = notes.Count,
-                  IsPhrase = 0,
-                  IsOverdrive = 0,
+                  HasPitchedVox = 0,
+                  HasUnpitchedVox = 0,
                   LowNote = float.MaxValue,
                   HighNote = float.MinValue
                 };

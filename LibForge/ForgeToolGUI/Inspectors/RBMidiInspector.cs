@@ -32,14 +32,35 @@ namespace ForgeToolGUI
       {
         for (var i = 0; i < file.GemTracks[track].Gems.Length; i++)
         {
-          difficultySelector.Items.Add($"Track {track} difficulty {i}");
+          if (file.GemTracks[track].Gems[i].Length == 0)
+            continue;
+          difficultySelector.Items.Add($"Gem track {track} difficulty {i}");
+          SelectorActions.Add(MakeGemtrackAction(track, i));
         }
       }
+      for(var track = 0; track < file.VocalTracks.Length; track++)
+      {
+        difficultySelector.Items.Add($"Vocal track {track}");
+        SelectorActions.Add(MakeVocalTrackAction(track));
+      }
     }
-    
-    public void PreviewGemTrack()
+
+    private List<Action> SelectorActions = new List<Action>();
+    private Action MakeGemtrackAction(int track, int diff)
     {
-      previewState.enabled = true;
+      return () =>
+      {
+        previewState.enabled = true;
+        RenderGemTrack(previewState.Midi.GemTracks[track].Gems[diff]);
+      };
+    }
+    private Action MakeVocalTrackAction(int track)
+    {
+      return () =>
+      {
+        previewState.enabled = true;
+        RenderVocalTrack(previewState.Midi.VocalTracks[track]);
+      };
     }
     
     private class GemTrackPreviewState
@@ -63,6 +84,7 @@ namespace ForgeToolGUI
       public float lengthMillis;
       public string label;
       public int offsetFromTop;
+      public int offsetFromTop2;
       public int color;
     }
 
@@ -78,6 +100,7 @@ namespace ForgeToolGUI
         g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
         g.Clear(previewState.clearColor);
         var brushes = previewState.brushes;
+        var corners = new PointF[4];
         foreach (var gem in previewState.gems)
         {
           var left = gem.startMillis * scale - offset;
@@ -86,10 +109,19 @@ namespace ForgeToolGUI
             continue;
           if (left > gemDisplay.Image.Width)
             break;
-          g.FillRectangle(brushes[gem.color], left, gem.offsetFromTop * 15, width, 10);
+          corners[0].X = left;
+          corners[1].X = left;
+          corners[3].X = left + width;
+          corners[2].X = left + width;
+          corners[0].Y = gem.offsetFromTop * 15;
+          corners[1].Y = gem.offsetFromTop * 15 + 10;
+          corners[3].Y = gem.offsetFromTop2 * 15;
+          corners[2].Y = gem.offsetFromTop2 * 15 + 10;
+          g.FillPolygon(brushes[gem.color % brushes.Length], corners);
+          //g.FillRectangle(brushes[gem.color], left, gem.offsetFromTop * 15, width, 10);
           if(gem.label != null)
           {
-            g.DrawString(gem.label, SystemFonts.DefaultFont, brushes[gem.color], left, gem.offsetFromTop * 15 + 10);
+            g.DrawString(gem.label, SystemFonts.DefaultFont, brushes[gem.color % brushes.Length], left, gem.offsetFromTop * 15 + 10);
           }
         }
       }
@@ -98,11 +130,10 @@ namespace ForgeToolGUI
 
     Brush[] GemBrushes = new[] { Brushes.Green, Brushes.Red, Brushes.Yellow, Brushes.Blue, Brushes.Orange };
 
-    private void RenderGemTrack()
+    private void RenderGemTrack(RBMid.GEMTRACK.GEM[] track)
     {
       if (!previewState.enabled) return;
       previewState.gems.Clear();
-      var track = previewState.Midi.GemTracks[previewState.GemTrack].Gems[previewState.diff];
       foreach (var gem in track)
       {
         for (var lane = 0; lane < 5; lane++)
@@ -114,6 +145,7 @@ namespace ForgeToolGUI
               startMillis = gem.StartMillis,
               lengthMillis = gem.LengthMillis,
               offsetFromTop = 5 - lane,
+              offsetFromTop2 = 5 - lane,
               color = lane,
               label = gem.IsHopo ?  "H" : null
             });
@@ -121,6 +153,63 @@ namespace ForgeToolGUI
         }
       }
       previewState.brushes = GemBrushes;
+      RenderGems();
+    }
+
+    Brush[] VocalBrushes = { Brushes.Black, Brushes.Red, Brushes.Cyan, Brushes.Green, Brushes.Blue };
+    const int MaxVocalNote = 86;
+    private void RenderVocalTrack(RBMid.VOCALTRACK track)
+    {
+      if (!previewState.enabled) return;
+      previewState.gems.Clear();
+      foreach (var gem in track.Notes)
+      {
+        previewState.gems.Add(new Gem
+        {
+          startMillis = gem.StartMillis,
+          lengthMillis = gem.LengthMillis,
+          offsetFromTop = MaxVocalNote - gem.MidiNote,
+          offsetFromTop2 = MaxVocalNote - gem.MidiNote2,
+          color = gem.Unpitched ? 4 : 0,
+          label = gem.Lyric
+        });
+      }
+      //foreach(var x in track.AuthoredPhraseMarkers)
+      //{
+      //  previewState.gems.Add(new Gem
+      //  {
+      //    startMillis = x.StartMillis,
+      //    lengthMillis = x.Length,
+      //    offsetFromTop = 1,
+      //    offsetFromTop2 = 1,
+      //    color = 1,
+      //    label = null
+      //  });
+      //}
+      foreach (var x in track.FakePhraseMarkers)
+      {
+        previewState.gems.Add(new Gem
+        {
+          startMillis = x.StartMillis,
+          lengthMillis = x.Length,
+          offsetFromTop = 2,
+          offsetFromTop2 = 2,
+          color = x.HasUnpitchedVox == 0 ? 1 : 2,
+          label = null
+        });
+        previewState.gems.Add(new Gem
+        {
+          startMillis = x.StartMillis,
+          lengthMillis = x.Length,
+          offsetFromTop = 1,
+          offsetFromTop2 = 1,
+          color = x.HasPitchedVox == 0 ? 1 : 2,
+          label = null
+        });
+      }
+
+      previewState.gems.Sort((x, y) => x.startMillis.CompareTo(y.startMillis));
+      previewState.brushes = VocalBrushes;
       RenderGems();
     }
 
@@ -137,10 +226,7 @@ namespace ForgeToolGUI
 
     private void difficultySelector_SelectedIndexChanged(object sender, EventArgs e)
     {
-      previewState.GemTrack = difficultySelector.SelectedIndex >> 2;
-      previewState.diff = difficultySelector.SelectedIndex & 3;
-      previewState.enabled = true;
-      RenderGemTrack();
+      SelectorActions[difficultySelector.SelectedIndex]();
     }
 
 

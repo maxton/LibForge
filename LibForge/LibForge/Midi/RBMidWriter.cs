@@ -214,8 +214,8 @@ namespace LibForge.Midi
       Write(obj.LengthTicks);
       Write(obj.StartNoteIdx);
       Write(obj.EndNoteIdx);
-      Write(obj.IsPhrase);
-      Write(obj.IsOverdrive);
+      Write(obj.HasPitchedVox);
+      Write(obj.HasUnpitchedVox);
       s.Position += 9;
       Write(obj.LowNote);
       Write(obj.HighNote);
