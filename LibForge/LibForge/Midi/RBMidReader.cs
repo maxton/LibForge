@@ -223,8 +223,8 @@ namespace LibForge.Midi
         LengthTicks = UInt(),
         StartNoteIdx = Int(),
         EndNoteIdx = Int(),
-        HasPitchedVox = Byte(),
-        HasUnpitchedVox = Byte().Then(Skip(9)),
+        HasPitchedVox = Bool(),
+        HasUnpitchedVox = Bool().Then(Skip(9)),
         // 9 bytes here are zero in every single rbmid I have found. So we are skipping them.
         LowNote = Float(),
         HighNote = Float(),

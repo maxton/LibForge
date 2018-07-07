@@ -122,6 +122,9 @@ namespace LibForge.Util
     protected string String() => s.ReadLengthPrefixedString(Encoding.ASCII);
     protected string String(int length) => s.ReadFixedLengthNullTerminatedString(length);
     protected uint UInt24() => s.ReadUInt24LE();
+    /// <summary>
+    /// Reads a byte as a boolean, throwing if it's not 1 or 0
+    /// </summary>
     protected bool Bool() => CheckRange(Byte(), 0, 1) != 0;
   }
 }

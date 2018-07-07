@@ -149,8 +149,8 @@ namespace LibForge.Midi
         public uint LengthTicks;
         public int StartNoteIdx;
         public int EndNoteIdx;
-        public byte HasPitchedVox;
-        public byte HasUnpitchedVox;
+        public bool HasPitchedVox;
+        public bool HasUnpitchedVox;
         public float LowNote;
         public float HighNote;
         public byte UnknownCount; // seen: 0, 1, 2, and 3

@@ -19,7 +19,8 @@ namespace ForgeToolGUI
       var Midi = new MidiCS.MidiFile(MidiCS.MidiFormat.MultiTrack, file.MidiTracks.ToList(), 480);
       previewState = new GemTrackPreviewState
       {
-        Midi = file,
+        rbmid = file,
+        tempos = Midi.TempoTimeSigMap,
         diff = difficultySelector.SelectedIndex,
         scroll = 0,
         length = (float)(Midi.Duration * 1000.0),
@@ -51,7 +52,7 @@ namespace ForgeToolGUI
       return () =>
       {
         previewState.enabled = true;
-        RenderGemTrack(previewState.Midi.GemTracks[track].Gems[diff]);
+        RenderGemTrack(previewState.rbmid.GemTracks[track].Gems[diff]);
       };
     }
     private Action MakeVocalTrackAction(int track)
@@ -59,13 +60,14 @@ namespace ForgeToolGUI
       return () =>
       {
         previewState.enabled = true;
-        RenderVocalTrack(previewState.Midi.VocalTracks[track]);
+        RenderVocalTrack(previewState.rbmid.VocalTracks[track]);
       };
     }
     
     private class GemTrackPreviewState
     {
-      public RBMid Midi;
+      public RBMid rbmid;
+      public IList<MidiCS.TimeSigTempoEvent> tempos;
       public int GemTrack;
       public int scroll;
       public float length;
@@ -92,6 +94,9 @@ namespace ForgeToolGUI
     {
       if (!previewState.enabled) return;
       const float scale_factor = 0.01f;
+      const int height = 10;
+      const int interval = 12;
+      var textbrush = Brushes.White;
       var virtWidth = previewState.zoom * previewState.length * scale_factor;
       var offset = previewState.scroll / 1000.0f * virtWidth;
       var scale = scale_factor * previewState.zoom;
@@ -113,15 +118,14 @@ namespace ForgeToolGUI
           corners[1].X = left;
           corners[3].X = left + width;
           corners[2].X = left + width;
-          corners[0].Y = gem.offsetFromTop * 15;
-          corners[1].Y = gem.offsetFromTop * 15 + 10;
-          corners[3].Y = gem.offsetFromTop2 * 15;
-          corners[2].Y = gem.offsetFromTop2 * 15 + 10;
-          g.FillPolygon(brushes[gem.color % brushes.Length], corners);
-          //g.FillRectangle(brushes[gem.color], left, gem.offsetFromTop * 15, width, 10);
+          corners[0].Y = gem.offsetFromTop * interval;
+          corners[1].Y = gem.offsetFromTop * interval + height;
+          corners[3].Y = gem.offsetFromTop2 * interval;
+          corners[2].Y = gem.offsetFromTop2 * interval + height;
+          g.FillPolygon(brushes[gem.color], corners);
           if(gem.label != null)
           {
-            g.DrawString(gem.label, SystemFonts.DefaultFont, brushes[gem.color % brushes.Length], left, gem.offsetFromTop * 15 + 10);
+            g.DrawString(gem.label, SystemFonts.DefaultFont, textbrush, left, gem.offsetFromTop * interval);
           }
         }
       }
@@ -156,6 +160,12 @@ namespace ForgeToolGUI
       RenderGems();
     }
 
+    private float GetMillis(uint tick)
+    {
+      var tempo = previewState.tempos.Last(e => e.Tick <= tick);
+      return (float)(tempo.Time + ((tick - tempo.Tick) / 480.0) * (60 / tempo.BPM)) * 1000f;
+    }
+
     Brush[] VocalBrushes = { Brushes.Black, Brushes.Red, Brushes.Cyan, Brushes.Green, Brushes.Blue };
     const int MaxVocalNote = 86;
     private void RenderVocalTrack(RBMid.VOCALTRACK track)
@@ -174,18 +184,19 @@ namespace ForgeToolGUI
           label = gem.Lyric
         });
       }
-      //foreach(var x in track.AuthoredPhraseMarkers)
-      //{
-      //  previewState.gems.Add(new Gem
-      //  {
-      //    startMillis = x.StartMillis,
-      //    lengthMillis = x.Length,
-      //    offsetFromTop = 1,
-      //    offsetFromTop2 = 1,
-      //    color = 1,
-      //    label = null
-      //  });
-      //}
+      foreach (var x in track.AuthoredPhraseMarkers)
+      {
+        var startMillis = GetMillis(x.StartTicks);
+        var lengthMllis = GetMillis(x.LengthTicks);
+        previewState.gems.Add(new Gem
+        {
+          startMillis = startMillis,
+          lengthMillis = lengthMllis,
+          offsetFromTop = 4,
+          offsetFromTop2 = 4,
+          color = 0,
+        });
+      }
       foreach (var x in track.FakePhraseMarkers)
       {
         previewState.gems.Add(new Gem
@@ -194,7 +205,7 @@ namespace ForgeToolGUI
           lengthMillis = x.Length,
           offsetFromTop = 2,
           offsetFromTop2 = 2,
-          color = x.HasUnpitchedVox == 0 ? 1 : 2,
+          color = x.HasUnpitchedVox ? 2 : 1,
           label = null
         });
         previewState.gems.Add(new Gem
@@ -203,8 +214,29 @@ namespace ForgeToolGUI
           lengthMillis = x.Length,
           offsetFromTop = 1,
           offsetFromTop2 = 1,
-          color = x.HasPitchedVox == 0 ? 1 : 2,
+          color = x.HasPitchedVox ? 2 : 1,
           label = null
+        });
+        previewState.gems.Add(new Gem
+        {
+          startMillis = x.StartMillis,
+          lengthMillis = x.Length,
+          offsetFromTop = 3,
+          offsetFromTop2 = 3,
+          color = x.UnknownCount,
+          label = null
+        });
+      }
+      foreach(var x in track.Tacets)
+      {
+        previewState.gems.Add(new Gem
+        {
+          startMillis = x.StartMillis,
+          lengthMillis = x.EndMillis - x.StartMillis,
+          offsetFromTop = 0,
+          offsetFromTop2 = 0,
+          color = 0,
+          label = (x.StartMillis / 1000).ToString()
         });
       }
 
@@ -249,7 +281,7 @@ namespace ForgeToolGUI
     {
       splitContainer2.Panel2.Controls.Remove(button3);
       splitContainer2.SplitterDistance = 200;
-      splitContainer2.Panel2.Controls.Add(new ObjectInspector(previewState.Midi) { Dock = DockStyle.Fill });
+      splitContainer2.Panel2.Controls.Add(new ObjectInspector(previewState.rbmid) { Dock = DockStyle.Fill });
     }
   }
 }
