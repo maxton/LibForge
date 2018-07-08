@@ -166,7 +166,7 @@ namespace ForgeToolGUI
       return (float)(tempo.Time + ((tick - tempo.Tick) / 480.0) * (60 / tempo.BPM)) * 1000f;
     }
 
-    Brush[] VocalBrushes = { Brushes.Black, Brushes.Red, Brushes.Cyan, Brushes.Green, Brushes.Blue };
+    Brush[] VocalBrushes = { Brushes.Black, Brushes.Red, Brushes.Orange, Brushes.Yellow, Brushes.Green, Brushes.Blue, Brushes.Violet, Brushes.White };
     const int MaxVocalNote = 86;
     private void RenderVocalTrack(RBMid.VOCALTRACK track)
     {
@@ -194,7 +194,8 @@ namespace ForgeToolGUI
           lengthMillis = lengthMllis,
           offsetFromTop = 4,
           offsetFromTop2 = 4,
-          color = 0,
+          color = x.UnknownCount,
+          label = startMillis.ToString(),
         });
       }
       foreach (var x in track.FakePhraseMarkers)
@@ -224,7 +225,7 @@ namespace ForgeToolGUI
           offsetFromTop = 3,
           offsetFromTop2 = 3,
           color = x.UnknownCount,
-          label = null
+          label = x.StartMillis.ToString()
         });
       }
       foreach(var x in track.Tacets)
@@ -282,6 +283,12 @@ namespace ForgeToolGUI
       splitContainer2.Panel2.Controls.Remove(button3);
       splitContainer2.SplitterDistance = 200;
       splitContainer2.Panel2.Controls.Add(new ObjectInspector(previewState.rbmid) { Dock = DockStyle.Fill });
+    }
+
+    private void button1_Click(object sender, EventArgs e)
+    {
+      var reprocessed = RBMidConverter.ToRBMid(RBMidConverter.ToMid(previewState.rbmid));
+      fb.OpenTab(InspectorFactory.GetInspector(reprocessed), Name + " reprocessed");
     }
   }
 }

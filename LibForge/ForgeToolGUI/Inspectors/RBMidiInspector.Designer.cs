@@ -34,6 +34,7 @@
             this.trackBar = new System.Windows.Forms.HScrollBar();
             this.zoomBar = new System.Windows.Forms.TrackBar();
             this.button3 = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
@@ -54,6 +55,7 @@
             // splitContainer2.Panel1
             // 
             this.splitContainer2.Panel1.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.splitContainer2.Panel1.Controls.Add(this.button1);
             this.splitContainer2.Panel1.Controls.Add(this.difficultySelector);
             this.splitContainer2.Panel1.Controls.Add(this.gemDisplay);
             this.splitContainer2.Panel1.Controls.Add(this.trackBar);
@@ -62,7 +64,7 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.button3);
-            this.splitContainer2.Size = new System.Drawing.Size(411, 415);
+            this.splitContainer2.Size = new System.Drawing.Size(627, 415);
             this.splitContainer2.SplitterDistance = 358;
             this.splitContainer2.TabIndex = 8;
             // 
@@ -83,7 +85,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.gemDisplay.Location = new System.Drawing.Point(0, 30);
             this.gemDisplay.Name = "gemDisplay";
-            this.gemDisplay.Size = new System.Drawing.Size(411, 295);
+            this.gemDisplay.Size = new System.Drawing.Size(627, 295);
             this.gemDisplay.TabIndex = 4;
             this.gemDisplay.TabStop = false;
             this.gemDisplay.SizeChanged += new System.EventHandler(this.gemDisplay_SizeChanged);
@@ -95,7 +97,7 @@
             this.trackBar.Location = new System.Drawing.Point(3, 328);
             this.trackBar.Maximum = 1000;
             this.trackBar.Name = "trackBar";
-            this.trackBar.Size = new System.Drawing.Size(408, 30);
+            this.trackBar.Size = new System.Drawing.Size(624, 30);
             this.trackBar.TabIndex = 6;
             this.trackBar.Scroll += new System.Windows.Forms.ScrollEventHandler(this.seekBar_Scroll);
             // 
@@ -116,11 +118,21 @@
             this.button3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button3.Location = new System.Drawing.Point(0, 0);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(411, 53);
+            this.button3.Size = new System.Drawing.Size(627, 53);
             this.button3.TabIndex = 2;
             this.button3.Text = "Populate Structure View";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(411, 3);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 8;
+            this.button1.Text = "Reprocess";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // RBMidiInspector
             // 
@@ -128,7 +140,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.splitContainer2);
             this.Name = "RBMidiInspector";
-            this.Size = new System.Drawing.Size(411, 415);
+            this.Size = new System.Drawing.Size(627, 415);
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel1.PerformLayout();
             this.splitContainer2.Panel2.ResumeLayout(false);
@@ -147,5 +159,6 @@
     private System.Windows.Forms.HScrollBar trackBar;
     private System.Windows.Forms.TrackBar zoomBar;
     private System.Windows.Forms.Button button3;
+    private System.Windows.Forms.Button button1;
   }
 }

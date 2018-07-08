@@ -127,6 +127,7 @@ namespace ForgeToolGUI
     public void OpenTab(Inspector c, string name)
     {
       var x = new TabPage(name);
+      c.Name = name;
       x.Controls.Add(c);
       c.SetBrowser(this);
       c.Dock = DockStyle.Fill;
