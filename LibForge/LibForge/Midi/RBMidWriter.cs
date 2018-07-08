@@ -57,7 +57,7 @@ namespace LibForge.Midi
       {
         WriteVREvents(r.VREvents);
       }
-      Write(r.UnknownTwo);
+      Write(r.MidiSongResourceMagic);
       Write(r.LastMarkupEventTick);
       Write(r.MidiTracks, WriteMidiTrack);
       Write(r.FinalTick);
@@ -190,14 +190,14 @@ namespace LibForge.Midi
         Write(x.LengthTicks);
         Write(x.Lyric);
         Write(x.LastNoteInPhrase);
-        Write(x.UnknownFalse);
+        Write(x.False1);
         Write(x.Unpitched);
-        Write(x.UnknownFalse2);
-        Write(x.UnkFlag1);
-        Write(x.Unknown);
+        Write(x.False2);
+        Write(x.RangeDivider);
+        Write(x.TugOfWarBitmask);
         Write(x.Portamento);
-        Write(x.Flag8);
-        Write(x.Flag9);
+        Write(x.LyricShift);
+        Write(x.ShowLyric);
       });
       Write(obj.Percussion, Write);
       Write(obj.Tacets, x =>
@@ -219,8 +219,8 @@ namespace LibForge.Midi
       s.Position += 9;
       Write(obj.LowNote);
       Write(obj.HighNote);
-      Write(obj.UnknownCount);
-      Write(obj.UnknownFlag);
+      Write(obj.TugOfWarBitmask);
+      Write(obj.PercussionSection);
       s.Position += 8;
     }
     private void WriteUnkstruct1(RBMid.UNKSTRUCT1 obj)

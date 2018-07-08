@@ -67,7 +67,7 @@ namespace LibForge.Midi
       {
         r.VREvents = ReadVREvents();
       }
-      r.UnknownTwo = Check(Int(), 2);
+      r.MidiSongResourceMagic = Check(Int(), 2);
       r.LastMarkupEventTick = UInt();
       r.MidiTracks = Arr(ReadMidiTrack);
       r.FinalTick = UInt();
@@ -198,14 +198,14 @@ namespace LibForge.Midi
           LengthTicks = UShort(),
           Lyric = String(),
           LastNoteInPhrase = Bool(),
-          UnknownFalse = Check(Bool(), false),
+          False1 = Check(Bool(), false),
           Unpitched = Bool(),
-          UnknownFalse2 = Bool(),
-          UnkFlag1 = Bool(),
-          Unknown = Byte(),
+          False2 = Check(Bool(), false),
+          RangeDivider = Bool(),
+          TugOfWarBitmask = Byte(),
           Portamento = Bool(),
-          Flag8 = Bool(),
-          Flag9 = Bool(),
+          LyricShift = Bool(),
+          ShowLyric = Bool(),
         }; return note; }),
       Percussion = Arr(UInt),
       Tacets = Arr(() => new RBMid.VOCALTRACK.VOCAL_TACET
@@ -228,8 +228,8 @@ namespace LibForge.Midi
         // 9 bytes here are zero in every single rbmid I have found. So we are skipping them.
         LowNote = Float(),
         HighNote = Float(),
-        UnknownCount = Byte(),
-        UnknownFlag = Bool().Then(Skip(8)),
+        TugOfWarBitmask = Byte(),
+        PercussionSection = Bool().Then(() => { Check(Int(), 0); Check(Int(), 0); }),
         // 8 bytes here are zero in every single rbmid I have found. So we are skipping them.
       };
     private RBMid.UNKSTRUCT1 ReadUnkstruct1() => new RBMid.UNKSTRUCT1

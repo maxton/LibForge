@@ -217,7 +217,7 @@ namespace LibForge.Midi
           MidiTrackNames = mf.Tracks.Select(t => t.Name).ToArray(),
           PreviewStartMillis = PreviewStart,
           PreviewEndMillis = PreviewEnd,
-          UnknownTwo = 2,
+          MidiSongResourceMagic = 2,
           LastMarkupEventTick = LastMarkupTick,
           NumPlayableTracks = (uint)Lyrics.Count,
           FinalEventTick = processedTracks.Where(t=>t.Name == "EVENTS").Select(t=>t.LastTick).First(),
@@ -1037,6 +1037,7 @@ namespace LibForge.Midi
         });
       }
 
+      const byte AltPhraseMarker = 106;
       const byte PhraseMarker = 105;
       const byte Percussion = 96;
       const byte VocalsEnd = 84;
@@ -1171,9 +1172,9 @@ namespace LibForge.Midi
                     Lyric = "",
                     LastNoteInPhrase = false,
                     // TODO: What is this?
-                    Unknown = 1,
+                    TugOfWarBitmask = 1,
                     Portamento = true,
-                    Flag9 = true
+                    ShowLyric = true
                   }); 
                 }
                 var last = notes.LastOrDefault();
@@ -1200,16 +1201,16 @@ namespace LibForge.Midi
                   Lyric = lyricCleaned == "+" ? "" : lyricCleaned,
                   // TODO
                   LastNoteInPhrase = false,
-                  UnknownFalse = false,
+                  False1 = false,
                   Unpitched = lyric.Contains("#") || lyric.Contains("^"),
-                  UnknownFalse2 = false,
-                  UnkFlag1 = false,
+                  False2 = false,
+                  RangeDivider = false,
                   // TODO: What is this?
-                  Unknown = 1,
+                  TugOfWarBitmask = 1,
                   Portamento = lyricCleaned == "+",
-                  Flag8 = false,
+                  LyricShift = false,
                   // TODO: What is this?
-                  Flag9 = true
+                  ShowLyric = true
                 });
                 if (theVocalRange.HighNote < e.Key) theVocalRange.HighNote = e.Key;
                 if (theVocalRange.LowNote > e.Key) theVocalRange.LowNote = e.Key;

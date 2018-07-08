@@ -153,8 +153,14 @@ namespace LibForge.Midi
         public bool HasUnpitchedVox;
         public float LowNote;
         public float HighNote;
-        public byte UnknownCount; // seen: 0, 1, 2, and 3
-        public bool UnknownFlag;
+        /// <summary>
+        /// Bitmask for regular phrase (105), alternate phrase (106)
+        /// </summary>
+        public byte TugOfWarBitmask; // seen: 0, 1, 2, and 3
+        /// <summary>
+        /// Set to true on fake phrase markers during percussion
+        /// </summary>
+        public bool PercussionSection;
       }
       public struct VOCAL_NOTE
       {
@@ -170,15 +176,42 @@ namespace LibForge.Midi
         // 0 0 0 0 0 1 0 0 1 for normal notes
         // 0 0 0 0 0 1 1 0 1 for portamento
         // 0 0 1 0 0 1 0 0 1 for unpitched
+        /// <summary>
+        /// Set to true on the last note of any phrase
+        /// </summary>
         public bool LastNoteInPhrase;
-        public bool UnknownFalse;
+        /// <summary>
+        /// Always false
+        /// </summary>
+        public bool False1;
+        /// <summary>
+        /// Set to true on unpitched notes
+        /// </summary>
         public bool Unpitched;
-        public bool UnknownFalse2;
-        public bool UnkFlag1;
-        public byte Unknown;
+        /// <summary>
+        /// Always false
+        /// </summary>
+        public bool False2;
+        /// <summary>
+        /// Set to true when a vocal range divider (%) is attached to this note
+        /// </summary>
+        public bool RangeDivider;
+        /// <summary>
+        /// Set the first bit if a regular phrase (105), second if alternate phrase (106), both if both
+        /// </summary>
+        public byte TugOfWarBitmask;
+        /// <summary>
+        /// Set to true if this note is a slide between two notes
+        /// </summary>
         public bool Portamento;
-        public bool Flag8;
-        public bool Flag9;
+        /// <summary>
+        /// Set to true when a lyric shift marker (note 1) follows this note
+        /// </summary>
+        public bool LyricShift;
+        /// <summary>
+        /// Set to false when there is a $ character on a harmony lyric.
+        /// </summary>
+        public bool ShowLyric;
       }
       public struct VOCAL_TACET
       {
@@ -353,7 +386,7 @@ namespace LibForge.Midi
     public TWOTICKS[] MarkupLoop2;
 
     public RBVREVENTS VREvents;
-    public int UnknownTwo;
+    public int MidiSongResourceMagic;
     public uint LastMarkupEventTick;
     public MidiTrack[] MidiTracks;
     public uint FinalTick;
@@ -539,13 +572,13 @@ namespace LibForge.Midi
                 ?? Check(their2.Lyric, my2.Lyric, nameof(my2.Lyric))
                 // TODO: enable after fixing phrases
                 // ?? Check(their2.LastNoteInPhrase, my2.LastNoteInPhrase, nameof(my2.LastNoteInPhrase))
-                ?? Check(their2.UnknownFalse, my2.UnknownFalse, nameof(my2.UnknownFalse))
+                ?? Check(their2.False1, my2.False1, nameof(my2.False1))
                 ?? Check(their2.Unpitched, my2.Unpitched, nameof(my2.Unpitched))
-                ?? Check(their2.UnknownFalse2, my2.UnknownFalse2, nameof(my2.UnknownFalse2))
-                ?? Check(their2.UnkFlag1, my2.UnkFlag1, nameof(my2.UnkFlag1))
-                ?? Check(their2.Unknown, my2.Unknown, nameof(my2.Unknown))
+                ?? Check(their2.False2, my2.False2, nameof(my2.False2))
+                ?? Check(their2.RangeDivider, my2.RangeDivider, nameof(my2.RangeDivider))
+                ?? Check(their2.TugOfWarBitmask, my2.TugOfWarBitmask, nameof(my2.TugOfWarBitmask))
                 ?? Check(their2.Portamento, my2.Portamento, nameof(my2.Portamento))
-                ?? Check(their2.Flag8, my2.Flag8, nameof(my2.Flag8))
+                ?? Check(their2.LyricShift, my2.LyricShift, nameof(my2.LyricShift))
                 // TODO: determine meaning of flag9
                 //?? Check(their2.Flag9, my2.Flag9, nameof(my2.Flag9))
                 )
@@ -624,7 +657,7 @@ namespace LibForge.Midi
       ?? Check(other.MarkupSoloNotes2, MarkupSoloNotes2, nameof(MarkupSoloNotes2), CheckSoloNotes)
       ?? Check(other.MarkupSoloNotes3, MarkupSoloNotes3, nameof(MarkupSoloNotes3), CheckSoloNotes)
       ?? Check(other.MarkupLoop2, MarkupLoop2, nameof(MarkupLoop2), CheckTwoTick)
-      ?? Check(other.UnknownTwo, UnknownTwo, nameof(UnknownTwo))
+      ?? Check(other.MidiSongResourceMagic, MidiSongResourceMagic, nameof(MidiSongResourceMagic))
       ?? Check(other.LastMarkupEventTick, LastMarkupEventTick, nameof(LastMarkupEventTick))
       ?? Check(other.MidiTracks, MidiTracks, nameof(MidiTracks), (their, my)
            => Check(their.Name, my.Name, nameof(my.Name))

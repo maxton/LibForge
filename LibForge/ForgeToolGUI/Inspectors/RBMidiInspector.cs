@@ -180,7 +180,7 @@ namespace ForgeToolGUI
           lengthMillis = gem.LengthMillis,
           offsetFromTop = MaxVocalNote - gem.MidiNote,
           offsetFromTop2 = MaxVocalNote - gem.MidiNote2,
-          color = gem.Unpitched ? 4 : 0,
+          color = gem.TugOfWarBitmask,
           label = gem.Lyric
         });
       }
@@ -194,7 +194,7 @@ namespace ForgeToolGUI
           lengthMillis = lengthMllis,
           offsetFromTop = 4,
           offsetFromTop2 = 4,
-          color = x.UnknownCount,
+          color = x.PercussionSection ? 1 : 0,
           label = startMillis.ToString(),
         });
       }
@@ -206,7 +206,7 @@ namespace ForgeToolGUI
           lengthMillis = x.Length,
           offsetFromTop = 2,
           offsetFromTop2 = 2,
-          color = x.HasUnpitchedVox ? 2 : 1,
+          color = x.PercussionSection ? 1 : 0,
           label = null
         });
         previewState.gems.Add(new Gem
@@ -224,7 +224,7 @@ namespace ForgeToolGUI
           lengthMillis = x.Length,
           offsetFromTop = 3,
           offsetFromTop2 = 3,
-          color = x.UnknownCount,
+          color = x.TugOfWarBitmask,
           label = x.StartMillis.ToString()
         });
       }
