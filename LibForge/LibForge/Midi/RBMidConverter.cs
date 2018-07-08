@@ -52,6 +52,7 @@ namespace LibForge.Midi
       private uint FinalTick;
       private int hopoThreshold;
       private List<uint> MeasureTicks = new List<uint>() { 0U };
+      private IList<TimeSigTempoEvent> TempoMap;
 
       public MidiConverter(MidiFile mf, int hopoThreshold = 170)
       {
@@ -104,6 +105,7 @@ namespace LibForge.Midi
         TimeSigs = new List<RBMid.TIMESIG>();
         Beats = new List<RBMid.BEAT>();
         MidiTrackNames = new List<string>();
+        TempoMap = mf.TempoTimeSigMap;
         var lastTimeSig = mf.TempoTimeSigMap[0];
         var measure = 0;
         foreach (var tempo in mf.TempoTimeSigMap)
@@ -242,6 +244,12 @@ namespace LibForge.Midi
           return;
         else if (trackHandlers.ContainsKey(track.Name))
           trackHandlers[track.Name](track);
+      }
+      
+      private float GetMillis(uint tick)
+      {
+        var tempo = TempoMap.Last(e => e.Tick <= tick);
+        return (float)(tempo.Time + ((tick - tempo.Tick) / 480.0) * (60 / tempo.BPM)) * 1000f;
       }
 
       const byte Roll2 = 127;
@@ -915,6 +923,9 @@ namespace LibForge.Midi
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
           Mixes = new RBMid.TICKTEXT[4][]
+          {
+            new RBMid.TICKTEXT[0], new RBMid.TICKTEXT[0], new RBMid.TICKTEXT[0], new RBMid.TICKTEXT[0]
+          }
         });
         GemTracks.Add(new RBMid.GEMTRACK
         {
@@ -1048,186 +1059,276 @@ namespace LibForge.Midi
         var overdrive_markers = new List<RBMid.SECTIONS.SECTION>();
         var percussions = new List<uint>();
         var notes = new List<RBMid.VOCALTRACK.VOCAL_NOTE>();
-        var phrase_markers_1 = new List<RBMid.VOCALTRACK.PHRASE_MARKER>();
-        var phrase_markers_2 = new List<RBMid.VOCALTRACK.PHRASE_MARKER>();
+        var gen_phrases = new List<RBMid.VOCALTRACK.PHRASE_MARKER>();
+        var authored_phrases = new List<RBMid.VOCALTRACK.PHRASE_MARKER>();
         var tacets = new List<RBMid.VOCALTRACK.VOCAL_TACET>();
         int phrase_index = 0;
-        RBMid.VOCALTRACK.PHRASE_MARKER last_phrase_1 = null;
-        RBMid.VOCALTRACK.PHRASE_MARKER last_phrase_2 = null;
-        
-        bool copyPreviousPhrases = track.Name == "HARM3"
-          || (track.Name == "HARM2" && mf.GetTrackByName("HARM3") == null);
+        bool pitched = false;
+        var trackVocalRange = new RBMid.VocalTrackRange
+        {
+          LowNote = float.MaxValue,
+          HighNote = float.MinValue
+        };
+        RBMid.VOCALTRACK.PHRASE_MARKER gen_phrase = null;
+        RBMid.VOCALTRACK.PHRASE_MARKER authored_phrase = null;
+
+        int harm;
+        switch (track.Name) {
+          case "HARM1": harm = 1; break;
+          case "HARM2": harm = 2; break;
+          case "HARM3": harm = 3; break;
+          default: harm = 0; break;
+        }
+
+        // Initialization
+        bool copyPreviousPhrases = harm == 3;
         RBMid.VOCALTRACK.PHRASE_MARKER[] last_track_markers = null;
         if (copyPreviousPhrases)
         {
           last_track_markers = VocalTracks.Last().FakePhraseMarkers;
-          phrase_markers_1.Add(last_track_markers[0]);
-          last_phrase_1 = phrase_markers_1[0];
+          foreach(var marker in last_track_markers)
+          {
+            gen_phrases.Add(new RBMid.VOCALTRACK.PHRASE_MARKER
+            {
+              StartMillis = marker.StartMillis,
+              LengthMillis = marker.LengthMillis,
+              StartTicks = marker.StartTicks,
+              LengthTicks = marker.LengthTicks,
+              HighNote = float.MinValue,
+              LowNote = float.MaxValue,
+              StartNoteIdx = marker.StartNoteIdx == -1 ? -1 : 0,
+              EndNoteIdx = marker.EndNoteIdx == -1 ? -1 : 0,
+              TugOfWarBitmask = marker.TugOfWarBitmask
+            });
+            gen_phrase = gen_phrases[0];
+          }
+        }
+        else
+        {
+          gen_phrase = new RBMid.VOCALTRACK.PHRASE_MARKER
+          {
+            StartMillis = 0f,
+            StartTicks = 0,
+            StartNoteIdx = -1,
+            EndNoteIdx = -1,
+            LowNote = float.MaxValue,
+            HighNote = float.MinValue,
+          };
+          gen_phrases.Add(gen_phrase);
+        }
+
+        // Event handlers
+        bool AddLyric(MidiText e)
+        {
+          if (e.Text[0] != '[')
+          {
+            lyrics.Add(new RBMid.TICKTEXT
+            {
+              Text = e.Text.Trim(' '),
+              Tick = e.StartTicks,
+            });
+            return true;
+          }
+          return false;
+        }
+        bool AddVocalNote(MidiNote e)
+        {
+          if (e.Key < VocalsStart || e.Key > VocalsEnd)
+            return false;
+          if (lyrics.Count == 0) throw new Exception("Note without accompanying lyric");
+          if (copyPreviousPhrases)
+          {
+            var phrase = gen_phrases.First(x => x.StartTicks + x.LengthTicks > e.StartTicks);
+            if(phrase != gen_phrase)
+            {
+              gen_phrase = phrase;
+              if (gen_phrase.StartNoteIdx == 0)
+                gen_phrase.StartNoteIdx = notes.Count;
+              if (notes.Count > 0)
+                notes.Last().LastNoteInPhrase = true;
+            }
+          }
+          var lyric = lyrics.Last().Text;
+          var lyricCleaned = lyric.Replace("$", "").Replace("#", "").Replace("^", "");
+          if (lyricCleaned == "+")
+          {
+            var previous = notes.LastOrDefault();
+            notes.Add(new RBMid.VOCALTRACK.VOCAL_NOTE
+            {
+              PhraseIndex = previous.PhraseIndex,
+              MidiNote = previous.MidiNote2,
+              MidiNote2 = e.Key,
+              StartMillis = previous.StartMillis + previous.LengthMillis,
+              StartTick = previous.StartTick + previous.LengthTicks,
+              LengthMillis = ((float)e.StartTime * 1000) - (previous.StartMillis + previous.LengthMillis),
+              LengthTicks = (ushort)(e.StartTicks - (previous.StartTick + previous.LengthTicks)),
+              Lyric = "",
+              LastNoteInPhrase = false,
+              TugOfWarBitmask = previous.TugOfWarBitmask,
+              Portamento = true,
+              ShowLyric = previous.ShowLyric,
+            });
+          }
+          var last = notes.LastOrDefault();
+          var lastNoteEnd = last == null ? 0 : (last.StartMillis + last.LengthMillis);
+          var tacet = ((float)e.StartTime * 1000) - lastNoteEnd;
+          if (tacet > 600f)
+          {
+            float transition = (tacet > 800f ? 100f : 50f);
+            tacets.Add(new RBMid.VOCALTRACK.VOCAL_TACET
+            {
+              StartMillis = lastNoteEnd + transition,
+              EndMillis = (float)e.StartTime * 1000 - transition
+            });
+          }
+          RBMid.VOCALTRACK.VOCAL_NOTE note;
+          notes.Add(note = new RBMid.VOCALTRACK.VOCAL_NOTE
+          {
+            PhraseIndex = gen_phrases.IndexOf(gen_phrase),
+            MidiNote = e.Key,
+            MidiNote2 = e.Key,
+            StartMillis = (float)e.StartTime * 1000,
+            StartTick = e.StartTicks,
+            LengthMillis = (float)e.Length * 1000,
+            LengthTicks = (ushort)e.LengthTicks,
+            Lyric = lyricCleaned == "+" ? "" : lyricCleaned,
+            LastNoteInPhrase = false,
+            False1 = false,
+            Unpitched = lyric.Contains('#') || lyric.Contains('^'),
+            False2 = false,
+            RangeDivider = lyric.Contains('%'),
+            TugOfWarBitmask = gen_phrase.TugOfWarBitmask,
+            Portamento = lyricCleaned == "+",
+            LyricShift = false,
+            ShowLyric = !lyric.Contains('$'),
+          });
+          if (note.Unpitched)
+          {
+            gen_phrase.HasUnpitchedVox = true;
+          }
+          else
+          {
+            pitched = true;
+            gen_phrase.HasPitchedVox = true;
+            gen_phrase.LowNote = Math.Min(e.Key, gen_phrase.LowNote);
+            gen_phrase.HighNote = Math.Max(e.Key, gen_phrase.HighNote);
+          }
+          gen_phrase.EndNoteIdx = notes.Count;
+
+          if (authored_phrase != null)
+          {
+            if (harm < 2)
+            {
+              authored_phrase.EndNoteIdx = gen_phrase.EndNoteIdx;
+              authored_phrase.HasUnpitchedVox = gen_phrase.HasUnpitchedVox;
+            }
+          }
+
+          theVocalRange.HighNote = Math.Max(e.Key, theVocalRange.HighNote);
+          theVocalRange.LowNote = Math.Min(e.Key, theVocalRange.LowNote);
+          return true;
+        }
+        bool AddPhrase(MidiNote e)
+        {
+          if (e.Key != PhraseMarker && e.Key != AltPhraseMarker)
+            return false;
+
+          if (authored_phrase?.StartTicks == e.StartTicks)
+          {
+            // Add tug-of-war bit
+            authored_phrase.TugOfWarBitmask =
+                (byte)((e.Key == PhraseMarker ? 1 : 0)
+                     + (e.Key == AltPhraseMarker ? 2 : 0));
+            gen_phrase.TugOfWarBitmask = authored_phrase.TugOfWarBitmask;
+            return true;
+          }
+
+          if(notes.Count > 0)
+          {
+            notes.Last().LastNoteInPhrase = true;
+          }
+
+          if (gen_phrase.StartTicks == 0)
+          {
+            var tick = e.StartTicks - 640;
+            gen_phrase.LengthMillis = GetMillis(tick);
+            gen_phrase.LengthTicks = tick;
+          }
+          var start = gen_phrase.StartTicks + gen_phrase.LengthTicks;
+          var end = e.StartTicks + e.LengthTicks;
+          gen_phrase = new RBMid.VOCALTRACK.PHRASE_MARKER
+          {
+            StartTicks = start,
+            LengthTicks = end - start,
+            StartMillis = GetMillis(start),
+            LengthMillis = GetMillis(end) - GetMillis(start),
+            StartNoteIdx = notes.Count,
+            EndNoteIdx = notes.Count,
+            HasPitchedVox = false,
+            HasUnpitchedVox = false,
+            LowNote = float.MaxValue,
+            HighNote = float.MinValue,
+            PercussionSection = false,
+            TugOfWarBitmask =
+                (byte)((e.Key == PhraseMarker ? 1 : 0)
+                     + (e.Key == AltPhraseMarker ? 2 : 0)),
+          };
+          gen_phrases.Add(gen_phrase);
+
+          authored_phrase = new RBMid.VOCALTRACK.PHRASE_MARKER
+          {
+            StartMillis = 0f,
+            LengthMillis = 0f,
+            StartTicks = e.StartTicks,
+            LengthTicks = e.LengthTicks,
+            StartNoteIdx = harm == 2 ? -1 : notes.Count,
+            EndNoteIdx = harm == 2 ? -1 : notes.Count,
+            HasPitchedVox = false,
+            HasUnpitchedVox = false,
+            LowNote = float.MaxValue,
+            HighNote = float.MinValue,
+            TugOfWarBitmask = gen_phrase.TugOfWarBitmask,
+          };
+          authored_phrases.Add(authored_phrase);
+          return true;
+        }
+        bool AddOverdrive(MidiNote e)
+        {
+          if (e.Key != OverdriveMarker)
+            return false;
+          overdrive_markers.Add(new RBMid.SECTIONS.SECTION
+          {
+            StartTicks = e.StartTicks,
+            LengthTicks = e.LengthTicks
+          });
+          return true;
+        }
+        bool AddPercussion(MidiNote e)
+        {
+          if (e.Key != Percussion)
+            return false;
+          gen_phrase.PercussionSection = true;
+          percussions.Add(e.StartTicks);
+          return true;
         }
 
         // Order the notes by descending key so that bad phrase markers (that start at the same time as a note) are counted
-        foreach (var item in track.Items.OrderBy(x => -(x as MidiNote)?.Key ?? 0).OrderBy(x => x.StartTicks))
+        foreach (var item in track.Items.OrderBy(x => 128 - (x as MidiNote)?.Key ?? 0).OrderBy(x => x.StartTicks))
         {
-          if (copyPreviousPhrases)
-          {
-            while (last_phrase_1.StartTicks + last_phrase_1.LengthTicks < item.StartTicks)
-            {
-              if (last_track_markers.Length - 1 < phrase_markers_1.Count) break;
-              phrase_markers_1.Add(last_track_markers[phrase_markers_1.Count]);
-              last_phrase_1 = phrase_markers_1.Last();
-              if (notes.Count > 0)
-              {
-                var lastNoteInPhrase = notes.Last();
-                lastNoteInPhrase.LastNoteInPhrase = true;
-                notes[notes.Count - 1] = lastNoteInPhrase;
-              }
-            }
-          }
           switch (item)
           {
             case MidiNote e:
-              if (e.Key == OverdriveMarker)
-              {
-                overdrive_markers.Add(new RBMid.SECTIONS.SECTION
-                {
-                  StartTicks = e.StartTicks,
-                  LengthTicks = e.LengthTicks
-                });
-              }
-              else if (e.Key == Percussion)
-              {
-                percussions.Add(e.StartTicks);
-              }
-              else if (e.Key == PhraseMarker)
-              {
-                // TODO This is mostly wrong.
-                if(phrase_markers_1.Count == 0)
-                {
-                  phrase_markers_1.Add(new RBMid.VOCALTRACK.PHRASE_MARKER
-                  {
-                    StartMillis = 0,
-                    Length = (float)e.StartTime * 1000,
-                    StartTicks = 0U,
-                    LengthTicks = e.StartTicks,
-                    StartNoteIdx = -1,
-                    EndNoteIdx = -1,
-                    HasPitchedVox = false,
-                    HasUnpitchedVox = false,
-                    LowNote = theVocalRange.LowNote,
-                    HighNote = theVocalRange.HighNote
-                  });
-                } else if(last_phrase_1 != null)
-                {
-                  last_phrase_1.EndNoteIdx = notes.Count;
-                  if (notes.Count > 0)
-                  {
-                    var lastNoteInPhrase = notes.Last();
-                    lastNoteInPhrase.LastNoteInPhrase = true;
-                    notes[notes.Count - 1] = lastNoteInPhrase;
-                  }
-                }
-                last_phrase_1 = new RBMid.VOCALTRACK.PHRASE_MARKER
-                {
-                  StartMillis = (float)e.StartTime * 1000,
-                  StartTicks = e.StartTicks,
-                  Length = (float)e.Length * 1000,
-                  LengthTicks = e.LengthTicks,
-                  StartNoteIdx = notes.Count,
-                  HasPitchedVox = false,
-                  HasUnpitchedVox = false,
-                  LowNote = float.MaxValue,
-                  HighNote = float.MinValue
-                };
-                phrase_markers_1.Add(last_phrase_1);
-                last_phrase_2 = new RBMid.VOCALTRACK.PHRASE_MARKER
-                {
-                  StartMillis = 0f,
-                  Length = 0f,
-                  StartTicks = e.StartTicks,
-                  LengthTicks = e.LengthTicks,
-                  StartNoteIdx = notes.Count,
-                  HasPitchedVox = false,
-                  HasUnpitchedVox = false,
-                  LowNote = float.MaxValue,
-                  HighNote = float.MinValue
-                };
-                phrase_markers_2.Add(last_phrase_2);
-              }
-              else if (e.Key >= VocalsStart && e.Key <= VocalsEnd)
-              {
-                var lyric = (track.Items.Find(s => s is MidiText && s.StartTicks == e.StartTicks) as MidiText).Text;
-                var lyricCleaned = lyric.Replace("$", "").Replace("#", "").Replace("^", "");
-                if(lyricCleaned == "+")
-                {
-                  var previous = notes.LastOrDefault();
-                  notes.Add(new RBMid.VOCALTRACK.VOCAL_NOTE
-                  {
-                    PhraseIndex = phrase_markers_1.Count - 1,
-                    MidiNote = previous.MidiNote2,
-                    MidiNote2 = e.Key,
-                    StartMillis = previous.StartMillis + previous.LengthMillis,
-                    StartTick = previous.StartTick + previous.LengthTicks,
-                    LengthMillis = ((float)e.StartTime * 1000) - (previous.StartMillis + previous.LengthMillis),
-                    LengthTicks = (ushort)(e.StartTicks - (previous.StartTick + previous.LengthTicks)),
-                    Lyric = "",
-                    LastNoteInPhrase = false,
-                    // TODO: What is this?
-                    TugOfWarBitmask = 1,
-                    Portamento = true,
-                    ShowLyric = true
-                  }); 
-                }
-                var last = notes.LastOrDefault();
-                var lastNoteEnd = last.StartMillis + last.LengthMillis;
-                var tacet = ((float)e.StartTime * 1000) - lastNoteEnd;
-                if(tacet > 600f)
-                {
-                  float transition = (tacet > 800f ? 100f : 50f);
-                  tacets.Add(new RBMid.VOCALTRACK.VOCAL_TACET
-                  {
-                    StartMillis = lastNoteEnd + transition,
-                    EndMillis = (float)e.StartTime * 1000 - transition
-                  });
-                }
-                notes.Add(new RBMid.VOCALTRACK.VOCAL_NOTE
-                {
-                  PhraseIndex = phrase_markers_1.Count - 1,
-                  MidiNote = e.Key,
-                  MidiNote2 = e.Key,
-                  StartMillis = (float)e.StartTime * 1000,
-                  StartTick = e.StartTicks,
-                  LengthMillis = (float)e.Length * 1000,
-                  LengthTicks = (ushort)e.LengthTicks,
-                  Lyric = lyricCleaned == "+" ? "" : lyricCleaned,
-                  // TODO
-                  LastNoteInPhrase = false,
-                  False1 = false,
-                  Unpitched = lyric.Contains("#") || lyric.Contains("^"),
-                  False2 = false,
-                  RangeDivider = false,
-                  // TODO: What is this?
-                  TugOfWarBitmask = 1,
-                  Portamento = lyricCleaned == "+",
-                  LyricShift = false,
-                  // TODO: What is this?
-                  ShowLyric = true
-                });
-                if (theVocalRange.HighNote < e.Key) theVocalRange.HighNote = e.Key;
-                if (theVocalRange.LowNote > e.Key) theVocalRange.LowNote = e.Key;
-              }
+              if (AddVocalNote(e)) { }
+              else if (AddPercussion(e)) { }
+              else if (AddPhrase(e)) { }
+              else if (AddOverdrive(e)) { }
               break;
             case MidiText e:
-              if (e.Text[0] != '[')
-              {
-                lyrics.Add(new RBMid.TICKTEXT
-                {
-                  Text = e.Text.Trim(' '),
-                  Tick = e.StartTicks,
-                });
-              }
+              if (AddLyric(e)) { }
               break;
           }
         }
+
         var lastNote = notes.Last();
         var lastTempo = mf.TempoTimeSigMap.Last();
         var lastMeasure = MeasureTicks.Last() + (480U * lastTempo.Numerator * 4 / lastTempo.Denominator);
@@ -1240,6 +1341,13 @@ namespace LibForge.Midi
         lastNote.LastNoteInPhrase = true;
         notes[notes.Count - 1] = lastNote;
 
+        // fix for cases like deadblack
+        if(pitched)
+          foreach (var phrase in gen_phrases)
+          {
+            phrase.LowNote = theVocalRange.LowNote;
+            phrase.HighNote = theVocalRange.HighNote;
+          }
 
         Lyrics.Add(new RBMid.LYRICS
         {
@@ -1249,7 +1357,11 @@ namespace LibForge.Midi
           Unknown2 = 3,
           Unknown3 = 0
         });
-        DrumFills.Add(new RBMid.DRUMFILLS());
+        DrumFills.Add(new RBMid.DRUMFILLS
+        {
+          Fills = new RBMid.DRUMFILLS.FILL[0],
+          Lanes = new RBMid.DRUMFILLS.FILL_LANES[0],
+        });
         ProMarkers.Add(new RBMid.TOMMARKER
         {
           Markers = new RBMid.TOMMARKER.MARKER[]
@@ -1261,8 +1373,14 @@ namespace LibForge.Midi
             }
           }
         });
-        LaneMarkers.Add(new RBMid.LANEMARKER());
-        TrillMarkers.Add(new RBMid.GTRTRILLS());
+        LaneMarkers.Add(new RBMid.LANEMARKER
+        {
+          Markers = new RBMid.LANEMARKER.MARKER[0][],
+        });
+        TrillMarkers.Add(new RBMid.GTRTRILLS
+        {
+          Trills = new RBMid.GTRTRILLS.TRILL[0][],
+        });
         var emptyMixes = new RBMid.TICKTEXT[0];
         DrumMixes.Add(new RBMid.DRUMMIXES
         {
@@ -1295,7 +1413,7 @@ namespace LibForge.Midi
         {
           VocalTracks.Add(new RBMid.VOCALTRACK
           {
-            FakePhraseMarkers = VocalTracks.Last().FakePhraseMarkers,
+            FakePhraseMarkers = gen_phrases.ToArray(),
             AuthoredPhraseMarkers = new RBMid.VOCALTRACK.PHRASE_MARKER[0],
             Notes = notes.ToArray(),
             Percussion = percussions.ToArray(),
@@ -1306,8 +1424,8 @@ namespace LibForge.Midi
         {
           VocalTracks.Add(new RBMid.VOCALTRACK
           {
-            FakePhraseMarkers = phrase_markers_1.ToArray(),
-            AuthoredPhraseMarkers = phrase_markers_2.ToArray(),
+            FakePhraseMarkers = gen_phrases.ToArray(),
+            AuthoredPhraseMarkers = authored_phrases.ToArray(),
             Notes = notes.ToArray(),
             Percussion = percussions.ToArray(),
             Tacets = tacets.ToArray()

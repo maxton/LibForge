@@ -144,7 +144,7 @@ namespace LibForge.Midi
       public class PHRASE_MARKER
       {
         public float StartMillis;
-        public float Length;
+        public float LengthMillis;
         public uint StartTicks;
         public uint LengthTicks;
         public int StartNoteIdx;
@@ -162,7 +162,7 @@ namespace LibForge.Midi
         /// </summary>
         public bool PercussionSection;
       }
-      public struct VOCAL_NOTE
+      public class VOCAL_NOTE
       {
         public int PhraseIndex;
         public int MidiNote;
@@ -562,7 +562,7 @@ namespace LibForge.Midi
            => Check(their.Notes, my.Notes, nameof(my.Notes), (their2, my2)
                 =>
                 // TODO: enable after fixing phrases
-                   null //Check(their2.PhraseIndex, my2.PhraseIndex, nameof(my2.PhraseIndex))
+                   Check(their2.PhraseIndex, my2.PhraseIndex, nameof(my2.PhraseIndex))
                 ?? Check(their2.MidiNote, my2.MidiNote, nameof(my2.MidiNote))
                 ?? Check(their2.MidiNote2, my2.MidiNote2, nameof(my2.MidiNote2))
                 ?? CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 0.4f)
@@ -570,8 +570,7 @@ namespace LibForge.Midi
                 ?? CheckFloats(their2.LengthMillis, my2.LengthMillis, nameof(my2.LengthMillis), 0.4f)
                 ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
                 ?? Check(their2.Lyric, my2.Lyric, nameof(my2.Lyric))
-                // TODO: enable after fixing phrases
-                // ?? Check(their2.LastNoteInPhrase, my2.LastNoteInPhrase, nameof(my2.LastNoteInPhrase))
+                ?? Check(their2.LastNoteInPhrase, my2.LastNoteInPhrase, nameof(my2.LastNoteInPhrase))
                 ?? Check(their2.False1, my2.False1, nameof(my2.False1))
                 ?? Check(their2.Unpitched, my2.Unpitched, nameof(my2.Unpitched))
                 ?? Check(their2.False2, my2.False2, nameof(my2.False2))
@@ -579,43 +578,40 @@ namespace LibForge.Midi
                 ?? Check(their2.TugOfWarBitmask, my2.TugOfWarBitmask, nameof(my2.TugOfWarBitmask))
                 ?? Check(their2.Portamento, my2.Portamento, nameof(my2.Portamento))
                 ?? Check(their2.LyricShift, my2.LyricShift, nameof(my2.LyricShift))
-                // TODO: determine meaning of flag9
-                //?? Check(their2.Flag9, my2.Flag9, nameof(my2.Flag9))
+                ?? Check(their2.ShowLyric, my2.ShowLyric, nameof(my2.ShowLyric))
                 )
            ?? Check(their.Percussion, my.Percussion, nameof(my.Percussion), Check)
            // TODO: Fix tacets on HARM tracks
-           // ?? Check(their.Tacets, my.Tacets, nameof(my.Tacets), (their2, my2)
-                // => CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 0.2f)
+           //?? Check(their.Tacets, my.Tacets, nameof(my.Tacets), (their2, my2)
+                //=> CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
                 //?? CheckFloats(their2.EndMillis, my2.EndMillis, nameof(my2.EndMillis), 2f)
-                // )
-           //?? Check(their.FakePhraseMarkers, my.FakePhraseMarkers, nameof(my.FakePhraseMarkers), (their2, my2)
-           //     => // TODO: Fix first phrase marker. It seems to start earlier than authored!?
-           //       null // CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
-                // TODO: why is this wrong?
-                // ?? CheckFloats(their2.Length, my2.Length, nameof(my2.Length), 1f)
-                // ?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
-                // TODO: fix this
-                // ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
-                // TODO ???
-                // ?? Check(their2.IsPhrase, my2.IsPhrase, nameof(my2.IsPhrase))
-                // ?? Check(their2.IsOverdrive, my2.IsOverdrive, nameof(my2.IsOverdrive))
-                // ?? Check(their2.StartNoteIdx, my2.StartNoteIdx, nameof(my2.StartNoteIdx))
-                // ?? Check(their2.EndNoteIdx, my2.EndNoteIdx, nameof(my2.EndNoteIdx))
-                //)
-           //?? Check(their.AuthoredPhraseMarkers, my.AuthoredPhraseMarkers, nameof(my.AuthoredPhraseMarkers), (their2, my2)
-           //     => CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
-           //     ?? CheckFloats(their2.Length, my2.Length, nameof(my2.Length), 1f)
-           //     ?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
-           //     ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
-           //     ?? Check(their2.IsPhrase, my2.IsPhrase, nameof(my2.IsPhrase))
-                // TODO...
-                // ?? Check(their2.IsOverdrive, my2.IsOverdrive, nameof(my2.IsOverdrive))
-                // ?? Check(their2.StartNoteIdx, my2.StartNoteIdx, nameof(my2.StartNoteIdx))
-                // ?? Check(their2.EndNoteIdx, my2.EndNoteIdx, nameof(my2.EndNoteIdx))
-                // ?? Check(their2.UnknownCount, my2.UnknownCount, nameof(my2.UnknownCount))
-                // ?? Check(their2.UnknownFlag, my2.UnknownFlag, nameof(my2.UnknownFlag))
-                //)
-                )
+           //)
+           ?? Check(their.FakePhraseMarkers, my.FakePhraseMarkers, nameof(my.FakePhraseMarkers), (their2, my2)
+                 => CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
+                 ?? CheckFloats(their2.LengthMillis, my2.LengthMillis, nameof(my2.LengthMillis), 1f)
+                 ?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
+                 ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
+                 ?? Check(their2.StartNoteIdx, my2.StartNoteIdx, nameof(my2.StartNoteIdx))
+                 ?? Check(their2.EndNoteIdx, my2.EndNoteIdx, nameof(my2.EndNoteIdx))
+                 ?? Check(their2.HasPitchedVox, my2.HasPitchedVox, nameof(my2.HasPitchedVox))
+                 ?? Check(their2.HasUnpitchedVox, my2.HasUnpitchedVox, nameof(my2.HasUnpitchedVox))
+                 ?? Check(their2.LowNote, my2.LowNote, nameof(my2.LowNote))
+                 ?? Check(their2.HighNote, my2.HighNote, nameof(my2.HighNote))
+                 ?? Check(their2.TugOfWarBitmask, my2.TugOfWarBitmask, nameof(my2.TugOfWarBitmask))
+                 ?? Check(their2.PercussionSection, my2.PercussionSection, nameof(my2.PercussionSection)))
+           ?? Check(their.AuthoredPhraseMarkers, my.AuthoredPhraseMarkers, nameof(my.AuthoredPhraseMarkers), (their2, my2)
+                 => CheckFloats(their2.StartMillis, my2.StartMillis, nameof(my2.StartMillis), 1f)
+                 ?? CheckFloats(their2.LengthMillis, my2.LengthMillis, nameof(my2.LengthMillis), 1f)
+                 ?? Check(their2.StartTicks, my2.StartTicks, nameof(my2.StartTicks))
+                 ?? Check(their2.LengthTicks, my2.LengthTicks, nameof(my2.LengthTicks))
+                 ?? Check(their2.StartNoteIdx, my2.StartNoteIdx, nameof(my2.StartNoteIdx))
+                 ?? Check(their2.EndNoteIdx, my2.EndNoteIdx, nameof(my2.EndNoteIdx))
+                 ?? Check(their2.HasPitchedVox, my2.HasPitchedVox, nameof(my2.HasPitchedVox))
+                 ?? Check(their2.HasUnpitchedVox, my2.HasUnpitchedVox, nameof(my2.HasUnpitchedVox))
+                 ?? Check(their2.LowNote, my2.LowNote, nameof(my2.LowNote))
+                 ?? Check(their2.HighNote, my2.HighNote, nameof(my2.HighNote))
+                 ?? Check(their2.TugOfWarBitmask, my2.TugOfWarBitmask, nameof(my2.TugOfWarBitmask))
+                 ?? Check(their2.PercussionSection, my2.PercussionSection, nameof(my2.PercussionSection))))
       ?? Check(other.UnknownOne, UnknownOne, nameof(UnknownOne))
       ?? Check(other.UnknownNegOne, UnknownNegOne, nameof(UnknownNegOne))
       ?? Check(other.UnknownHundred, UnknownHundred, nameof(UnknownHundred))

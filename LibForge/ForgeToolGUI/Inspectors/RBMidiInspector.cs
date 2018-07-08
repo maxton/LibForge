@@ -180,7 +180,7 @@ namespace ForgeToolGUI
           lengthMillis = gem.LengthMillis,
           offsetFromTop = MaxVocalNote - gem.MidiNote,
           offsetFromTop2 = MaxVocalNote - gem.MidiNote2,
-          color = gem.TugOfWarBitmask,
+          color = gem.LastNoteInPhrase ? 1 : 0,
           label = gem.Lyric
         });
       }
@@ -195,7 +195,7 @@ namespace ForgeToolGUI
           offsetFromTop = 4,
           offsetFromTop2 = 4,
           color = x.PercussionSection ? 1 : 0,
-          label = startMillis.ToString(),
+          label = (startMillis / 1000).ToString("0.000"),
         });
       }
       foreach (var x in track.FakePhraseMarkers)
@@ -203,7 +203,16 @@ namespace ForgeToolGUI
         previewState.gems.Add(new Gem
         {
           startMillis = x.StartMillis,
-          lengthMillis = x.Length,
+          lengthMillis = x.LengthMillis,
+          offsetFromTop = 1,
+          offsetFromTop2 = 1,
+          color = (x.HasPitchedVox ? 1 : 0) + (x.HasUnpitchedVox ? 2 : 0),
+          label = null
+        });
+        previewState.gems.Add(new Gem
+        {
+          startMillis = x.StartMillis,
+          lengthMillis = x.LengthMillis,
           offsetFromTop = 2,
           offsetFromTop2 = 2,
           color = x.PercussionSection ? 1 : 0,
@@ -212,20 +221,11 @@ namespace ForgeToolGUI
         previewState.gems.Add(new Gem
         {
           startMillis = x.StartMillis,
-          lengthMillis = x.Length,
-          offsetFromTop = 1,
-          offsetFromTop2 = 1,
-          color = x.HasPitchedVox ? 2 : 1,
-          label = null
-        });
-        previewState.gems.Add(new Gem
-        {
-          startMillis = x.StartMillis,
-          lengthMillis = x.Length,
+          lengthMillis = x.LengthMillis,
           offsetFromTop = 3,
           offsetFromTop2 = 3,
           color = x.TugOfWarBitmask,
-          label = x.StartMillis.ToString()
+          label = (x.StartMillis / 1000).ToString("0.000")
         });
       }
       foreach(var x in track.Tacets)
@@ -237,7 +237,7 @@ namespace ForgeToolGUI
           offsetFromTop = 0,
           offsetFromTop2 = 0,
           color = 0,
-          label = (x.StartMillis / 1000).ToString()
+          label = (x.StartMillis / 1000).ToString("0.000")
         });
       }
 

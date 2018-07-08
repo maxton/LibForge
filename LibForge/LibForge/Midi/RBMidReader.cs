@@ -218,7 +218,7 @@ namespace LibForge.Midi
       new RBMid.VOCALTRACK.PHRASE_MARKER
       {
         StartMillis = Float(),
-        Length = Float(),
+        LengthMillis = Float(),
         StartTicks = UInt(),
         LengthTicks = UInt(),
         StartNoteIdx = Int(),

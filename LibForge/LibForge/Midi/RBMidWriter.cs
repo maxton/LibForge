@@ -209,7 +209,7 @@ namespace LibForge.Midi
     private void WritePhraseMarker(RBMid.VOCALTRACK.PHRASE_MARKER obj)
     {
       Write(obj.StartMillis);
-      Write(obj.Length);
+      Write(obj.LengthMillis);
       Write(obj.StartTicks);
       Write(obj.LengthTicks);
       Write(obj.StartNoteIdx);
