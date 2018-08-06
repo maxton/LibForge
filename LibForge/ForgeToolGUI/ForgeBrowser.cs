@@ -28,12 +28,15 @@ namespace ForgeToolGUI
     {
       if (state.Loaded) Unload();
       state.pkg = GameArchives.PackageReader.ReadPackageFromFile(GameArchives.Util.LocalFile(filename));
-      if(state.pkg is GameArchives.PFS.PFSPackage p)
+      if(state.pkg is GameArchives.PFS.PFSPackage)
       {
-        if(p.RootDirectory.TryGetFile("pfs_image.dat", out var f))
+        if(state.pkg.RootDirectory.TryGetFile("pfs_image.dat", out var f))
         {
-          var innerPfs = GameArchives.PackageReader.ReadPackageFromFile(f);
-          state.pkg = GameArchives.PackageReader.ReadPackageFromFile(innerPfs.GetFile("/main_ps4.hdr"));
+          state.pkg = GameArchives.PackageReader.ReadPackageFromFile(f);
+        }
+        if(state.pkg.RootDirectory.TryGetFile("main_ps4.hdr", out var f2))
+        {
+          state.pkg = GameArchives.PackageReader.ReadPackageFromFile(f2);
         }
       }
       state.root = state.pkg.RootDirectory;
