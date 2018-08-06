@@ -34,6 +34,7 @@ after_build:
    %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\LibForge.dll
    %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\MidiCS.dll
    %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\GameArchives.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\LibOrbisPkg.dll
    %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\DtxCS.dll
    %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\ForgeToolGUI.exe
    %APPVEYOR_BUILD_FOLDER%\files-in-DLC-packages.md
