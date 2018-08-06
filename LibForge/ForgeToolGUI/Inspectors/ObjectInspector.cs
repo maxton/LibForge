@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using LibForge.RBSong;
 using LibForge.Midi;
+using System.Collections;
 
 namespace ForgeToolGUI
 {
@@ -39,11 +40,20 @@ namespace ForgeToolGUI
         if (f.IsLiteral) continue;
         if (f.FieldType.IsPrimitive || f.FieldType == typeof(string) || f.FieldType.IsEnum)
         {
-          nodes.Add(f.Name + " = " + f.GetValue(obj).ToString());
+          var val = f.GetValue(obj);
+          if (val != null)
+          {
+            nodes.Add(f.Name + " = " + val.ToString());
+          }
         }
         else if (f.FieldType.IsArray)
         {
           AddArrayNodes(f.GetValue(obj) as Array, f.Name, nodes);
+        }
+        else if (f.FieldType.IsGenericType && f.FieldType.GetGenericTypeDefinition() == typeof(List<>))
+        {
+          var internalType = f.FieldType.GetGenericArguments()[0];
+          AddArrayNodes((f.GetValue(obj) as IList).Cast<object>().ToArray(), f.Name, nodes);
         }
         else
         {

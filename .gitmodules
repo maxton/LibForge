@@ -1,0 +1,3 @@
+[submodule "Dependencies/GameArchives"]
+	path = Dependencies/GameArchives
+	url = https://github.com/maxton/GameArchives.git

@@ -11,28 +11,45 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForgeToolGUI", "ForgeToolGU
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibForgeTests", "LibForgeTests\LibForgeTests.csproj", "{DB683EFE-A4DE-4A8C-BD78-30B84787A027}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameArchives", "..\Dependencies\GameArchives\Library\GameArchives.csproj", "{906748F0-3A55-4B20-BCCB-9DC7187F1D5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Release-minimal|Any CPU = Release-minimal|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3684B7E6-0978-487A-895C-D0ED8F6B7B9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3684B7E6-0978-487A-895C-D0ED8F6B7B9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3684B7E6-0978-487A-895C-D0ED8F6B7B9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3684B7E6-0978-487A-895C-D0ED8F6B7B9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3684B7E6-0978-487A-895C-D0ED8F6B7B9A}.Release-minimal|Any CPU.ActiveCfg = Release|Any CPU
+		{3684B7E6-0978-487A-895C-D0ED8F6B7B9A}.Release-minimal|Any CPU.Build.0 = Release|Any CPU
 		{CB848B8C-A1B6-4777-A674-D3E5C255AAC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CB848B8C-A1B6-4777-A674-D3E5C255AAC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB848B8C-A1B6-4777-A674-D3E5C255AAC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB848B8C-A1B6-4777-A674-D3E5C255AAC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB848B8C-A1B6-4777-A674-D3E5C255AAC1}.Release-minimal|Any CPU.ActiveCfg = Release|Any CPU
+		{CB848B8C-A1B6-4777-A674-D3E5C255AAC1}.Release-minimal|Any CPU.Build.0 = Release|Any CPU
 		{233099F7-0471-4064-B000-F6DDE21E64E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{233099F7-0471-4064-B000-F6DDE21E64E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{233099F7-0471-4064-B000-F6DDE21E64E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{233099F7-0471-4064-B000-F6DDE21E64E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{233099F7-0471-4064-B000-F6DDE21E64E6}.Release-minimal|Any CPU.ActiveCfg = Release|Any CPU
+		{233099F7-0471-4064-B000-F6DDE21E64E6}.Release-minimal|Any CPU.Build.0 = Release|Any CPU
 		{DB683EFE-A4DE-4A8C-BD78-30B84787A027}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DB683EFE-A4DE-4A8C-BD78-30B84787A027}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB683EFE-A4DE-4A8C-BD78-30B84787A027}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB683EFE-A4DE-4A8C-BD78-30B84787A027}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB683EFE-A4DE-4A8C-BD78-30B84787A027}.Release-minimal|Any CPU.ActiveCfg = Release|Any CPU
+		{DB683EFE-A4DE-4A8C-BD78-30B84787A027}.Release-minimal|Any CPU.Build.0 = Release|Any CPU
+		{906748F0-3A55-4B20-BCCB-9DC7187F1D5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{906748F0-3A55-4B20-BCCB-9DC7187F1D5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{906748F0-3A55-4B20-BCCB-9DC7187F1D5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{906748F0-3A55-4B20-BCCB-9DC7187F1D5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{906748F0-3A55-4B20-BCCB-9DC7187F1D5E}.Release-minimal|Any CPU.ActiveCfg = Release-minimal|Any CPU
+		{906748F0-3A55-4B20-BCCB-9DC7187F1D5E}.Release-minimal|Any CPU.Build.0 = Release-minimal|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

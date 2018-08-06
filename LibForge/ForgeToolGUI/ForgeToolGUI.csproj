@@ -37,8 +37,8 @@
     <Reference Include="DtxCS">
       <HintPath>..\..\Dependencies\DtxCS.dll</HintPath>
     </Reference>
-    <Reference Include="GameArchives">
-      <HintPath>..\..\Dependencies\GameArchives.dll</HintPath>
+    <Reference Include="LibOrbisPkg">
+      <HintPath>..\..\..\PS4\pkglib\LibOrbisPkg\bin\Debug\LibOrbisPkg.dll</HintPath>
     </Reference>
     <Reference Include="MidiCS">
       <HintPath>..\..\Dependencies\MidiCS.dll</HintPath>
@@ -132,6 +132,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Dependencies\GameArchives\Library\GameArchives.csproj">
+      <Project>{906748f0-3a55-4b20-bccb-9dc7187f1d5e}</Project>
+      <Name>GameArchives</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LibForge\LibForge.csproj">
       <Project>{3684b7e6-0978-487a-895c-d0ed8f6b7b9a}</Project>
       <Name>LibForge</Name>

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+
 namespace ForgeToolGUI
 {
   static class InspectorFactory
@@ -110,6 +111,20 @@ namespace ForgeToolGUI
         using (var s = i.GetStream())
         {
           return new RBSongReader(s).Read();
+        }
+      }
+      else if (i.Name.Contains(".gp4"))
+      {
+        using (var s = i.GetStream())
+        {
+          return LibOrbisPkg.GP4.Gp4Project.ReadFrom(s);
+        }
+      }
+      else if (i.Name.Contains(".pkg"))
+      {
+        using (var s = i.GetStream())
+        {
+          return new LibOrbisPkg.PKG.PkgReader(s).ReadHeader();
         }
       }
       else
