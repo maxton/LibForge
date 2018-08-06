@@ -28,6 +28,14 @@ namespace ForgeToolGUI
     {
       if (state.Loaded) Unload();
       state.pkg = GameArchives.PackageReader.ReadPackageFromFile(GameArchives.Util.LocalFile(filename));
+      if(state.pkg is GameArchives.PFS.PFSPackage p)
+      {
+        if(p.RootDirectory.TryGetFile("pfs_image.dat", out var f))
+        {
+          var innerPfs = GameArchives.PackageReader.ReadPackageFromFile(f);
+          state.pkg = GameArchives.PackageReader.ReadPackageFromFile(innerPfs.GetFile("/main_ps4.hdr"));
+        }
+      }
       state.root = state.pkg.RootDirectory;
       FinishLoad();
     }
@@ -78,7 +86,7 @@ namespace ForgeToolGUI
     private void openToolStripMenuItem_Click(object sender, EventArgs e)
     {
       OpenFileDialog of = new OpenFileDialog();
-      of.Filter = "Supported Packages (*.hdr, *.dat)|*.hdr;*.dat";
+      of.Filter = "Supported Packages (*.hdr, *.dat, *.pkg)|*.hdr;*.dat;*.pkg";
       if(of.ShowDialog(this) == DialogResult.OK)
       {
         LoadPackage(of.FileName);
