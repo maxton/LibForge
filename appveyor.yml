@@ -16,6 +16,9 @@ assembly_info:
   assembly_file_version: '{version}.0'
   assembly_informational_version: '{version}.0'
 
+install:
+- cmd: git submodule update --init --recursive
+
 before_build:
 - cmd: nuget restore LibForge/LibForge.sln
 
