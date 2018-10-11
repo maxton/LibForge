@@ -4,6 +4,9 @@ typedef struct {
     int Width;
     int Height;
     int Flag;
+    if(Version == 0xC) {
+        int unk[2];
+    }
 } MipmapInfo;
 typedef struct {
     int Size;
@@ -11,9 +14,9 @@ typedef struct {
 } MipmapData;
 
 int Magic;
+int Version;
 Assert(Magic == 6 || Magic == 4, "Magic number == 6 or 4");
-if (Magic == 6) {
-    int UnknownNine;
+if (Magic == 6 && Version != 0xC) {
     int Unknown;
     int Unknown;
     int UnknownSixteen;
@@ -45,6 +48,9 @@ if (Magic == 6) {
     int UnknownTwo;
     int UnknownThree;
     int Unk2[5];
+}
+else if (Magic == 6 && Version == 0xC) {
+    FSeek(0x84);
 }
 else {
     FSeek(0xAC);
