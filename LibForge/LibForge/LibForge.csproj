@@ -98,6 +98,10 @@
       <Project>{906748f0-3a55-4b20-bccb-9dc7187f1d5e}</Project>
       <Name>GameArchives</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Dependencies\LibOrbisPkg\LibOrbisPkg\LibOrbisPkg.csproj">
+      <Project>{b053f491-ff0f-4cbb-b03b-520591bb0441}</Project>
+      <Name>LibOrbisPkg</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

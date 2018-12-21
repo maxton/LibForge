@@ -263,7 +263,7 @@ namespace ForgeTool
             var i = 0;
             bool eu = false;
             string pkgId = null, pkgDesc = null;
-            while (++i < args.Length - 4)
+            while (++i < args.Length - 3)
             {
               switch (args[i])
               {
@@ -281,7 +281,6 @@ namespace ForgeTool
             }
             if(makepkg)
             {
-              var cmd = args[i++];
               var con = args[i++];
               var dest = args[i++];
               var tmpDir = Path.Combine(Path.GetTempPath(), "forgetool_tmp_build");
@@ -294,7 +293,7 @@ namespace ForgeTool
               {
                 PkgCreator.ConsToGp4(con, tmpDir, eu, pkgId, pkgDesc); 
               }
-              PkgCreator.BuildPkg(cmd, Path.Combine(tmpDir, "project.gp4"), dest);
+              PkgCreator.BuildPkg(Path.Combine(tmpDir, "project.gp4"), dest);
               Directory.Delete(tmpDir, true);
             }
             else
