@@ -37,7 +37,7 @@ SHORTNAMES
   </rootdir>
 </psproject>";
 
-    public static byte[] MakeParamSfo(string pkgId, string description)
+    public static byte[] MakeParamSfo(string pkgId, string description, bool eu)
     {
       if (pkgId.Length != 36) throw new Exception("Content ID is not formatted correctly. It should be 36 characters");
       var param = new LibOrbisPkg.SFO.ParamSfo();
@@ -46,7 +46,7 @@ SHORTNAMES
       param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("CONTENT_ID", pkgId, 48));
       param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("FORMAT", "obs", 4));
       param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("TITLE", description, 128));
-      param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("TITLE_ID", "CUSA02084", 12));
+      param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("TITLE_ID", eu ? "CUSA02901" : "CUSA02084", 12));
       param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("VERSION", "01.00", 8));
       var descBytes = Encoding.UTF8.GetBytes(description);
       return param.Serialize();
@@ -365,7 +365,8 @@ SHORTNAMES
     /// <param name="pkgId">36-character package ID</param>
     /// <param name="pkgDesc">User-visible name of the package</param>
     /// <param name="buildDir">Directory in which to put the project and files</param>
-    public static void DLCSongsToGP4(IList<DLCSong> songs, string pkgId, string pkgDesc, string buildDir)
+    /// <param name="eu">Set to true if SCEE</param>
+    public static void DLCSongsToGP4(IList<DLCSong> songs, string pkgId, string pkgDesc, string buildDir, bool eu)
     {
       var shortnames = new List<string>(songs.Count);
       var files = new List<string>(songs.Count * 8);
@@ -386,7 +387,7 @@ SHORTNAMES
         shortnames.Add(shortname);
       }
       
-      var paramSfo = MakeParamSfo(pkgId, pkgDesc);
+      var paramSfo = MakeParamSfo(pkgId, pkgDesc, eu);
 
       // Write all the files
       foreach(var song in songs)
@@ -427,7 +428,7 @@ SHORTNAMES
       var identifier = id ?? ("RB" + pkgName + pkgNum);
       var pkgId = eu ? $"EP8802-CUSA02901_00-{identifier}" : $"UP8802-CUSA02084_00-{identifier}";
       var pkgDesc = $"Custom: \"{songs[0].SongData.Name} - {songs[0].SongData.Artist}\"";
-      DLCSongsToGP4(songs, pkgId, desc ?? pkgDesc, buildDir);
+      DLCSongsToGP4(songs, pkgId, desc ?? pkgDesc, buildDir, eu);
     }
 
     public static void ConsToGp4(string conPath, string buildDir, bool eu, string id, string desc)
@@ -456,7 +457,7 @@ SHORTNAMES
         }
       }
       var pkgId = eu ? $"EP8802-CUSA02901_00-{id}" : $"UP8802-CUSA02084_00-{id}";
-      DLCSongsToGP4(songs, pkgId, desc ?? "", buildDir);
+      DLCSongsToGP4(songs, pkgId, desc ?? "", buildDir, eu);
     }
 
     public static void BuildPkg(string proj, string outPath)
