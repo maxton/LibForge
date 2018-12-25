@@ -33,10 +33,16 @@ Verbs:
    - converts a Forge texture to PNG
   mesh2obj <input.fbx...> <output.obj>
    - converts a Forge mesh to OBJ
-  con2gp4 <input_con> <output_dir>
+  con2gp4 [--scee] [--id 16CHARIDENTIFIER] [--desc "Package Description"] <input_con> <output_dir>
    - converts a CON custom to a .gp4 project in the given output directory
-  con2pkg <path_to_pub_cmd.exe> <input_con> <output_dir>
+       --scee : make an EU package
+       --id <16CHARIDENTIFIER> : set the customizable part of the Package ID/Filename
+       --desc "Package Description" : set the description of the package
+  con2pkg [--scee] [--id 16CHARIDENTIFIER] [--desc "Package Description"] <input_con> <output_dir>
    - converts a CON custom to a PS4 PKG custom in the given output directory
+       --scee : make an EU package
+       --id <16CHARIDENTIFIER> : set the customizable part of the Package ID/Filename
+       --desc "Package Description" : set the description of the package
   milo2lipsync <input.milo_xbox> <output.lipsync>
    - converts an uncompressed milo archive to forge lipsync file
 ```
