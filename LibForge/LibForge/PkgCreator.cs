@@ -195,7 +195,7 @@ SHORTNAMES
                     new Property("tempo", new SymbolValue("medium")),
                     new Property("vocal_tonic_note", new LongValue(array.Array("vocal_tonic_note")?.Int(1) ?? 0)),
                     new Property("vocal_track_scroll_duration_ms", new LongValue(array.Array("song_scroll_speed")?.Int(1) ?? 2300)),
-                    new Property("global_tuning_offset", new FloatValue(array.Array("tuning_offset_cents")?.Int(1) ?? 0)),
+                    new Property("global_tuning_offset", new FloatValue(array.Array("tuning_offset_cents")?.Number(1) ?? 0)),
                     new Property("band_fail_sound_event", new SymbolValue("", true)),
                     new Property("vocal_percussion_patch", new ResourcePathValue("fusion/patches/vox_perc_tambourine.fusion", true)),
                     new Property("drum_kit_patch", new ResourcePathValue(drumBank)),
