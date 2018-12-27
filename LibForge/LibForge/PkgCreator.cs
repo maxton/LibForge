@@ -83,7 +83,17 @@ SHORTNAMES
         trackSubArray.AddNode(child);
       }
       var totalTracks = array.Array("song").Array("pans").Array(1).Children.Count;
-      var lastTrack = ((trackSubArray.Children.Last() as DataArray)
+      // Get the last track number. This is based on the assumption that the tracks are in order
+      // We have to filter out empty track arrays because GHtoRB(?) does stuff like (keys ()) instead
+      // of leaving out the keys array entirely
+      var lastTrack = ((trackSubArray.Children.Where(x =>
+        {
+          if(x is DataArray dx)
+          {
+            return dx.Array(1).Children.Count > 0;
+          }
+          return false;
+        }).Last() as DataArray)
         .Array(1).Children.Last() as DataAtom).Int;
       var crowdChannel = array.Array("song").Array("crowd_channels")?.Int(1);
       if (crowdChannel != null)
