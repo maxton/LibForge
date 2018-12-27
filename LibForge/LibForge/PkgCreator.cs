@@ -13,6 +13,7 @@ using LibForge.Midi;
 using LibForge.Milo;
 using LibForge.RBSong;
 using LibForge.SongData;
+using LibOrbisPkg.PFS;
 
 namespace LibForge.Util
 {
@@ -358,6 +359,56 @@ SHORTNAMES
       }
     }
 
+    private static FSFile WriterToFile(string name, Action<Stream> writer)
+    {
+      using (var ms = new MemoryStream())
+      {
+        writer(ms);
+        var bytes = ms.ToArray();
+        return new FSFile(s => s.Write(bytes, 0, bytes.Length), name, bytes.Length);
+      }
+    }
+
+    public static void DLCSongToFsFiles(DLCSong song, FSDir songsDir)
+    {
+      var shortname = song.SongData.Shortname;
+      var songDir = new FSDir() { name = shortname, Parent = songsDir };
+      songsDir.Dirs.Add(songDir);
+      songDir.Files.Add(WriterToFile(
+        $"{shortname}.lipsync_ps4",
+        s => new LipsyncWriter(s).WriteStream(song.Lipsync)));
+      songDir.Files.Add(new FSFile(
+        s => { using (var mogg = song.Mogg.GetStream()) mogg.CopyTo(s); },
+        $"{shortname}.mogg",
+        song.Mogg.Size));
+      var moggFileString = Encoding.Unicode.GetBytes(song.MoggDta.ToFileString());
+      songDir.Files.Add(new FSFile(
+        s => s.Write(moggFileString, 0, moggFileString.Length),
+        $"{shortname}.mogg.dta",
+        moggFileString.Length));
+      var moggSongFileString = Encoding.Unicode.GetBytes(song.MoggSong.ToFileString());
+      songDir.Files.Add(new FSFile(
+        s => s.Write(moggSongFileString, 0, moggSongFileString.Length),
+        $"{shortname}.moggsong",
+        moggSongFileString.Length));
+      songDir.Files.Add(WriterToFile(
+        $"{shortname}.rbmid_ps4",
+        s => RBMidWriter.WriteStream(song.RBMidi, s)));
+      songDir.Files.Add(WriterToFile(
+        $"{shortname}.rbsong",
+        s => new RBSongWriter(s).WriteStream(song.RBSong)));
+      songDir.Files.Add(WriterToFile(
+        $"{shortname}.songdta_ps4",
+        s => SongDataWriter.WriteStream(song.SongData, s)));
+      if (song.SongData.AlbumArt)
+      {
+        songDir.Files.Add(WriterToFile(
+          $"{shortname}.png_ps4",
+          s => Texture.TextureWriter.WriteStream(song.Artwork, s)));
+      }
+      foreach (var f in songDir.Files) f.Parent = songDir;
+    }
+
     /// <summary>
     /// Writes all the songs and creates a Publishing Tools .gp4 project in the given directory
     /// </summary>
@@ -460,6 +511,34 @@ SHORTNAMES
       DLCSongsToGP4(songs, pkgId, desc ?? "", buildDir, eu);
     }
 
+    public static void BuildPkg(List<DLCSong> songs, string contentId, string desc, bool eu, string output, Action<string> logger)
+    {
+      var shortnames = new List<string>(songs.Count);
+      var root = new FSDir();
+      var sys = new FSDir() { name = "sce_sys", Parent = root };
+      root.Dirs.Add(sys);
+      var songsDir = new FSDir() { name = "songs", Parent = root };
+      root.Dirs.Add(songsDir);
+      foreach (var song in songs)
+      {
+        DLCSongToFsFiles(song, songsDir);
+      }
+      var paramSfo = MakeParamSfo(contentId, desc, eu);
+      sys.Files.Add(new FSFile(s => s.Write(paramSfo, 0, paramSfo.Length), "param.sfo", paramSfo.Length) { Parent = sys });
+      using (var of = File.Open(output, FileMode.Create))
+        new LibOrbisPkg.PKG.PkgBuilder(new LibOrbisPkg.PKG.PkgProperties
+        {
+          ContentId = contentId,
+          CreationDate = DateTime.UtcNow,
+          TimeStamp = DateTime.UtcNow,
+          UseCreationTime = true,
+          EntitlementKey = "00000000000000000000000000000000",
+          Passcode = "00000000000000000000000000000000",
+          RootDir = root,
+          VolumeType = LibOrbisPkg.GP4.VolumeType.pkg_ps4_ac_data,
+        }).Write(of, logger);
+    }
+
     public static void BuildPkg(string proj, string outPath)
     {
       using (var projFile = File.OpenRead(proj))
@@ -471,7 +550,9 @@ SHORTNAMES
             $"{project.volume.Package.ContentId}.pkg"),
             FileMode.Create))
         {
-          new LibOrbisPkg.PKG.PkgBuilder(project, Path.GetDirectoryName(proj)).Write(outFile);
+          new LibOrbisPkg.PKG.PkgBuilder(
+            LibOrbisPkg.PKG.PkgProperties.FromGp4(
+            project, Path.GetDirectoryName(proj))).Write(outFile);
         }
       }
     }

@@ -194,6 +194,11 @@ namespace ForgeToolGUI
       if (tabControl1.SelectedTab != null)
         tabControl1.TabPages.Remove(tabControl1.SelectedTab);
     }
+
+    private void convertCONToPKGToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+      OpenTab(new Inspectors.ConversionInspector(), "CON to PKG Conversion");
+    }
   }
   public class ForgeBrowserState
   {

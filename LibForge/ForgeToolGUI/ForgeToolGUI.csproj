@@ -58,6 +58,12 @@
     <Compile Include="ForgeBrowser.Designer.cs">
       <DependentUpon>ForgeBrowser.cs</DependentUpon>
     </Compile>
+    <Compile Include="Inspectors\ConversionInspector.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Inspectors\ConversionInspector.Designer.cs">
+      <DependentUpon>ConversionInspector.cs</DependentUpon>
+    </Compile>
     <Compile Include="Inspectors\RBMidiInspector.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -93,6 +99,9 @@
     </Compile>
     <EmbeddedResource Include="ForgeBrowser.resx">
       <DependentUpon>ForgeBrowser.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Inspectors\ConversionInspector.resx">
+      <DependentUpon>ConversionInspector.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Inspectors\RBMidiInspector.resx">
       <DependentUpon>RBMidiInspector.cs</DependentUpon>
