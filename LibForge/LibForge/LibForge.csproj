@@ -66,6 +66,7 @@
     <Compile Include="Mesh\HxMeshConverter.cs" />
     <Compile Include="Mesh\HxMeshReader.cs" />
     <Compile Include="Mesh\HxMeshWriter.cs" />
+    <Compile Include="Meta.cs" />
     <Compile Include="Midi\MidiHelper.cs" />
     <Compile Include="Midi\RBMid.cs" />
     <Compile Include="Midi\RBMidConverter.cs" />

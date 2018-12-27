@@ -26,9 +26,21 @@ namespace ForgeToolGUI.Inspectors
       {
         if(ofd.ShowDialog() == DialogResult.OK)
         {
-          if(LoadCon(ofd.FileName))
+          try
           {
-            selectedFileLabel.Text = ofd.FileName;
+            if (LoadCon(ofd.FileName))
+            {
+              selectedFileLabel.Text = ofd.FileName;
+            }
+          }
+          catch(Exception ex)
+          {
+            new ErrorWindow(
+              "Oops! Couldn't load that CON!"+Environment.NewLine
+              +"LibForge version: " + LibForge.Meta.BuildString+Environment.NewLine
+              +"Error: " + ex.Message,
+              "Error Parsing CON",
+              "Stack Trace: " + ex.StackTrace).ShowDialog(this);
           }
         }
       }
