@@ -44,9 +44,8 @@ namespace ForgeToolGUI.Inspectors
       }
       var songs = PkgCreator.ConvertDLCPackage(con.RootDirectory.GetDirectory("songs"));
 
-      var shortname = songs[0].SongData.Shortname;
-      var pkgName = new Regex("[^a-zA-Z0-9]").Replace(shortname, "")
-        .ToUpper().Substring(0, Math.Min(shortname.Length, 10)).PadRight(10, 'X');
+      var shortname = new Regex("[^a-zA-Z0-9]").Replace(songs[0].SongData.Shortname, "");
+      var pkgName = shortname.ToUpper().Substring(0, Math.Min(shortname.Length, 10)).PadRight(10, 'X');
       string pkgNum = (songs[0].SongData.SongId % 10000).ToString().PadLeft(4, '0');
       idBox.Text ="CU" + pkgName + pkgNum;
       descriptionBox.Text = $"Custom: \"{songs[0].SongData.Name} - {songs[0].SongData.Artist}\"";
