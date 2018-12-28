@@ -40,10 +40,10 @@
       this.closePackageMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
       this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-      this.tabControl1 = new System.Windows.Forms.TabControl();
-      this.splitContainer1 = new System.Windows.Forms.SplitContainer();
       this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       this.convertCONToPKGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+      this.tabControl1 = new System.Windows.Forms.TabControl();
+      this.splitContainer1 = new System.Windows.Forms.SplitContainer();
       this.menuStrip1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
       this.splitContainer1.Panel1.SuspendLayout();
@@ -147,6 +147,21 @@
       this.exitToolStripMenuItem.Text = "E&xit";
       this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
       // 
+      // toolsToolStripMenuItem
+      // 
+      this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.convertCONToPKGToolStripMenuItem});
+      this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
+      this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+      this.toolsToolStripMenuItem.Text = "&Tools";
+      // 
+      // convertCONToPKGToolStripMenuItem
+      // 
+      this.convertCONToPKGToolStripMenuItem.Name = "convertCONToPKGToolStripMenuItem";
+      this.convertCONToPKGToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+      this.convertCONToPKGToolStripMenuItem.Text = "Convert CON to PKG";
+      this.convertCONToPKGToolStripMenuItem.Click += new System.EventHandler(this.convertCONToPKGToolStripMenuItem_Click);
+      // 
       // tabControl1
       // 
       this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -177,21 +192,6 @@
       this.splitContainer1.SplitterWidth = 8;
       this.splitContainer1.TabIndex = 4;
       // 
-      // toolsToolStripMenuItem
-      // 
-      this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.convertCONToPKGToolStripMenuItem});
-      this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-      this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
-      this.toolsToolStripMenuItem.Text = "&Tools";
-      // 
-      // convertCONToPKGToolStripMenuItem
-      // 
-      this.convertCONToPKGToolStripMenuItem.Name = "convertCONToPKGToolStripMenuItem";
-      this.convertCONToPKGToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
-      this.convertCONToPKGToolStripMenuItem.Text = "Convert CON to PKG";
-      this.convertCONToPKGToolStripMenuItem.Click += new System.EventHandler(this.convertCONToPKGToolStripMenuItem_Click);
-      // 
       // ForgeBrowser
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -204,7 +204,7 @@
       this.MainMenuStrip = this.menuStrip1;
       this.MinimumSize = new System.Drawing.Size(828, 542);
       this.Name = "ForgeBrowser";
-      this.Text = "Forge Browser";
+      this.Text = "ForgeToolGUI";
       this.menuStrip1.ResumeLayout(false);
       this.menuStrip1.PerformLayout();
       this.splitContainer1.Panel1.ResumeLayout(false);

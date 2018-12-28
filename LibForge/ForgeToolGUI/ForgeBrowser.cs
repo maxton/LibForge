@@ -22,6 +22,7 @@ namespace ForgeToolGUI
     {
       state = new ForgeBrowserState();
       InitializeComponent();
+      Text = $"ForgeToolGUI (LibForge v{LibForge.Meta.BuildString})";
     }
 
     private void LoadPackage(string filename)
