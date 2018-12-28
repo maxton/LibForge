@@ -386,12 +386,12 @@ SHORTNAMES
         s => { using (var mogg = song.Mogg.GetStream()) mogg.CopyTo(s); },
         $"{shortname}.mogg",
         song.Mogg.Size));
-      var moggFileString = Encoding.Unicode.GetBytes(song.MoggDta.ToFileString());
+      var moggFileString = Encoding.UTF8.GetBytes(song.MoggDta.ToFileString());
       songDir.Files.Add(new FSFile(
         s => s.Write(moggFileString, 0, moggFileString.Length),
         $"{shortname}.mogg.dta",
         moggFileString.Length));
-      var moggSongFileString = Encoding.Unicode.GetBytes(song.MoggSong.ToFileString());
+      var moggSongFileString = Encoding.UTF8.GetBytes(song.MoggSong.ToFileString());
       songDir.Files.Add(new FSFile(
         s => s.Write(moggSongFileString, 0, moggSongFileString.Length),
         $"{shortname}.moggsong",
