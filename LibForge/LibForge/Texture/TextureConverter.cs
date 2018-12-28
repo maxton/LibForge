@@ -241,7 +241,7 @@ namespace LibForge.Texture
       s.Position = 32;
       if(width == 512)
       {
-        s.Position += (512 * 512);
+        s.Position += (512 * 512) / (version == 0x010818 ? 1 : 2);
         width = 256;
         height = 256;
       }
@@ -249,16 +249,20 @@ namespace LibForge.Texture
       {
         throw new Exception("Texture was not 512x512 or 256x256");
       }
-      var mipmaps = new Texture.Mipmap[7];
-      for(var i = 0; i < mipmaps.Length; i++)
+      var mipmaps = new List<Texture.Mipmap>();
+      for(var i = 0; i < 7; i++)
       {
-        var m = mipmaps[i] = new Texture.Mipmap
+        var m = new Texture.Mipmap
         {
           Width = width,
           Height = height,
           Data = new byte[width * height / 2]
         };
         var bytes = s.ReadBytes(width * height / (version == 0x010818 ? 1 : 2));
+        if(bytes.Length == 0)
+        {
+          break;
+        }
         for (int x = (version == 0x010818 ? 0 : -8), y = 0; y < m.Data.Length; x += (version == 0x010818 ? 16 : 8))
         {
           m.Data[y] = bytes[x + 9];
@@ -273,13 +277,14 @@ namespace LibForge.Texture
         }
         width /= 2;
         height /= 2;
+        mipmaps.Add(m);
       }
       return new Texture
       {
         HeaderData = HeaderData256x256,
         FooterData = FooterData256x256,
         Version = 6,
-        Mipmaps = mipmaps
+        Mipmaps = mipmaps.ToArray()
       };
     }
 
