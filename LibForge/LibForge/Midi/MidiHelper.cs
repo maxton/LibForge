@@ -43,7 +43,7 @@ namespace LibForge.Midi
         var time = tempo.Time + ((ticks - tempo.Tick) / 480.0) * (60 / tempo.BPM);
         switch (msg)
         {
-          case NoteOnEvent e:
+          case NoteOnEvent e when e.Velocity != 0:
             {
               var note = new MidiNote
               {
@@ -56,6 +56,13 @@ namespace LibForge.Midi
               };
               notesOn[e.Channel << 8 | e.Key] = note;
               items.Add(note);
+            }
+            break;
+          case NoteOnEvent e when e.Velocity == 0:
+            {
+              var note = notesOn[e.Channel << 8 | e.Key];
+              note.Length = time - note.StartTime;
+              note.LengthTicks = ticks - note.StartTicks;
             }
             break;
           case NoteOffEvent e:
