@@ -27,7 +27,17 @@ namespace ForgeToolGUI
     private void LoadPackage(string filename)
     {
       if (state.Loaded) Unload();
-      state.pkg = GameArchives.PackageReader.ReadPackageFromFile(GameArchives.Util.LocalFile(filename));
+      var pkgFile = GameArchives.Util.LocalFile(filename);
+      var contentId = "";
+      using (var tempS = pkgFile.GetStream())
+      {
+        var hdr = new LibOrbisPkg.PKG.PkgReader(tempS).ReadHeader();
+        contentId = hdr.content_id;
+      }
+      state.pkg = GameArchives.PackageReader.ReadPackageFromFile(pkgFile,
+        new string(LibOrbisPkg.Util.Crypto.ComputeKeys(
+          contentId, "00000000000000000000000000000000", 1)
+          .Select(b => (char)b).ToArray()));
       if(state.pkg is GameArchives.PFS.PFSPackage)
       {
         if(state.pkg.RootDirectory.TryGetFile("pfs_image.dat", out var f))
