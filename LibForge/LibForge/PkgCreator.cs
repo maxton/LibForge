@@ -455,6 +455,19 @@ SHORTNAMES
     }
 
     /// <summary>
+    /// Generates a 16-char ID for a PKG
+    /// </summary>
+    /// <param name="song">Song to use for generation</param>
+    /// <returns>16 char id</returns>
+    public static string GenId(DLCSong song)
+    {
+      var shortname = new Regex("[^a-zA-Z0-9]").Replace(song.SongData.Shortname, "");
+      var pkgName = shortname.ToUpper().Substring(0, Math.Min(shortname.Length, 10)).PadRight(10, 'X');
+      string pkgNum = (song.SongData.SongId % 10000).ToString().PadLeft(4, '0');
+      return "CU" + pkgName + pkgNum;
+    }
+
+    /// <summary>
     /// Does the whole process of converting a CON to a GP4 project
     /// </summary>
     /// <param name="conPath">Path to CON file</param>
@@ -477,11 +490,7 @@ SHORTNAMES
           throw new Exception("You must provide a 16 char ID if you are building a custom package with multiple songs");
         }
       }
-      var shortname = songs[0].SongData.Shortname;
-      var pkgName = new Regex("[^a-zA-Z0-9]").Replace(shortname, "")
-        .ToUpper().Substring(0, Math.Min(shortname.Length, 10)).PadRight(10, 'X');
-      string pkgNum = (songs[0].SongData.SongId % 10000).ToString().PadLeft(4, '0');
-      var identifier = id ?? ("RB" + pkgName + pkgNum);
+      var identifier = id ?? GenId(songs[0]);
       var pkgId = eu ? $"EP8802-CUSA02901_00-{identifier}" : $"UP8802-CUSA02084_00-{identifier}";
       var pkgDesc = $"Custom: \"{songs[0].SongData.Name} - {songs[0].SongData.Artist}\"";
       DLCSongsToGP4(songs, pkgId, desc ?? pkgDesc, buildDir, eu);
