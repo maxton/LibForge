@@ -24,15 +24,37 @@ namespace LibForge.Milo
       long startingOffset = stream.Position; // You might not be starting at 0x0
       var structureType = (BlockStructure)stream.ReadUInt32LE();
 
-      if (structureType != BlockStructure.MILO_A)
+      if (!(structureType == BlockStructure.MILO_A || structureType == BlockStructure.MILO_D))
         throw new Exception("Unsupported milo compression");
 
       int offset = stream.ReadInt32LE(); // Start of blocks
       int blockCount = stream.ReadInt32LE();
-      int maxBlockSize = stream.ReadInt32LE(); // Skips max uncompressed size
+      stream.Seek(4, SeekOrigin.Current); // Skips max uncompressed size
 
       // Reads block sizes
-      int totalSize = Enumerable.Range(0, blockCount).Select(x => stream.ReadInt32LE()).Sum();
+      int totalSize;
+      if (structureType == BlockStructure.MILO_A)
+      {
+        totalSize = Enumerable.Range(0, blockCount)
+          .Select(x => stream.ReadInt32LE())
+          .Sum();
+      }
+      else // Milo_D
+      {
+        // TODO: Implement zlib block inflation
+        totalSize = Enumerable.Range(0, blockCount)
+          .Select(x =>
+          {
+            var blockSize = stream.ReadInt32LE();
+            var compressed = (blockSize & 0x01_00_00_00) == 0;
+            
+            if (compressed)
+              throw new NotImplementedException("Zlib block inflation not implemented yet");
+          
+            return blockSize & 0xFF_FF_FF;
+          })
+          .Sum();
+      }
 
       // Jumps to first block offset
       stream.Position = startingOffset + offset;
@@ -50,8 +72,8 @@ namespace LibForge.Milo
     {
       int version = stream.ReadInt32BE();
 
-      if (version != 28)
-        throw new Exception("Unsupported milo directory version");
+      if (!(version == 25 || version == 28)) // RBN1 and RBN2 milos
+        throw new NotSupportedException($"Milo directory version of {version} is not supported");
 
       string dirType = stream.ReadLengthUTF8(true), dirName = stream.ReadLengthUTF8(true);
       MiloFile milo = new MiloFile(dirType, dirName);
