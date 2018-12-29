@@ -296,7 +296,15 @@ SHORTNAMES
       Texture.Texture artwork = null;
       if (songData.AlbumArt)
       {
-        artwork = Texture.TextureConverter.MiloPngToTexture(songRoot.GetFileAtPath(artPath).GetStream());
+        try
+        {
+          artwork = Texture.TextureConverter.MiloPngToTexture(songRoot.GetFileAtPath(artPath).GetStream());
+        }
+        catch(Exception e)
+        {
+          warner?.Invoke("Failed to convert texture: "+e.Message);
+          songData.AlbumArt = false;
+        }
       }
       return new DLCSong
       {
