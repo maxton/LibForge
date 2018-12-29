@@ -81,12 +81,14 @@ namespace LibForge.Lipsync
         return data;
       }
 
+      // Calculates max interlaced frames
       int max = lips.Count;
       while (max > 0)
       {
-        if (lips[max - 1]
-          .Frames[fo]
-          .Events.Count > 0)
+        if (fo < lips[max - 1].Frames.Length
+          && lips[max - 1]
+            .Frames[fo]
+            .Events.Count > 0)
           break;
 
         max--;
