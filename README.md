@@ -6,7 +6,7 @@ I am working out the structure of the files in Rock Band 4. These are being docu
 
 # Latest Build
 
-Can be downloaded at [Appveyor](https://ci.appveyor.com/project/maxton/libforge/build/artifacts)
+Can be downloaded at [Appveyor](https://ci.appveyor.com/project/maxton/libforge/branch/master/artifacts)
 
 # LibForge
 
