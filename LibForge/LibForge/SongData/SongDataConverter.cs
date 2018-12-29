@@ -12,6 +12,8 @@ namespace LibForge.SongData
     {
       var songId = songDta.Array("song_id");
       var art = songDta.Array("album_art").Any(1);
+      var shortName = "CU_" + songDta.Array("song").Array("name").String(1).Split('/').Last();
+      var songIdNum = (shortName.GetHashCode() & 0xFFFFFF) + 90000000;
       return new SongData
       {
         AlbumArt = art == "1" || art == "TRUE",
@@ -40,8 +42,8 @@ namespace LibForge.SongData
         Version = -1,
         VocalGender = (byte)((songDta.Array("vocal_gender")?.Any(1) ?? "male") == "male" ? 1 : 2),
         VocalParts = songDta.Array("song").Array("vocal_parts")?.Int(1) ?? 1,
-        Shortname = songDta.Array("song").Array("name").String(1).Split('/').Last(),
-        SongId = (uint)(songId.Children[1].Type == DataType.INT ? songId.Int(1) : songId.Any(1).GetHashCode()),
+        Shortname = shortName.ToLowerInvariant(),
+        SongId = (uint)songIdNum,
         SongLength = songDta.Array("song_length").Int(1),
         PreviewStart = songDta.Array("preview").Int(1),
         PreviewEnd = songDta.Array("preview").Int(2),

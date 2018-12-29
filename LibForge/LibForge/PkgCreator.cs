@@ -80,7 +80,8 @@ SHORTNAMES
       var trackSubArray = trackArray.AddNode(new DataArray());
       foreach (var child in array.Array("song").Array("tracks").Array(1).Children)
       {
-        trackSubArray.AddNode(child);
+        if(child is DataArray a && a.Children[1] is DataArray b && b.Count > 0)
+          trackSubArray.AddNode(child);
       }
       var totalTracks = array.Array("song").Array("pans").Array(1).Children.Count;
       // Get the last track number. This is based on the assumption that the tracks are in order
@@ -303,7 +304,7 @@ SHORTNAMES
         Lipsync = LipsyncConverter.FromMilo(milo),
         Mogg = songRoot.GetFile(shortname + ".mogg"),
         MoggDta = MakeMoggDta(songDta),
-        MoggSong = DTX.FromDtaString($"(mogg_path \"{shortname}.mogg\")\r\n(midi_path \"{shortname}.rbmid\")\r\n"),
+        MoggSong = DTX.FromDtaString($"(mogg_path \"{songData.Shortname}.mogg\")\r\n(midi_path \"{songData.Shortname}.rbmid\")\r\n"),
         RBMidi = RBMidConverter.ToRBMid(mid, hopoThreshold),
         Artwork = artwork,
         RBSong = MakeRBSong(songDta)
@@ -462,9 +463,9 @@ SHORTNAMES
     public static string GenId(DLCSong song)
     {
       var shortname = new Regex("[^a-zA-Z0-9]").Replace(song.SongData.Shortname, "");
-      var pkgName = shortname.ToUpper().Substring(0, Math.Min(shortname.Length, 10)).PadRight(10, 'X');
+      var pkgName = shortname.ToUpper().Substring(0, Math.Min(shortname.Length, 12)).PadRight(12, 'X');
       string pkgNum = (song.SongData.SongId % 10000).ToString().PadLeft(4, '0');
-      return "CU" + pkgName + pkgNum;
+      return pkgName + pkgNum;
     }
 
     /// <summary>
