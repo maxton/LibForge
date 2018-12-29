@@ -848,7 +848,7 @@ namespace LibForge.Midi
             case MidiText e:
               var regex = new System.Text.RegularExpressions.Regex("\\[map (HandMap_[A-Za-z_2]+)\\]");
               var match = regex.Match(e.Text);
-              if (match.Success)
+              if (match.Success && HandMaps.ContainsKey(match.Groups[1].Value))
               {
                 var mapType = HandMaps[match.Groups[1].Value];
                 maps.Add(new RBMid.MAP
@@ -860,7 +860,7 @@ namespace LibForge.Midi
               }
               regex = new System.Text.RegularExpressions.Regex("\\[map (StrumMap_[A-Za-z]+)\\]");
               match = regex.Match(e.Text);
-              if(match.Success)
+              if(match.Success && StrumMaps.ContainsKey(match.Groups[1].Value))
               {
                 var mapType = StrumMaps[match.Groups[1].Value];
                 strummaps.Add(new RBMid.MAP
