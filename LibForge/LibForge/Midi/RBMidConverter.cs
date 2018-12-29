@@ -7,9 +7,9 @@ namespace LibForge.Midi
 {
   public class RBMidConverter
   {
-    public static RBMid ToRBMid(MidiFile mf, int hopoThreshold = 170)
+    public static RBMid ToRBMid(MidiFile mf, int hopoThreshold = 170, Action<string> warner = null)
     {
-      return new MidiConverter(mf, hopoThreshold).ToRBMid();
+      return new MidiConverter(mf, hopoThreshold, warner).ToRBMid();
     }
     public static MidiFile ToMid(RBMid m)
     {
@@ -19,6 +19,11 @@ namespace LibForge.Midi
     public class MidiConverter
     {
       private MidiFile mf;
+      private Action<string> warnAction;
+      private void Warn(string msg)
+      {
+        warnAction?.Invoke(msg);
+      }
       private RBMid rb;
       private List<MidiTrackProcessed> processedTracks;
 
@@ -54,9 +59,10 @@ namespace LibForge.Midi
       private List<uint> MeasureTicks = new List<uint>() { 0U };
       private IList<TimeSigTempoEvent> TempoMap;
 
-      public MidiConverter(MidiFile mf, int hopoThreshold = 170)
+      public MidiConverter(MidiFile mf, int hopoThreshold = 170, Action<string> warnAction = null)
       {
         this.mf = mf;
+        this.warnAction = warnAction;
         this.hopoThreshold = hopoThreshold;
         processedTracks = new MidiHelper().ProcessTracks(mf);
         trackHandlers = new Dictionary<string, Action<MidiTrackProcessed>>
@@ -502,7 +508,7 @@ namespace LibForge.Midi
               }
               else
               {
-                throw new Exception($"Unhandled midi note {e.Key} in drum track at time {e.StartTime}");
+                Warn($"Unhandled midi note {e.Key} in drum track at time {e.StartTime}");
               }
               break;
             case MidiText e:

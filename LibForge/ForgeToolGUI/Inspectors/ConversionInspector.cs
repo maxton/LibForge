@@ -86,7 +86,7 @@ namespace ForgeToolGUI.Inspectors
         {
           Action<string> log = x => logBox.AppendText(x + Environment.NewLine);
           log("Converting DLC files...");
-          var songs = PkgCreator.ConvertDLCPackage(con.RootDirectory.GetDirectory("songs"));
+          var songs = PkgCreator.ConvertDLCPackage(con.RootDirectory.GetDirectory("songs"), s => log("Warning: " + s));
           log("Building PKG...");
           PkgCreator.BuildPkg(songs, contentIdTextBox.Text, descriptionBox.Text, euCheckBox.Checked, sfd.FileName, log);
         }

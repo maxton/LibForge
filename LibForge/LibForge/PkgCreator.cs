@@ -276,7 +276,7 @@ SHORTNAMES
       };
     }
 
-    public static DLCSong ConvertDLCSong(DataArray songDta, GameArchives.IDirectory songRoot)
+    public static DLCSong ConvertDLCSong(DataArray songDta, GameArchives.IDirectory songRoot, Action<string> warner)
     {
       var path = songDta.Array("song").Array("name").String(1);
       var hopoThreshold = songDta.Array("song").Array("hopo_threshold")?.Int(1) ?? 170;
@@ -305,7 +305,7 @@ SHORTNAMES
         Mogg = songRoot.GetFile(shortname + ".mogg"),
         MoggDta = MakeMoggDta(songDta),
         MoggSong = DTX.FromDtaString($"(mogg_path \"{songData.Shortname}.mogg\")\r\n(midi_path \"{songData.Shortname}.rbmid\")\r\n"),
-        RBMidi = RBMidConverter.ToRBMid(mid, hopoThreshold),
+        RBMidi = RBMidConverter.ToRBMid(mid, hopoThreshold, warner),
         Artwork = artwork,
         RBSong = MakeRBSong(songDta)
       };
@@ -316,7 +316,7 @@ SHORTNAMES
     /// </summary>
     /// <param name="dlcRoot"></param>
     /// <returns></returns>
-    public static List<DLCSong> ConvertDLCPackage(GameArchives.IDirectory dlcRoot)
+    public static List<DLCSong> ConvertDLCPackage(GameArchives.IDirectory dlcRoot, Action<string> warner = null)
     {
       var dlcSongs = new List<DLCSong>();
       var dta = DTX.FromPlainTextBytes(dlcRoot.GetFile("songs.dta").GetBytes());
@@ -324,7 +324,7 @@ SHORTNAMES
       for(int i = 0; i < dta.Count; i++)
       {
         arr = dta.Array(i);
-        dlcSongs.Add(ConvertDLCSong(arr, dlcRoot.GetDirectory(arr.Array("song").Array("name").String(1).Split('/').Last())));
+        dlcSongs.Add(ConvertDLCSong(arr, dlcRoot.GetDirectory(arr.Array("song").Array("name").String(1).Split('/').Last()), warner));
       }
       return dlcSongs;
     }
