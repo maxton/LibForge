@@ -548,18 +548,18 @@ SHORTNAMES
       }
       var paramSfo = MakeParamSfo(contentId, desc, eu);
       sys.Files.Add(new FSFile(s => s.Write(paramSfo, 0, paramSfo.Length), "param.sfo", paramSfo.Length) { Parent = sys });
-      using (var of = File.Open(output, FileMode.Create))
-        new LibOrbisPkg.PKG.PkgBuilder(new LibOrbisPkg.PKG.PkgProperties
-        {
-          ContentId = contentId,
-          CreationDate = DateTime.UtcNow,
-          TimeStamp = DateTime.UtcNow,
-          UseCreationTime = true,
-          EntitlementKey = "00000000000000000000000000000000",
-          Passcode = "00000000000000000000000000000000",
-          RootDir = root,
-          VolumeType = LibOrbisPkg.GP4.VolumeType.pkg_ps4_ac_data,
-        }).Write(of, logger);
+      new LibOrbisPkg.PKG.PkgBuilder(new LibOrbisPkg.PKG.PkgProperties
+      {
+        ContentId = contentId,
+        CreationDate = DateTime.UtcNow,
+        TimeStamp = DateTime.UtcNow,
+        UseCreationTime = true,
+        EntitlementKey = "00000000000000000000000000000000",
+        Passcode = "00000000000000000000000000000000",
+        RootDir = root,
+        VolumeType = LibOrbisPkg.GP4.VolumeType.pkg_ps4_ac_data,
+      }).Write(output, logger);
+      logger("Done!");
     }
 
     public static void BuildPkg(string proj, string outPath)
