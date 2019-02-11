@@ -30,6 +30,25 @@ build:
 after_build:
  - >
    7z a LibForge-%APPVEYOR_BUILD_VERSION%.zip 
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\LibForge.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\MidiCS.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\GameArchives.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\LibOrbisPkg.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\DtxCS.dll
+   %APPVEYOR_BUILD_FOLDER%\README.md
+   %APPVEYOR_BUILD_FOLDER%\LICENSE.txt
+ - >
+   7z a ForgeTool-%APPVEYOR_BUILD_VERSION%.zip 
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\ForgeTool.exe
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\LibForge.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\MidiCS.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\GameArchives.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\LibOrbisPkg.dll
+   %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeToolGUI\bin\Release\DtxCS.dll
+   %APPVEYOR_BUILD_FOLDER%\README.md
+   %APPVEYOR_BUILD_FOLDER%\LICENSE.txt
+ - >
+   7z a ForgeToolGUI-%APPVEYOR_BUILD_VERSION%.zip 
    %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\ForgeTool.exe
    %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\LibForge.dll
    %APPVEYOR_BUILD_FOLDER%\LibForge\ForgeTool\bin\Release\MidiCS.dll
@@ -43,3 +62,5 @@ after_build:
    %APPVEYOR_BUILD_FOLDER%\LICENSE.txt
 artifacts:
 - path: LibForge-%APPVEYOR_BUILD_VERSION%.zip
+- path: ForgeTool-%APPVEYOR_BUILD_VERSION%.zip
+- path: ForgeToolGUI-%APPVEYOR_BUILD_VERSION%.zip
