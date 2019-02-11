@@ -16,17 +16,39 @@ namespace LibForge.Mesh
     public HxMeshReader(Stream s) : base(s)
     {
     }
-
+    const int kMeshFileVersion = 0xF; // 0xE in blu-ray version
     public override HxMesh Read()
     {
       // Note: the string doesn't have a null terminator
       Check(String(9), "HXMESH\r\n");
+      // This appears to be used to verify endianness
       Check(Int(), 1);
-      var unk1 = Int();
-      var unk2 = Int();
+      var version = Int();
+      if (version > kMeshFileVersion)
+        throw new Exception($"Unknown mesh version 0x{version:X}");
+      var vertexType = Int();
       var numVerts = UInt();
       var numTris = UInt();
-      s.Position = 0x2D;
+      if(version >= 0xC)
+      {
+        var unkFlag1 = Bool();
+        var unkFlag2 = Bool();
+        if (version >= 0xD)
+        {
+          var unkFlag3 = Bool();
+          var unkFlag4 = Bool();
+        }
+      }
+      if(version >= 0x3)
+      {
+        var keepMeshData = Bool();
+      }
+      var vertexUsageFlags = UInt();
+      var faceUsageFlags = UInt();
+      if (version > 0xA)
+      {
+        var unk = UInt();
+      }
       return new HxMesh
       {
         Unknown1 = Float(),
@@ -37,12 +59,11 @@ namespace LibForge.Mesh
         {
           X = Float(),
           Y = Float(),
-          //Z = Float().Then(Skip(unk2 == 7 ? 52 : 40))
-          Z = Float().Then(Skip(32)),
+          Z = Float().Then(Skip(32)), // TODO: what are these bytes
           U1 = Half(),
           V1 = Half(),
           U2 = Half(),
-          V2 = Half().Then(Skip(unk2 == 7 ? 12 : 0))
+          V2 = Half().Then(Skip(vertexType == 7 ? 12 : 0)) // TODO: what are these bytes
         }, numVerts),
         Triangles = FixedArr(() => new HxMesh.Triangle
         {

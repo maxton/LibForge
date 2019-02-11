@@ -40,6 +40,12 @@
     <Reference Include="MidiCS">
       <HintPath>..\..\Dependencies\MidiCS.dll</HintPath>
     </Reference>
+    <Reference Include="OpenTK, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.3.0.1\lib\net20\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.GLControl, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.GLControl.3.0.1\lib\net20\OpenTK.GLControl.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -69,6 +75,12 @@
     </Compile>
     <Compile Include="Inspectors\ConversionInspector.Designer.cs">
       <DependentUpon>ConversionInspector.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Inspectors\MeshInspector.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Inspectors\MeshInspector.Designer.cs">
+      <DependentUpon>MeshInspector.cs</DependentUpon>
     </Compile>
     <Compile Include="Inspectors\RBMidiInspector.cs">
       <SubType>UserControl</SubType>
@@ -112,6 +124,9 @@
     <EmbeddedResource Include="Inspectors\ConversionInspector.resx">
       <DependentUpon>ConversionInspector.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Inspectors\MeshInspector.resx">
+      <DependentUpon>MeshInspector.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Inspectors\RBMidiInspector.resx">
       <DependentUpon>RBMidiInspector.cs</DependentUpon>
     </EmbeddedResource>
@@ -136,6 +151,8 @@
     <EmbeddedResource Include="Inspectors\SongDataInspector.resx">
       <DependentUpon>SongDataInspector.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="OpenTK.dll.config" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

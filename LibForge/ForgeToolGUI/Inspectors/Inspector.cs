@@ -31,6 +31,8 @@ namespace ForgeToolGUI
           return new SongDataInspector(d);
         case RBMid m:
           return new RBMidiInspector(m);
+        case HxMesh m:
+          return new MeshInspector(m);
         case object o:
           return new ObjectInspector(obj);
       }
@@ -88,8 +90,7 @@ namespace ForgeToolGUI
       {
         using (var s = i.GetStream())
         {
-          var mesh = HxMeshReader.ReadStream(s);
-          return HxMeshConverter.ToObj(mesh);
+          return HxMeshReader.ReadStream(s);
         }
       }
       else if (i.Name.Contains(".rbmid_"))

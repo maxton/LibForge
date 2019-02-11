@@ -7,7 +7,7 @@ namespace LibForge.Mesh
 {
   public class HxMesh
   {
-    public class Point
+    public struct Point
     {
       public float X, Y, Z;
 

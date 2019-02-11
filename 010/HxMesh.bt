@@ -10,11 +10,12 @@
 //  ID Bytes: 
 //   History: 
 //------------------------------------------------
+LittleEndian();
 typedef struct {
     float x;
     float y;
     float z;
-
+    
     int unk;
     int unk;
     int unk;
@@ -31,7 +32,7 @@ typedef struct {
     hfloat v1;
     hfloat u2;
     hfloat v2;
-    if(points_size2 == 7){
+    if(vertexType == 7){
         short unk;
         short unk;
         int unk;
@@ -44,20 +45,22 @@ typedef struct {
 } Triangle;
 
 char ID[8];
+int endian;
 int version;
-int points_size;
-int points_size2;
+int vertexType;
 
 int num_verts;
 int num_tris;
-int unk;
-int unk;
-int unk;
-byte unk;
-int unk;
-float unk;
-float unk;
-float unk;
-float unk;
+if(version > 0xC)
+    char bools[2];
+if(version > 0xD)
+    char bools_2[2];
+if(version > 3)
+    char keepMeshData;
+uint vertexUsageFlags;
+uint faceUsageFlags;
+if(version > 0xA)
+    uint unk;
+float unkFloats[4];
 Point vertices[num_verts];
 Triangle tris[num_tris];
