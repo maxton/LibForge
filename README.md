@@ -51,7 +51,7 @@ Verbs:
 
 This has an ark/PFS/folder browser with support for previewing the following:
   - Textures (.png_pc, .png_ps4, .bmp_pc, .bmp_ps4, etc)
-  - Models (not a 3d preview, but you can see the vertices / UVs / faces)
+  - Models (a 3d preview with optional wireframe)
   - .songdta files
   - Data (.dta/.dtb/.\*\_dta\_\*/.moggsong) files
   - RBmid files
