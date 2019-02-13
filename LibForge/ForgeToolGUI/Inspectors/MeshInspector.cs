@@ -17,12 +17,13 @@ namespace ForgeToolGUI
     private HxMesh mesh;
     private const int vertexSize = 7 * 4; // x,y,z, u1,v1, u2,v2
     private HxMesh.Point[] points;
-    float maxPoint = 0;
+    float scaleFactor = 0;
     private float xOff = 0, yOff = 0, zOff = 0;
-    private bool drag = false;
+    private DragState drag = DragState.None;
     private Point startDrag;
     public MeshInspector(HxMesh mesh)
     {
+      float maxPoint = 0;
       this.mesh = mesh;
       points = new HxMesh.Point[mesh.Triangles.Length * 3];
       for(int i = 0; i < mesh.Triangles.Length; i++)
@@ -34,7 +35,10 @@ namespace ForgeToolGUI
         if (points[i * 3].Y > maxPoint) maxPoint = points[i * 3].Y;
         if (points[i * 3].Z > maxPoint) maxPoint = points[i * 3].Z;
       }
+      scaleFactor = 1 / maxPoint;
       InitializeComponent();
+      trisLabel.Text = $"Tris: {mesh.Triangles.Length}";
+      vertsLabel.Text = $"Verts: {mesh.Points.Length}";
       glControl1.MouseWheel += GlControl1_MouseWheel;
     }
 
@@ -63,11 +67,15 @@ namespace ForgeToolGUI
 
     private void glControl1_Paint(object sender, PaintEventArgs e)
     {
+      label1.Text = $"Position: {xOff:0.00}, {yOff:0.00}, {-1 + zOff:0.00}   Scale: {scaleFactor:0.000}";
       glControl1.MakeCurrent();
       GL.ClearColor(Color.DimGray);
       GL.Clear(ClearBufferMask.ColorBufferBit);
 
-      projectionMatrix.Matrix = Matrix4.CreateScale(1.0f / maxPoint);
+      GL.PolygonMode(MaterialFace.FrontAndBack, 
+        checkBox1.Checked ? PolygonMode.Line : PolygonMode.Fill);
+
+      projectionMatrix.Matrix = Matrix4.CreateScale(scaleFactor);
       projectionMatrix.Matrix *= Matrix4.CreateTranslation(xOff, yOff, -1 + zOff);
       projectionMatrix.Matrix *= Matrix4.CreatePerspectiveFieldOfView(
         MathHelper.PiOver2, 1f * glControl1.ClientSize.Width / glControl1.ClientSize.Height, 0.1f, 100f);
@@ -132,28 +140,63 @@ void main()
 
     private void glControl1_MouseDown(object sender, MouseEventArgs e)
     {
-      drag = true;
+      switch (e.Button)
+      {
+        case MouseButtons.Left:
+          drag = DragState.Pan;
+          break;
+        case MouseButtons.None:
+          drag = DragState.None;
+          break;
+        case MouseButtons.Right:
+          drag = DragState.Zoom;
+          break;
+        case MouseButtons.Middle:
+          drag = DragState.Rotate;
+          break;
+        default:
+          break;
+      }
       startDrag = e.Location;
     }
 
     private void glControl1_MouseLeave(object sender, EventArgs e)
     {
-      drag = false;
+      drag = DragState.None;
     }
 
     private void glControl1_MouseUp(object sender, MouseEventArgs e)
     {
-      drag = false;
+      drag = DragState.None;
     }
 
     private void glControl1_MouseMove(object sender, MouseEventArgs e)
     {
-      if (!drag) return;
+      if (drag == DragState.None) return;
       var dragDiffX = e.Location.X - startDrag.X;
       var dragDiffY = e.Location.Y - startDrag.Y;
-      xOff += dragDiffX * 0.005f;
-      yOff -= dragDiffY * 0.005f;
+      switch (drag)
+      {
+        case DragState.None:
+          break;
+        case DragState.Pan:
+          xOff += dragDiffX * 0.005f;
+          yOff -= dragDiffY * 0.005f;
+          break;
+        case DragState.Zoom:
+          scaleFactor += scaleFactor * (dragDiffY * 0.005f);
+          break;
+        case DragState.Rotate:
+          break;
+        default:
+          break;
+      }
       startDrag = e.Location;
+      glControl1.Invalidate();
+    }
+
+    private void checkBox1_CheckedChanged(object sender, EventArgs e)
+    {
       glControl1.Invalidate();
     }
 
@@ -163,6 +206,11 @@ void main()
     {
       zOff += e.Delta * 0.005f;
       glControl1.Invalidate();
+    }
+
+    enum DragState
+    {
+      None, Pan, Zoom, Rotate
     }
   }
 
