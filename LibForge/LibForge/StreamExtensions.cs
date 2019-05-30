@@ -409,20 +409,21 @@ namespace LibForge.Extensions
     }
 
     /// <summary>
-    /// Read a null-terminated ASCII string from the given stream.
+    /// Read a null-terminated UTF8 string from the given stream.
     /// </summary>
     /// <param name="s"></param>
     /// <returns></returns>
     public static string ReadFixedLengthNullTerminatedString(this Stream s, int length)
     {
-      StringBuilder sb = new StringBuilder(length);
-      char cur;
-      while (--length > 0 && (cur = (char)s.ReadByte()) != 0)
+      var stringBytes = s.ReadBytes(length);
+      var endIdx = 0;
+      for (int i = 0; i < stringBytes.Length; i++)
       {
-        sb.Append(cur);
+        endIdx = i;
+        if (stringBytes[i] == 0)
+          break;
       }
-      s.Position += length;
-      return sb.ToString();
+      return Encoding.UTF8.GetString(stringBytes, 0, endIdx);
     }
 
     /// <summary>
