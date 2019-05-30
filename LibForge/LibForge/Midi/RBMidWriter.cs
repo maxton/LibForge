@@ -192,7 +192,7 @@ namespace LibForge.Midi
         Write(x.LastNoteInPhrase);
         Write(x.False1);
         Write(x.Unpitched);
-        Write(x.False2);
+        Write(x.UnpitchedGenerous);
         Write(x.RangeDivider);
         Write(x.TugOfWarBitmask);
         Write(x.Portamento);

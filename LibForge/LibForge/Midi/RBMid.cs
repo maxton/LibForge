@@ -189,9 +189,9 @@ namespace LibForge.Midi
         /// </summary>
         public bool Unpitched;
         /// <summary>
-        /// Always false
+        /// Set to true on unpitched notes with the generous detection (^) character
         /// </summary>
-        public bool False2;
+        public bool UnpitchedGenerous;
         /// <summary>
         /// Set to true when a vocal range divider (%) is attached to this note
         /// </summary>
@@ -592,7 +592,7 @@ namespace LibForge.Midi
                 ?? Check(their2.LastNoteInPhrase, my2.LastNoteInPhrase, nameof(my2.LastNoteInPhrase))
                 ?? Check(their2.False1, my2.False1, nameof(my2.False1))
                 ?? Check(their2.Unpitched, my2.Unpitched, nameof(my2.Unpitched))
-                ?? Check(their2.False2, my2.False2, nameof(my2.False2))
+                ?? Check(their2.UnpitchedGenerous, my2.UnpitchedGenerous, nameof(my2.UnpitchedGenerous))
                 ?? Check(their2.RangeDivider, my2.RangeDivider, nameof(my2.RangeDivider))
                 ?? Check(their2.TugOfWarBitmask, my2.TugOfWarBitmask, nameof(my2.TugOfWarBitmask))
                 ?? Check(their2.Portamento, my2.Portamento, nameof(my2.Portamento))

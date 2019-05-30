@@ -1201,7 +1201,7 @@ namespace LibForge.Midi
             LastNoteInPhrase = false,
             False1 = false,
             Unpitched = lyric.Contains('#') || lyric.Contains('^'),
-            False2 = false,
+            UnpitchedGenerous = lyric.Contains('^'),
             RangeDivider = lyric.Contains('%'),
             TugOfWarBitmask = gen_phrase.TugOfWarBitmask,
             Portamento = lyricCleaned == "+",

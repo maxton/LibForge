@@ -120,67 +120,91 @@ typedef struct {
 
 typedef struct {
     uint tick;
-    PSTR lyric;
-} LYRIC<read=LYRIC_READ,optimize=false>;
-string LYRIC_READ(LYRIC& l){
-    return PSTR_READ(l.lyric);
+    PSTR string;
+} TickedInfo_String<read=TickedInfo_String_READ,optimize=false>;
+string TickedInfo_String_READ(TickedInfo_String& l){
+    return PSTR_READ(l.string);
 }
 
 typedef struct {
     PSTR track_name;
-    int num_events;
-    if(num_events > 0)
-        LYRIC lyrics[num_events];
+    int num_tickedInfo_String;
+    if(num_tickedInfo_String > 0)
+        TickedInfo_String lyrics[num_tickedInfo_String];
     int unknown;
     int unknown_2;
-    char unk;
-} LYRICS<read=LYRICS_READ,optimize=false>;
-string LYRICS_READ(LYRICS& t){
+    char unkFlag;
+} TrackInfo<read=TrackInfo_READ,optimize=false>;
+string TrackInfo_READ(TrackInfo& t){
     string ret;
-    SPrintf(ret, "%s (%d, %d, %d)", PSTR_READ(t.track_name), t.unknown, t.unknown_2, t.unk);
+    SPrintf(ret, "%s (%d, %d, %d)", PSTR_READ(t.track_name), t.unknown, t.unknown_2, t.unkFlag);
     return ret;
 }
 
 typedef struct {
-    int num_fills_1;
-    if(num_fills_1 > 0)
-        struct {
-            tick_t tick;
-            int unk;
-        } fills_1[num_fills_1];
-    int num_fills_2;
-    if(num_fills_2 > 0)
-        struct {
-            tick_t fill_start_tick;
-            tick_t fill_end_tick;
-            char is_BRE;
-        } fill_start_stop[num_fills_2];
-} DRUMFILL;
+    tick_t tick;
+    int data;
+} TickedInfo_int;
+
+typedef struct {
+    tick_t fill_start_tick;
+    tick_t fill_end_tick;
+    char is_BRE;
+} FillExtent;
+
+typedef struct {
+    int num_fills;
+    if(num_fills > 0)
+        TickedInfo_int fills[num_fills];
+    int num_fill_extents;
+    if(num_fill_extents > 0)
+        FillExtent fill_extents[num_fill_extents];
+} DrumFillInfo;
+
+typedef struct {
+    float start_millis;
+    tick_t start_ticks;
+    short length_millis;
+    short length_ticks;
+    struct {
+        int lane_1 : 1;
+        int lane_2 : 1;
+        int lane_3 : 1;
+        int lane_4 : 1;
+        int lane_5 : 1;
+        int additional_real_keys_lanes : 27;
+    } lanes ;
+    char is_hopo;
+    Assert(is_hopo == 0 || is_hopo == 1);
+    char no_tail;
+    Assert(no_tail == 0 || no_tail == 1);
+    char flag3, flag4, flag5, flag6;
+// Probably more flags for rbmid_pc
+//    Assert(unknown == 0 || unknown == 1);
+} GameGem<read=GEM_read>;
+string GEM_read(GameGem& gem){
+    string ret;
+    SPrintf(ret, "%f", gem.start_millis/1000);
+    return ret;
+}
+
+typedef struct {
+    int unknown_aa;
+    int num_events;
+    if(num_gems)
+        GEM gem[num_gems];
+} GameGemList;
+
+typedef struct {
+    int num_difficulties;
+    GameGemList gemLists[num_difficulties]<optimize=false>;
+    int end;
+} GameGemDB;
 
 typedef struct {
     PSTR track_name;
-    int unk;
-    int unk;
-    int num_events;
-    struct {
-        float time;
-        tick_t ticks;
-        ushort Length_millis;
-        ushort Length_ticks;
-        // Stores each key down as (1 << (MIDI_NOTE - 48))
-        int key_bitfield<read=READ_KEY_POS>;
-        int unk2;
-        short unk3;
-    } events[num_events];
-    int unk;
-} ANIM;
-string READ_KEY_POS(int k)
-{
-    int bit = (int)(Log(k)/Log(2.0));
-    string ret;
-    SPrintf(ret, "%d", bit);
-    return ret;
-}
+    GameGemDB animation;
+} FakeTrack;
 
 typedef struct {
     int num_pro_markers;
@@ -193,10 +217,12 @@ typedef struct {
             int PRO_BLUE : 1;
             int PRO_GREEN : 1;
         } flags;
-    } markers[num_pro_markers];
+    } markers[num_pro_markers]; // same as TickedInfo_int
+    int num_fill_extents;
+    if(num_fill_extents > 0)
+        FillExtent fill_extents[num_fill_extents];
     int unk;
-    int unk;
-} CYMBALMARKER;
+} DrumMap;
 
 typedef struct {
     int difficulties;
@@ -244,43 +270,6 @@ typedef struct {
 } DRUMMIX;
 
 typedef struct {
-    float start_millis;
-    tick_t start_ticks;
-    short length_millis;
-    short length_ticks;
-    struct {
-        int lane_1 : 1;
-        int lane_2 : 1;
-        int lane_3 : 1;
-        int lane_4 : 1;
-        int lane_5 : 1;
-        int additional_real_keys_lanes : 27;
-    } lanes ;
-    char is_hopo;
-    Assert(is_hopo == 0 || is_hopo == 1);
-    char no_tail;
-    Assert(no_tail == 0 || no_tail == 1);
-    int unknown;
-// Probably more flags for rbmid_pc
-//    Assert(unknown == 0 || unknown == 1);
-} GEM<read=GEM_read>;
-string GEM_read(GEM& gem){
-    string ret;
-    SPrintf(ret, "%f", gem.start_millis/1000);
-    return ret;
-}
-typedef struct {
-    int num_difficulties;
-    struct {
-        int unknown_aa;
-        int num_events;
-        if(num_events)
-            GEM gem[num_events];
-    } difficulty[num_difficulties]<optimize=false>;
-    int end;
-} GEMTRACK;
-
-typedef struct {
     int num_difficulties;
     struct {
         int num_section_types;
@@ -294,7 +283,7 @@ typedef struct {
             } sections[num_sections]<optimize=false>;
         } section_types[num_section_types]<optimize=false>;
     } difficulties[num_difficulties]<optimize=false>;
-} OVERDRIVE;
+} PhraseDB;
 
 typedef struct {
     float start_ms;
@@ -331,9 +320,9 @@ typedef struct {
         char IsLastNoteInPhrase;
         char UnkZero;
         char Unpitched;
-        char UnkZero;
-        char UnkFlag;  // always 0?
-        char Unknown;  // Not a flag?
+        char UnpitchedGenerous;
+        char RangeDivider;  // always 0?
+        char TugOfWarBitmask;  // Not a flag?
         char IsPortamento;
         char UnkFlag; // always 0?
         char UnkFlag; // always 1?
@@ -400,7 +389,32 @@ typedef struct {
     int notes_in_chord;
     Assert(notes_in_chord <= 12, "Only 12 notes in an octave");
     int notes[notes_in_chord];
-} MARKUP_CHORD;
+} VocalImprovSingleChord;
+
+struct {
+    int num_markup_chords_1;
+    VocalImprovSingleChord markup_chords[num_markup_chords_1]<optimize=false>;
+} VocalImprovChordInfo;
+
+typedef struct {
+    int count;
+    MARKUP_SOLO_NOTES extents[count];
+} ImprovSoloCueExtentVector;
+
+typedef struct {
+    int count;
+    TWOTICKS loop_map[count];
+} ImprovSoloCueLoopMappingVector;
+
+typedef struct {
+    ImprovSoloCueExtentVector loopExtents;
+    ImprovSoloCueLoopMappingVector loopMap;
+} ImprovSoloCueInfo;
+
+typedef struct {
+    int count;
+    MARKUP_SOLO_NOTES loops[count];
+} RBLoopDefnVector;
 
 typedef struct {
     char unk;
@@ -502,16 +516,16 @@ typedef struct {
 
 int format;
 if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
-    int num_lyric_tracks;
-    LYRICS lyrics[num_lyric_tracks] <optimize=false>;
+    int num_track_info;
+    TrackInfo trackInfo[num_track_info] <optimize=false>;
     int num_fill_tracks;
     Assert(num_fill_tracks == num_lyric_tracks);
-    DRUMFILL drum_fills[num_fill_tracks] <optimize=false>;
+    FillInfo drum_fills[num_fill_tracks] <optimize=false>;
     int num_anim_tracks;
-    ANIM anims[num_anim_tracks] <optimize=false>;
+    FakeTrack anims[num_anim_tracks] <optimize=false>;
     int num_marker_tracks;
     Assert(num_marker_tracks == num_lyric_tracks);
-    CYMBALMARKER pro_markers[num_marker_tracks] <optimize=false>;
+    DrumMap pro_markers[num_marker_tracks] <optimize=false>;
     int num_lane_markers;
     Assert(num_lane_markers == num_lyric_tracks);
     LANEMARKER lane_markers[num_lane_markers] <optimize=false>;
@@ -523,10 +537,10 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     DRUMMIX drum_mixes[num_drum_mixes] <optimize=false>;
     int num_gem_tracks;
     Assert(num_gem_tracks == num_lyric_tracks);
-    GEMTRACK gems[num_gem_tracks] <optimize=false>;
+    GameGemDB gems[num_gem_tracks] <optimize=false>;
     int num_sections;
     Assert(num_sections == num_lyric_tracks);
-    OVERDRIVE overdrive_solo_sections[num_sections] <optimize=false>;
+    PhraseDB overdrive_solo_sections[num_sections] <optimize=false>;
     int num_vocal_tracks;
     VOCALTRACK vocal_tracks[num_vocal_tracks]<optimize=false>;
     int UnknownOne;
@@ -565,28 +579,11 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     Assert(num_strummap_tracks == num_lyric_tracks);
     STRUMMAP strum_maps[num_strummap_tracks]<optimize=false>;
 
-    // =============================================
-    // Begin confusing section
-
-    int num_markup_solo_notes;
-    MARKUP_SOLO_NOTES markup_notes_midi0[num_markup_solo_notes];
-    int num_twoticks_1;
-    TWOTICKS twoticks_1[num_twoticks_1];
-    // this outer struct is just to collapse the array down into one item
-    // because apparently 010 editor can only do that on optimized arrays
-    struct {
-        int num_markup_chords_1;
-        MARKUP_CHORD markup_chords[num_markup_chords_1]<optimize=false>;
-    } markup_chords_1;
-    int num_solo_notes_2;
-    MARKUP_SOLO_NOTES markup_notes[num_solo_notes_2];
-    int num_solo_notes_3;
-    MARKUP_SOLO_NOTES markup_notes_midi12[num_solo_notes_3];
-    int num_twotick_2;
-    TWOTICKS twoticks_2[num_twotick_2];
-
-    // End confusing section
-    // =============================================
+    // Begin markup section
+    ImprovSoloCueInfo cueInfo1;
+    VocalImprovChordInfo voxChordInfo;
+    RBLoopDefnVector loopDefns;
+    ImprovSoloCueInfo cueInfo2;
 
     if(format == 0x2f) { // RBVR Specific section
         RBVREVENTS vr_events;

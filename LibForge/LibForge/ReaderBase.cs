@@ -66,14 +66,20 @@ namespace LibForge.Util
         return v();
       };
     }
-    protected T Check<T>(T v, T expected)
+    protected T Check<T>(T v, T expected, string where = null)
     {
       if (v.Equals(expected))
         return v;
-      throw new Exception($"Invalid data encountered at {s.Position:X}: expected {expected}, got {v}");
+      throw new Exception($"Invalid data encountered at {s.Position:X} {where}: expected {expected}, got {v}");
     }
 
     protected byte CheckRange(byte v, byte minimum, byte maximum)
+    {
+      if (minimum <= v && maximum >= v)
+        return v;
+      throw new Exception($"Range of {minimum} -> {maximum} exceeded at {s.Position:X}: got {v} ");
+    }
+    protected int CheckRange(int v, int minimum, int maximum)
     {
       if (minimum <= v && maximum >= v)
         return v;
@@ -125,6 +131,6 @@ namespace LibForge.Util
     /// <summary>
     /// Reads a byte as a boolean, throwing if it's not 1 or 0
     /// </summary>
-    protected bool Bool() => CheckRange(Byte(), 0, 1) != 0;
+    protected bool Bool() => CheckRange(Byte(), (byte)0, (byte)1) != 0;
   }
 }
