@@ -66,23 +66,32 @@ namespace ForgeToolGUI
 
     void AddForgeVal(string name, Value value, TreeNodeCollection nodes)
     {
-      if (value is StructValue)
+      if (value is StructValue sv)
       {
         var no = new TreeNode($"{name}: Struct");
-        foreach (var x in (value as StructValue).Props)
+        no.Tag = new Action(() =>
         {
-          AddForgeProp(x, no.Nodes);
-        }
+          no.Nodes.Clear();
+          foreach (var x in sv.Props)
+          {
+            AddForgeProp(x, no.Nodes);
+          }
+        });
+        no.Nodes.Add("Loading...");
         nodes.Add(no);
       }
-      else if (value is ArrayValue)
+      else if (value is ArrayValue arr)
       {
-        var arr = value as ArrayValue;
         var no = new TreeNode($"{name}: {(arr.Type as ArrayType).ElementType.InternalType}[] ({arr.Data.Length})");
-        for (var i = 0; i < arr.Data.Length; i++)
+        no.Tag = new Action(() =>
         {
-          AddForgeVal(name + "[" + i + "]", arr.Data[i], no.Nodes);
-        }
+          no.Nodes.Clear();
+          for (var i = 0; i < arr.Data.Length; i++)
+          {
+            AddForgeVal(name + "[" + i + "]", arr.Data[i], no.Nodes);
+          }
+        });
+        no.Nodes.Add("Loading...");
         nodes.Add(no);
       }
       else if (value is PropRef)
@@ -109,45 +118,64 @@ namespace ForgeToolGUI
     void AddArrayNodes(Array arr, string name, TreeNodeCollection nodes)
     {
       var node = new TreeNode($"{name} ({arr.Length})");
-      var eType = arr.GetType().GetElementType();
-      if (eType.IsPrimitive || eType == typeof(string) || eType.IsEnum)
-        for (var i = 0; i < arr.Length; i++)
+      node.Tag = new Action(() => {
+        node.Nodes.Clear();
+        var eType = arr.GetType().GetElementType();
+        if (eType.IsPrimitive || eType == typeof(string) || eType.IsEnum)
         {
-          var n = new TreeNode($"{name}[{i}] = {arr.GetValue(i)}");
-          node.Nodes.Add(n);
-        }
-      else for (var i = 0; i < arr.Length; i++)
-        {
-          var myName = $"{name}[{i}]";
-          if (eType.IsArray)
-            AddArrayNodes(arr.GetValue(i) as Array, myName, node.Nodes);
-          else
+          var nodeList = new TreeNode[arr.Length];
+          for (var i = 0; i < arr.Length; i++)
           {
-            var obj = arr.GetValue(i);
+            nodeList[i] = new TreeNode($"{name}[{i}] = {arr.GetValue(i)}");
+          }
+          node.Nodes.AddRange(nodeList);
+        }
+        else
+        {
+          for (var i = 0; i < arr.Length; i++)
+          {
+            var myName = $"{name}[{i}]";
+            if (eType.IsArray)
+              AddArrayNodes(arr.GetValue(i) as Array, myName, node.Nodes);
+            else
+            {
+              var obj = arr.GetValue(i);
 
-            if (obj is Property)
-            {
-              AddForgeProp(obj as Property, node.Nodes);
-              continue;
-            }
-            if (obj is Value)
-            {
-              AddForgeVal(myName, obj as Value, node.Nodes);
-              continue;
-            }
+              if (obj is Property)
+              {
+                AddForgeProp(obj as Property, node.Nodes);
+                continue;
+              }
+              if (obj is Value)
+              {
+                AddForgeVal(myName, obj as Value, node.Nodes);
+                continue;
+              }
 
-            System.Reflection.FieldInfo nameField;
-            if (null != (nameField = obj.GetType().GetField("Name")))
-            {
-              myName += $" (Name: {nameField.GetValue(obj)})";
+              System.Reflection.FieldInfo nameField;
+              if (null != (nameField = obj.GetType().GetField("Name")))
+              {
+                myName += $" (Name: {nameField.GetValue(obj)})";
+              }
+              var n = new TreeNode(myName);
+              var item = arr.GetValue(i);
+              AddObjectNodes(item, n.Nodes);
+              node.Nodes.Add(n);
             }
-            var n = new TreeNode(myName);
-            var item = arr.GetValue(i);
-            AddObjectNodes(item, n.Nodes);
-            node.Nodes.Add(n);
           }
         }
+      });
+      node.Nodes.Add("Loading...");
       nodes.Add(node);
+    }
+
+    private void TreeView1_AfterExpand(object sender, TreeViewEventArgs e)
+    {
+      if (e.Node.Tag is Action x)
+      {
+        x.Invoke();
+        e.Node.Tag = null;
+      }
     }
   }
 }
