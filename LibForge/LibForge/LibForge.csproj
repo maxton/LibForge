@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TupleExtensions.cs" />
     <Compile Include="LipSync\FrameGroup.cs" />
     <Compile Include="LipSync\KeyFrame.cs" />
     <Compile Include="Lipsync\Lipsync.cs" />

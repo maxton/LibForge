@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using LibForge.Extensions;
 
 namespace LibForge.RBSong
 {
@@ -170,6 +171,14 @@ namespace LibForge.RBSong
     {
       var objs = new List<GameObject>();
       short index = 1;
+      var editorCom = new Component
+      {
+        Rev = 3,
+        Name1 = "Editor",
+        Name2 = "Editor",
+        Unknown2 = 2,
+        Props = new[] { new Property("capabilities", new UIntValue(62)) }
+      };
       objs.Add(new GameObject
       {
         Id = new GameObjectId { Index = 0, Layer = 0 },
@@ -207,7 +216,9 @@ namespace LibForge.RBSong
         { "PART GUITAR", "guitar_intensity" },
         { "PART DRUMS", "drum_intensity" },
         { "PART VOCALS", "mic_intensity" },
+#if DEBUG
         { "PART KEYS", "keyboard_intensity" },
+#endif
       };
       var intensityMap = new Dictionary<string, string>
       {
@@ -231,57 +242,78 @@ namespace LibForge.RBSong
         { "[ride_side_true]", "ride_side_true" },
         { "[ride_side_false]", "ride_side_false" },
       };
-      foreach(var track in tracks)
+      void AddAnimTrack(StructValue props)
       {
-        if (!partMap.ContainsKey(track.Name))
-          continue;
-        var propkeys = DTX.FromDtaString(
-          "(keys ()) " +
-          "(interpolation 0) " +
-          $"(driven_prop (0 0 RBVenueAuthoring 0 1 {partMap[track.Name]}))");
-        var keyframes = propkeys.Array("keys").Array(1);
-        foreach(var n in track.Items)
-        {
-          if(n is Midi.MidiText t)
-          {
-            if (intensityMap.ContainsKey(t.Text))
-            {
-              var keyframe = new DataArray();
-              keyframe.AddNode(new DataAtom((float)n.StartTime));
-              keyframe.AddNode(DataSymbol.Symbol(intensityMap[t.Text]));
-              keyframes.AddNode(keyframe);
-            }
-          }
-        }
         objs.Add(new GameObject
         {
           Id = new GameObjectId { Index = index, Layer = index++ },
           Rev = 2,
           Name = "Keys type 11",
-          Components = new []
+          Components = new[]
           {
-            new Component
-            {
-              Rev = 3,
-              Name1 = "Editor",
-              Name2 = "Editor",
-              Unknown2 = 2,
-              Props = new[]
-              {
-                new Property("capabilities", new UIntValue(62))
-              }
-            },
+            editorCom,
             new Component
             {
               Rev = 3,
               Name1 = "PropKeysSymCom",
               Name2 = "PropKeys",
               Unknown2 = 0,
-              Props = StructValue.FromData(propKeysType, propkeys).Props
+              Props = props.Props
             }
           }
         });
       }
+      StructValue MakeAnimProps(string drivenProp, List<Tuple<float, string>> frames)
+      {
+        var propkeys = DTX.FromDtaString(
+           "(keys ()) " +
+           "(interpolation 0) " +
+           $"(driven_prop (0 0 RBVenueAuthoring 0 1 {drivenProp}))");
+        var keyframes = propkeys.Array("keys").Array(1);
+        foreach(var (frame, key) in frames)
+        {
+          var keyframe = new DataArray();
+          keyframe.AddNode(new DataAtom(frame));
+          keyframe.AddNode(DataSymbol.Symbol(key));
+          keyframes.AddNode(keyframe);
+        }
+        return StructValue.FromData(propKeysType, propkeys);
+      }
+      foreach(var track in tracks)
+      {
+        if (!partMap.ContainsKey(track.Name))
+          continue;
+        var frames = new List<Tuple<float, string>>();
+        foreach(var n in track.Items)
+        {
+          if(n is Midi.MidiText t)
+          {
+            if (intensityMap.ContainsKey(t.Text))
+            {
+              frames.Add(Tuple.Create((float)n.StartTicks / mf.TicksPerQN, intensityMap[t.Text]));
+            }
+          }
+        }
+        AddAnimTrack(MakeAnimProps(partMap[track.Name], frames));
+      }
+      AddAnimTrack(MakeAnimProps("shot_bg", new List<Tuple<float, string>> {Tuple.Create(0f, "coop_all_far") }));
+      AddAnimTrack(MakeAnimProps("shot_bk", new List<Tuple<float, string>> {Tuple.Create(0f, "coop_all_far") }));
+      AddAnimTrack(MakeAnimProps("shot_gk", new List<Tuple<float, string>> {Tuple.Create(0f, "coop_all_far") }));
+      AddAnimTrack(MakeAnimProps("crowd", new List<Tuple<float, string>> {Tuple.Create(0f, "crowd_realtime") }));
+      AddAnimTrack(MakeAnimProps("world_event", new List<Tuple<float, string>> {Tuple.Create(0f, "none") }));
+      //AddAnimTrack(MakeAnimProps("part2_sing", new List<Tuple<float, string>> {Tuple.Create(0f, "singalong_off") }));
+      //AddAnimTrack(MakeAnimProps("part3_sing", new List<Tuple<float, string>> {Tuple.Create(0f, "singalong_off") }));
+      //AddAnimTrack(MakeAnimProps("part4_sing", new List<Tuple<float, string>> {Tuple.Create(0f, "singalong_off") }));
+      AddAnimTrack(MakeAnimProps("lightpreset", new List<Tuple<float, string>> {Tuple.Create(0f, "silhouettes") }));
+      AddAnimTrack(MakeAnimProps("postproc", new List<Tuple<float, string>> {Tuple.Create(0f, "profilm_a") }));
+      AddAnimTrack(MakeAnimProps("lightpreset_keyframe", new List<Tuple<float, string>> {Tuple.Create(0f, "next") }));
+      AddAnimTrack(MakeAnimProps("spot_bass", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }));
+      AddAnimTrack(MakeAnimProps("spot_guitar", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }));
+      AddAnimTrack(MakeAnimProps("spot_drums", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }));
+      //AddAnimTrack(MakeAnimProps("spot_keyboard", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }));
+      AddAnimTrack(MakeAnimProps("spot_vocal", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }));
+      //AddAnimTrack(MakeAnimProps("shot_5", new List<Tuple<float, string>> {Tuple.Create(0f, "coop_all_far") }));
+      AddAnimTrack(MakeAnimProps("stagekit_fog", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }));
       return objs.ToArray();
     }
   }
