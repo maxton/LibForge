@@ -30,7 +30,7 @@ namespace LibForge.RBSong
         if(er.Version >= 0xF)
         {
           var unk0 = Int();
-          if (er.Version >= 0x11)
+          if (er.Version >= 0x10)
           {
             var unk1 = Int();
           }
@@ -146,6 +146,11 @@ namespace LibForge.RBSong
       for(int i = 0; i < ent.Objects.Length; i++)
       {
         ent.Objects[i] = ReadGameObject(ent.Version);
+        if(ent.Objects[i] != null && ent.Objects[i].Rev >= 3 && ent.Objects[i].Name.Length == 0)
+        {
+          // It seems like maybe these are "ghost objects" that should be overwritten??? Need more RE
+          i--;
+        }
       }
       return ent;
     }
@@ -169,13 +174,15 @@ namespace LibForge.RBSong
         obj.Name = String();
       }
 
-      if(obj.Rev >= 4 && obj.Name.Length == 0)
+      if(obj.Rev >= 3 && obj.Name.Length == 0)
       {
         // TODO: Newer GameObject unknown stuff
         Int();
         Int();
-        Int();
-        Int();
+        if(obj.Rev >= 4)
+        {
+          Int();
+        }
         obj.Components = new Component[] { };
         return obj;
       }

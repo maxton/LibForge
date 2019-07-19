@@ -229,9 +229,13 @@ typedef struct (int entityRev)
             PSTR name;
         }
         
-        if(obj_rev >= 4 && name.strlen == 0)
+        if(obj_rev >= 3 && name.strlen == 0)
         {
-            int unk0, unk1, unk2, unk3;
+            int unk0, unk1;
+            if(obj_rev >= 4)
+            {
+                int unk2;
+            }
         }
         else
         {
@@ -277,6 +281,12 @@ typedef struct (int index, int entityRev) {
         //if (id.id.layer != index) Assert(false, "id.layer not == index");
         //if (i != id.id.index) Assert(false, "Failed to load game object");
         GameObject game_obj(rev);
+        if(game_obj.id.index != 0xfff 
+            && game_obj.obj_rev >= 3 
+            && game_obj.name.strlen == 0)
+        {
+            i--;
+        }
     }
 } EntityLayer;
 struct EntityResource;
@@ -375,7 +385,7 @@ typedef struct EntityResource {
     if(version >= 0xF)
     {
         int unk0;
-        if(version >= 0x11)
+        if(version >= 0x10)
         {
             int unk1;
         }
