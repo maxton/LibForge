@@ -15,6 +15,6 @@ namespace LibForge
     public GameArchives.IFile Mogg;
     public DataArray MoggSong;
     public DataArray MoggDta;
-    public RBSong.RBSong RBSong;
+    public RBSong.RBSongResource RBSong;
   }
 }

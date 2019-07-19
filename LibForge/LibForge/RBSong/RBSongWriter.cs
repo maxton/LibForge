@@ -7,48 +7,67 @@ using System.Text;
 
 namespace LibForge.RBSong
 {
-  public class RBSongWriter : WriterBase<RBSong>
+  public class RBSongWriter : WriterBase<RBSongResource>
   {
     public RBSongWriter(Stream s) : base(s) { }
-    public override void WriteStream(RBSong v)
+    public override void WriteStream(RBSongResource v)
     {
-      Write(v.Version);
-      Write(1);
-      Write(0);
-      WriteObjectContainer(v.Version, v.Object1);
-      Write(v.Version);
-      Write(1);
-      WriteKeyValue(v.KV);
-      Write(v.Version);
-      Write(1);
-      Write(0);
-      WriteObjectContainer(v.Version, v.Object2);
-      Write(v.Version);
-      Write(0);
+      WriteEntityResource(v);
     }
-    public void WriteObjectContainer(int version, ObjectContainer oc)
+    public void WriteEntityResource(EntityResource v)
     {
-      if(version > 0xE) { Write(0); }
-      Write(oc.Unknown1);
-      Write(oc.Unknown2);
-      Write(oc.Unknown3);
-      Write(oc.Unknown4);
-      Write(oc.Unknown5);
-      Write(oc.Entities, WriteEntity);
+      Write(v.Version);
+      Write(v.InlineLayerNames, Write);
+      WriteEntity(v);
     }
-    public void WriteEntity(Entity e)
+    public void WriteInlineResources(EntityResource er, int layerIndex)
     {
-      Write(e.Index0);
-      Write(e.Index1);
-      Write(2);
-      Write(e.Name);
-      Write(e.Coms, WriteComponent);
+      Write(er.Version);
+      Write(er.InlineResourceLayers[layerIndex].Length);
+      for(int i = 0; i < er.InlineResourceLayers[layerIndex].Length; i++)
+      {
+        var resource = er.InlineResourceLayers[layerIndex][i];
+        Write(resource.Type);
+        Write(resource.Path);
+        WriteEntityResource(er.InlineResourceLayers[layerIndex][i] as EntityResource);
+      }
+    }
+    public void WriteEntity(EntityResource rsrc)
+    {
+      if(rsrc.Version > 0xE) { Write(0); }
+      Write(rsrc.Entity.Version);
+      Write(rsrc.Entity.Layers.Length);
+      for(int i = 0; i < rsrc.Entity.Layers.Length; i++)
+      {
+        WriteEntityLayer(rsrc.Entity.Layers[i]);
+        WriteInlineResources(rsrc, i);
+      }
+    }
+    public void WriteEntityLayer(EntityLayer e)
+    {
+      Write(e.Version);
+      Write(e.fileSlotIndex);
+      Write(e.TotalObjectLayers);
+      Write(e.Objects, WriteGameObject);
+    }
+    public void WriteGameObject(GameObject go)
+    {
+      if(go == null)
+      {
+        Write(-1);
+        return;
+      }
+      var id = go.Id.Index | (go.Id.Layer << 16);
+      Write(id);
+      Write(go.Rev);
+      Write(go.Name);
+      Write(go.Components, WriteComponent);
     }
     public void WriteComponent(Component c)
     {
-      Write(c.ClassName);
-      Write(c.Name);
-      Write(c.Unknown1);
+      Write(c.Name1);
+      Write(c.Name2);
+      Write(c.Rev);
       Write(c.Unknown2);
       Write(c.Props, WritePropDef);
       Array.ForEach(c.Props, p => WriteValue(p.Value));
@@ -80,23 +99,20 @@ namespace LibForge.RBSong
         case FloatValue x: Write(x.Data); break;
         case IntValue x: Write(x.Data); break;
         case ByteValue x: Write(x.Data); break;
-        case FlagValue x: Write(x.Data); break;
+        case UIntValue x: Write(x.Data); break;
         case LongValue x: Write(x.Data); break;
         case BoolValue x: Write(x.Data); break;
-        // TODO: Look into extra null-terminator?
-        case SymbolValue x:
-          Write(x.Data);
-          if (x.NullTerminated) Write((byte)0);
-          break;
+        case SymbolValue x: Write(x.Data); break;
         case ResourcePathValue x:
+          Write(x.Prefix);
           Write(x.Data);
-          if (x.NullTerminated) Write((byte)0);
           break;
-        case PropRef x:
+        case DrivenProp x:
           Write(x.Unknown1);
-          Write(x.ClassName);
           Write(x.Unknown2);
+          Write(x.ClassName);
           Write(x.Unknown3);
+          Write(x.Unknown4);
           Write(x.PropertyName);
           break;
         case ArrayValue x: Write(x.Data, WriteValue); break;
@@ -105,11 +121,5 @@ namespace LibForge.RBSong
           throw new Exception("This is an exhaustive switch");
       }
     }
-    public void WriteKeyValue(KeyValue kv)
-    {
-      Write(kv.Str1);
-      Write(kv.Str2);
-    }
-
   }
 }

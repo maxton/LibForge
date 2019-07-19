@@ -5,76 +5,209 @@ using System.IO;
 
 namespace LibForge.RBSong
 {
-  public class RBSongReader : ReaderBase<RBSong>
+  public class RBSongReader : ReaderBase<RBSongResource>
   {
     public RBSongReader(Stream s) : base(s)
     {  }
 
-    public override RBSong Read()
+    public override RBSongResource Read()
     {
-      var ret = new RBSong();
-      ret.Version = Int();
-      Check(Int(), 1);
-      Check(Int(), 0);
-      ret.Object1 = ReadObjectContainer(ret.Version);
-      Check(Int(), ret.Version);
-      Check(Int(), 1);
-      ret.KV = ReadKeyValue();
-      Check(Int(), ret.Version);
-      Check(Int(), 1);
-      Check(Int(), 0);
-      ret.Object2 = ReadObjectContainer(ret.Version);
-      Check(Int(), ret.Version);
-      Check(Int(), 0);
+      var ret = new RBSongResource();
+      LoadResource(ret);
       return ret;
     }
-
-    private KeyValue ReadKeyValue()
-      => new KeyValue
-      {
-        Str1 = String(),
-        Str2 = String()
-      };
-    private ObjectContainer ReadObjectContainer(int version)
+    private void LoadResource(Resource r)
     {
-      var obj = new ObjectContainer();
-      if (version > 0xE) Int();
-      obj.Unknown1 = Int();
-      obj.Unknown2 = Int();
-      obj.Unknown3 = Int();
-      if (version > 0xE) Int();
-      obj.Unknown4 = Int();
-      obj.Unknown5 = Short();
-      obj.Entities = Arr(ReadEntity);
-      return obj;
+      if(r is EntityResource er)
+      {
+        er.Version = Int();
+        if (er.Version < 0xC || er.Version > EntityResource.MaxVersion)
+        {
+          throw new InvalidDataException("Can't handle EntityResource version " + er.Version);
+        }
+        er.InlineLayerNames = Arr(String);
+        er.InlineResourceLayers = new Resource[er.InlineLayerNames.Length][];
+        if(er.Version >= 0xF)
+        {
+          var unk0 = Int();
+          if (er.Version >= 0x11)
+          {
+            var unk1 = Int();
+          }
+
+        }
+        er.Entity = ReadEntity(er);
+      }
     }
-    private Entity ReadEntity()
+    private Entity ReadEntity(EntityResource rsrc)
     {
       var ent = new Entity();
-      ent.Index0 = UShort();
-      ent.Index1 = UShort();
-      if (ent.Index0 == 0xFFFF && ent.Index1 == 0xFFFF)
-        return null;
-      Check(UInt(), 2u);
-      ent.Name = String();
-      ent.Coms = Arr(ReadComponent);
+      ent.Version = Int();
+      if (ent.Version > Entity.MaxVersion)
+      {
+        throw new Exception("Can't handle entity version " + ent.Version);
+      }
+      if (ent.Version <= 1)
+      {
+        throw new InvalidDataException("Entity version must be > 1");
+      }
+      if (ent.Version <= 4)
+      {
+        String();
+      }
+      int numLayers = 1;
+      if (ent.Version >= 9)
+      {
+        numLayers = Int();
+      }
+      else
+      {
+        int rootId = Int();
+        if(ent.Version > 6)
+        {
+          numLayers = Int();
+        }
+        else
+        {
+          short arraySize = Short();
+        }
+      }
+      for (int li = 0; li < numLayers; li++)
+      {
+        if(ent.Version < 8)
+        {
+          if (ent.Version >= 7)
+            Short(); // layer_field_28
+          if (numLayers != 1)
+            throw new Exception("Num layers should be 1 for version <8");
+          var propArrayBaseSize = Int();
+          if(propArrayBaseSize > 0)
+          {
+            throw new NotImplementedException("Version < 8 should load objs here");
+          }
+        }
+        else if (ent.Version <= 11)
+        {
+          String(); // layer_name
+        }
+      }
+      if (ent.Version < 8)
+      {
+        throw new NotImplementedException("Version < 8 not implemented");
+      }
+      ent.Layers = new EntityLayer[numLayers];
+      LoadEntityLayer(0, rsrc, ent);
+      for(int i = 1; i < numLayers; i++)
+      {
+        LoadEntityLayer(i, rsrc, ent);
+      }
       return ent;
     }
-    private Component ReadComponent()
+    private void LoadEntityLayer(int layerIndex, EntityResource rsrc, Entity ent)
     {
-      var entity = new Component
+      ent.Layers[layerIndex] = ReadEntityLayer(layerIndex, ent.Version);
+      if (ent.Version >= 0xC)
       {
-        ClassName = String(),
-        Name = String(),
-        Unknown1 = Int(),
-        Unknown2 = Long(),
-        Props = Arr(ReadPropDef)
-      };
-      foreach(var prop in entity.Props)
-      {
-        prop.Value = ReadValue(prop.Type);
+        LoadInlineResources(layerIndex, rsrc);
       }
-      return entity;
+    }
+    private void LoadInlineResources(int layerIndex, EntityResource rsrc)
+    {
+      if (layerIndex > rsrc.InlineResourceLayers.Length)
+        throw new InvalidDataException("More inline resource layers than entity resource layers");
+      int version = Int();
+      int count = Int();
+      var layer = rsrc.InlineResourceLayers[layerIndex] = new Resource[count];
+      for (int i = 0; i < count; i++)
+      {
+        var type = String();
+        var inline = layer[i] = Resource.Create(type);
+        inline.Path = String();
+        LoadResource(inline);
+      }
+    }
+    private EntityLayer ReadEntityLayer(int index, int version)
+    {
+      var ent = new EntityLayer();
+      ent.Version = Int();
+      if (ent.Version < 8)
+        throw new InvalidDataException("Entity layer version should be > 8");
+      if (ent.Version >= 0x17)
+      {
+        Int(); // unknown
+      }
+      ent.fileSlotIndex = Int();
+      if(ent.fileSlotIndex != index)
+      {
+        //throw new InvalidDataException("Entity layer failed to load (serialized to different slot)");
+      }
+      ent.TotalObjectLayers = Short();
+      ent.Objects = new GameObject[Int()];
+      for(int i = 0; i < ent.Objects.Length; i++)
+      {
+        ent.Objects[i] = ReadGameObject(ent.Version);
+      }
+      return ent;
+    }
+    private GameObject ReadGameObject(int layerVersion)
+    {
+      var id = Int();
+      if (id == -1) return null;
+      var obj = new GameObject();
+      obj.Id = new GameObjectId
+      {
+        Index = id & 0xFFF,
+        Layer = (short)(id >> 16), // Some places say this should be >> 12, but that doesn't make sense with any files
+      };
+      obj.Rev = Int();
+      if(obj.Rev < 0)
+      {
+        obj.Name = new string((char)Byte(),1);
+      }
+      else
+      {
+        obj.Name = String();
+      }
+
+      if(obj.Rev >= 4 && obj.Name.Length == 0)
+      {
+        // TODO: Newer GameObject unknown stuff
+        Int();
+        Int();
+        Int();
+        Int();
+        obj.Components = new Component[] { };
+        return obj;
+      }
+      var numChildren = Int();
+      obj.Components = new Component[numChildren];
+      for(int i = 0; i < numChildren; i++)
+      {
+        obj.Components[i] = ReadComponent(obj.Rev, layerVersion);
+      }
+      return obj;
+    }
+    private Component ReadComponent(int objRev, int layerVersion)
+    {
+      var com = new Component();
+      com.Name1 = String();
+      if (objRev >= 2)
+        com.Name2 = String();
+      com.Rev = Int();
+      com.Unknown2 = Long();
+      if(layerVersion >= 0xE)
+      {
+        com.Props = new Property[Int()];
+        for(int i = 0; i < com.Props.Length; i++)
+        {
+          com.Props[i] = ReadPropDef();
+        }
+        foreach(var prop in com.Props)
+        {
+          prop.Value = ReadValue(prop.Type);
+        }
+      }
+      return com;
     }
     private Type ReadType()
     {
@@ -105,7 +238,7 @@ namespace LibForge.RBSong
         case DataType.Uint8:
           return PrimitiveType.Byte;
         case DataType.Uint32:
-          return PrimitiveType.Flag;
+          return PrimitiveType.UInt;
         case DataType.Uint64:
           return PrimitiveType.Long;
         case DataType.Bool:
@@ -114,8 +247,10 @@ namespace LibForge.RBSong
           return PrimitiveType.Symbol;
         case DataType.ResourcePath:
           return PrimitiveType.ResourcePath;
-        case DataType.PropRef:
-          return PrimitiveType.PropRef;
+        case DataType.DrivenProp:
+          return PrimitiveType.DrivenProp;
+        case DataType.GameObjectId:
+          return PrimitiveType.GameObjectId;
         default:
           return new PrimitiveType(type);
       }
@@ -128,7 +263,6 @@ namespace LibForge.RBSong
       };
     private Value ReadValue(Type t)
     {
-      bool null_term;
       switch (t)
       {
         case ArrayType at:
@@ -155,41 +289,64 @@ namespace LibForge.RBSong
             case DataType.Uint8:
               return new ByteValue(Byte());
             case DataType.Uint32:
-              return new FlagValue(Int());
+              return new UIntValue(UInt());
             case DataType.Uint64:
               return new LongValue(Long());
             case DataType.Bool:
               return new BoolValue(Byte() != 0);
             case DataType.Symbol:
-              var sym = String();
-              null_term = false;
-              if (sym.Length == 0)
-              {
-                null_term = true;
-                if (Byte() != 0)
-                {
-                  null_term = false;
-                  s.Position -= 1;
-                }
-              }
-              return new SymbolValue(sym, null_term);
+              return new SymbolValue(String());
             case DataType.ResourcePath:
-              var str = String();
-              null_term = true;
-              if (Byte() != 0)
+              var prefix = Byte();
+              return new ResourcePathValue(String(), prefix);
+            case DataType.DrivenProp:
+              int unk_driven_prop_1 = Int();
+              int unk_driven_prop_2 = Int();
+              if (unk_driven_prop_2 == 0)
               {
-                null_term = false;
-                s.Position -= 1;
+                return new DrivenProp
+                {
+                  Unknown1 = unk_driven_prop_1,
+                  Unknown2 = unk_driven_prop_2,
+                  ClassName = String(),
+                  Unknown3 = Int(),
+                  Unknown4 = Long(),
+                  PropertyName = String()
+                };
               }
-              return new ResourcePathValue(str, null_term);
-            case DataType.PropRef:
-              return new PropRef
+              else
               {
-                Unknown1 = Long(),
-                ClassName = String(),
+                return new DrivenProp
+                {
+                  Unknown1 = unk_driven_prop_1,
+                  Unknown2 = unk_driven_prop_2,
+                  ClassName = null,
+                  Unknown3 = Int(),
+                  Unknown4 = Long(),
+                  PropertyName = null
+                };
+              }
+            case DataType.GameObjectId:
+              return new GameObjectIdValue
+              {
+                Unknown1 = Int(),
                 Unknown2 = Int(),
-                Unknown3 = Long(),
-                PropertyName = String()
+                Unknown3 = Int(),
+                Unknown4 = Int(),
+                Unknown5 = Int(),
+                Unknown6 = Int(),
+              };
+            case DataType.Color:
+              return new ColorValue
+              {
+                R = Float(),
+                G = Float(),
+                B = Float(),
+                A = Float(),
+                Unk1 = Int(),
+                Unk2 = Int(),
+                Unk3 = Int(),
+                Unk4 = Int(),
               };
             default:
               throw new InvalidDataException("Unknown type");

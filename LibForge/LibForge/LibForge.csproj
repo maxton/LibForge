@@ -79,6 +79,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Midi\RBMidWriter.cs" />
     <Compile Include="RBSong\RBSong.cs" />
+    <Compile Include="RBSong\RBSongConverter.cs" />
     <Compile Include="RBSong\RBSongReader.cs" />
     <Compile Include="RBSong\RBSongWriter.cs" />
     <Compile Include="ReaderBase.cs" />

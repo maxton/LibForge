@@ -94,15 +94,19 @@ namespace ForgeToolGUI
         no.Nodes.Add("Loading...");
         nodes.Add(no);
       }
-      else if (value is PropRef)
+      else if (value is DrivenProp)
       {
-        var driv = value as PropRef;
+        var driv = value as DrivenProp;
         nodes.Add($"{name}: DrivenProp [{driv.ClassName} {driv.PropertyName}] ({driv.Unknown1},{driv.Unknown2}, {driv.Unknown3})");
+      }
+      else if (value is ColorValue c)
+      {
+        nodes.Add($"{name}: Color ({c.R},{c.G},{c.B},{c.A}) [{c.Unk1},{c.Unk2},{c.Unk3},{c.Unk4}]");
       }
       else
       {
-        var data = value.GetType().GetField("Data").GetValue(value);
-        nodes.Add(name + ": " + value.Type.InternalType.ToString() + " = " + data.ToString());
+        var data = value.GetType().GetField("Data")?.GetValue(value);
+        nodes.Add(name + ": " + value.Type.InternalType.ToString() + " = " + data);
       }
     }
 
@@ -140,7 +144,8 @@ namespace ForgeToolGUI
             else
             {
               var obj = arr.GetValue(i);
-
+              if (obj == null)
+                continue;
               if (obj is Property)
               {
                 AddForgeProp(obj as Property, node.Nodes);

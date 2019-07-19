@@ -1,17 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using DtxCS.DataTypes;
 
 namespace LibForge.RBSong
 {
-  public class RBSong
+  public class Component
+  {
+    public string Name1;
+    public string Name2;
+    public int Rev;
+    public long Unknown2;
+    public Property[] Props;
+  }
+  public struct GameObjectId
+  {
+    public short Layer;
+    public int Index;
+  }
+  public class GameObject
+  {
+    public const int MaxVersion = 0x4;
+    public GameObjectId Id;
+    public int Rev;
+    public string Name;
+    public Component[] Components;
+  }
+  public class EntityLayer
   {
     public int Version;
-    public ObjectContainer Object1;
-    public KeyValue KV;
-    public ObjectContainer Object2;
+    public int fileSlotIndex;
+    public short TotalObjectLayers;
+    public GameObject[] Objects;
+  }
+  public class Entity
+  {
+    public const int MaxVersion = 0x1E;
+    public int Version;
+    public EntityLayer[] Layers;
+  }
+  public abstract class Resource
+  {
+    public string Type;
+    public string Path;
+    public static Resource Create(string type)
+    {
+      switch (type)
+      {
+        case "PropAnimResource":
+          return new PropAnimResource();
+        case "RBSongResource":
+          return new RBSongResource();
+        default:
+          throw new NotImplementedException("Unimplemented resource type: "+type);
+      }
+    }
+  }
+  public class EntityResource : Resource
+  {
+    public EntityResource() { Type = "EntityResource"; }
+    public const int MaxVersion = 0x11;
+    public int Version;
+    public string[] InlineLayerNames;
+    public Entity Entity;
+    public Resource[][] InlineResourceLayers;
+  }
+  public class RBSongResource : EntityResource
+  {
+    public RBSongResource() { Type = "RBSongResource"; }
+  }
+  public class PropAnimResource : EntityResource
+  {
+    public PropAnimResource() { Type = "PropAnimResource"; }
   }
 
   // A TYPE is either:
@@ -36,8 +98,8 @@ namespace LibForge.RBSong
           return PrimitiveType.Int;
         case "byte":
           return PrimitiveType.Byte;
-        case "flag":
-          return PrimitiveType.Flag;
+        case "uint":
+          return PrimitiveType.UInt;
         case "long":
           return PrimitiveType.Long;
         case "bool":
@@ -47,7 +109,13 @@ namespace LibForge.RBSong
         case "string":
           return PrimitiveType.ResourcePath;
         case "array":
-          return new ArrayType { ElementType = FromData(n.Array("item")) };
+          var eType = FromData(n.Array("item"));
+          return new ArrayType {
+            ElementType = eType,
+            InternalType = DataType.Array | eType.InternalType
+          };
+        case "driven_prop":
+          return PrimitiveType.DrivenProp;
         default:
           if (TypeDefinitions.ContainsKey(type))
             return TypeDefinitions[type];
@@ -60,12 +128,14 @@ namespace LibForge.RBSong
     public static Type Float = new PrimitiveType(DataType.Float);
     public static Type Int = new PrimitiveType(DataType.Int32);
     public static Type Byte = new PrimitiveType(DataType.Uint8);
-    public static Type Flag = new PrimitiveType(DataType.Uint32);
+    public static Type UInt = new PrimitiveType(DataType.Uint32);
     public static Type Long = new PrimitiveType(DataType.Uint64);
     public static Type Bool = new PrimitiveType(DataType.Bool);
     public static Type Symbol = new PrimitiveType(DataType.Symbol);
     public static Type ResourcePath = new PrimitiveType(DataType.ResourcePath);
-    public static Type PropRef = new PrimitiveType(DataType.PropRef);
+    public static Type DrivenProp = new PrimitiveType(DataType.DrivenProp);
+    public static Type GameObjectId = new PrimitiveType(DataType.GameObjectId);
+    public static Type Color = new PrimitiveType(DataType.Color);
     internal PrimitiveType(DataType internalType) { InternalType = internalType; }
   }
   public class StructType : Type
@@ -113,7 +183,7 @@ namespace LibForge.RBSong
     Color = 0xD,
     // Array = 0xE,
     Struct = 0xF,
-    PropRef = 0x10,
+    DrivenProp = 0x10,
     Action = 0x11,
     WaveformFloat = 0x12,
     WaveformColor = 0x13,
@@ -151,7 +221,7 @@ namespace LibForge.RBSong
         case DataType.Uint8:
           return new ByteValue((byte)atom.Int);
         case DataType.Uint32:
-          return new FlagValue(atom.Int);
+          return new UIntValue((uint)atom.Int);
         case DataType.Uint64:
           return new LongValue(atom.Int);
         case DataType.Bool:
@@ -162,9 +232,11 @@ namespace LibForge.RBSong
           return new ResourcePathValue(d.ToString());
         case DataType.Struct:
           return StructValue.FromData(t as StructType, arr);
-        case DataType.PropRef:
-        case DataType.Array:
+        case DataType.DrivenProp:
+          return DrivenProp.FromData(arr);
         default:
+          if(t is ArrayType at)
+            return ArrayValue.FromData(at, arr);
           throw new Exception("Unhandled case (TODO)");
       }
     }
@@ -187,11 +259,11 @@ namespace LibForge.RBSong
     public override Type Type { get; } = PrimitiveType.Byte;
     public byte Data;
   }
-  public class FlagValue : Value
+  public class UIntValue : Value
   {
-    public FlagValue(int data) { Data = data; }
-    public override Type Type { get; } = PrimitiveType.Flag;
-    public int Data;
+    public UIntValue(uint data) { Data = data; }
+    public override Type Type { get; } = PrimitiveType.UInt;
+    public uint Data;
   }
   public class LongValue : Value
   {
@@ -207,17 +279,16 @@ namespace LibForge.RBSong
   }
   public class SymbolValue : Value
   {
-    public SymbolValue(string data, bool nullTerm = false) { Data = data; NullTerminated = nullTerm; }
+    public SymbolValue(string data) { Data = data; }
     public override Type Type { get; } = PrimitiveType.Symbol;
     public string Data;
-    public bool NullTerminated;
   }
   public class ResourcePathValue : Value
   {
-    public ResourcePathValue(string data, bool nullTerm = false) { Data = data; NullTerminated = nullTerm; }
+    public ResourcePathValue(string data, byte prefix = 0) { Data = data; Prefix = prefix; }
     public override Type Type { get; } = PrimitiveType.ResourcePath;
     public string Data;
-    public bool NullTerminated;
+    public byte Prefix;
   }
   public class StructValue : Value
   {
@@ -231,21 +302,66 @@ namespace LibForge.RBSong
     public static StructValue FromData(StructType t, DataArray arr)
     {
       var propVals = new List<Property>();
-      foreach(var prop in t.Properties)
+      if (t.Properties.Length > 0 && arr.Array(t.Properties[0].Name) != null)
       {
-        propVals.Add(new Property(prop.Name, FromData(prop.Type, arr.Array(prop.Name).Node(1))));
+        // Props should be defined by name
+        foreach (var prop in t.Properties)
+          propVals.Add(new Property(prop.Name, FromData(prop.Type, arr.Array(prop.Name).Node(1))));
+      }
+      else
+      {
+        // Anonymous struct (e.g. in an array)
+        for (int i = 0; i < t.Properties.Length; i++)
+          propVals.Add(new Property(
+            t.Properties[i].Name,
+            FromData(t.Properties[i].Type, arr.Node(i))));
       }
       return new StructValue(t, propVals.ToArray());
     }
   }
-  public class PropRef : Value
+  public class GameObjectIdValue : Value
   {
-    public override Type Type { get; } = PrimitiveType.PropRef;
-    public long Unknown1;
-    public string ClassName;
+    public override Type Type => PrimitiveType.GameObjectId;
+    public int Unknown1;
     public int Unknown2;
-    public long Unknown3;
+    public int Unknown3;
+    public int Unknown4;
+    public int Unknown5;
+    public int Unknown6;
+  }
+  public class ColorValue : Value
+  {
+    public override Type Type => PrimitiveType.Color;
+    public float R;
+    public float G;
+    public float B;
+    public float A;
+    public int Unk1;
+    public int Unk2;
+    public int Unk3;
+    public int Unk4;
+  }
+  public class DrivenProp : Value
+  {
+    public override Type Type { get; } = PrimitiveType.DrivenProp;
+    public int Unknown1;
+    public int Unknown2;
+    public string ClassName;
+    public int Unknown3;
+    public long Unknown4;
     public string PropertyName;
+    public static DrivenProp FromData(DataArray arr)
+    {
+      return new DrivenProp
+      {
+        Unknown1 = arr.Int(0),
+        Unknown2 = arr.Int(1),
+        ClassName = arr.Any(2),
+        Unknown3 = arr.Int(3),
+        Unknown4 = arr.Int(4),
+        PropertyName = arr.Any(5)
+      };
+    }
   }
   public class ArrayValue : Value
   {
@@ -256,35 +372,14 @@ namespace LibForge.RBSong
     }
     public override Type Type { get; }
     public Value[] Data;
-  }
-  public class Component
-  {
-    public string ClassName;
-    public string Name;
-    public int Unknown1;
-    public long Unknown2;
-    public Property[] Props;
-  }
-  public class Entity
-  {
-    public ushort Index0;
-    public ushort Index1;
-    // public uint Unknown2; // always 2
-    public string Name;
-    public Component[] Coms;
-  }
-  public class ObjectContainer
-  {
-    public int Unknown1;
-    public int Unknown2;
-    public int Unknown3;
-    public int Unknown4;
-    public short Unknown5;
-    public Entity[] Entities;
-  }
-  public class KeyValue
-  {
-    public string Str1;
-    public string Str2;
+    public static ArrayValue FromData(ArrayType t, DataArray arr)
+    {
+      var data = new List<Value>();
+      foreach(var node in arr.Children)
+      {
+        data.Add(FromData(t.ElementType, node));
+      }
+      return new ArrayValue(t, data.ToArray());
+    }
   }
 }
