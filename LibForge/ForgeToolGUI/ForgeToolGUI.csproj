@@ -82,6 +82,12 @@
     <Compile Include="Inspectors\MeshInspector.Designer.cs">
       <DependentUpon>MeshInspector.cs</DependentUpon>
     </Compile>
+    <Compile Include="Inspectors\PropertyInspector.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Inspectors\PropertyInspector.Designer.cs">
+      <DependentUpon>PropertyInspector.cs</DependentUpon>
+    </Compile>
     <Compile Include="Inspectors\RBMidiInspector.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -126,6 +132,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Inspectors\MeshInspector.resx">
       <DependentUpon>MeshInspector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Inspectors\PropertyInspector.resx">
+      <DependentUpon>PropertyInspector.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Inspectors\RBMidiInspector.resx">
       <DependentUpon>RBMidiInspector.cs</DependentUpon>

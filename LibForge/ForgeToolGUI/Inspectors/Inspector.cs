@@ -1,6 +1,7 @@
 ﻿using LibForge.Lipsync;
 using LibForge.Mesh;
 using LibForge.Midi;
+using LibForge.Milo;
 using LibForge.RBSong;
 using LibForge.SongData;
 using LibForge.Texture;
@@ -33,6 +34,8 @@ namespace ForgeToolGUI
           return new RBMidiInspector(m);
         case HxMesh m:
           return new MeshInspector(m);
+        case MiloFile mf:
+          return new PropertyInspector(mf);
         case object o:
           return new ObjectInspector(obj);
       }
@@ -126,6 +129,13 @@ namespace ForgeToolGUI
         using (var s = i.GetStream())
         {
           return new LibOrbisPkg.PKG.PkgReader(s).ReadHeader();
+        }
+      }
+      else if(i.Name.EndsWith(".milo_xbox"))
+      {
+        using (var s = i.GetStream())
+        {
+          return MiloFile.ReadFromStream(s);
         }
       }
       else
