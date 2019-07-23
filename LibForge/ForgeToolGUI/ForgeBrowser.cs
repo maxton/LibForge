@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -23,6 +24,28 @@ namespace ForgeToolGUI
       state = new ForgeBrowserState();
       InitializeComponent();
       Text = $"ForgeToolGUI (LibForge v{LibForge.Meta.BuildString})";
+      var args = Environment.GetCommandLineArgs();
+      if (args.Length > 1)
+      {
+        if (File.Exists(args[1]))
+        {
+          var file = GameArchives.Util.LocalFile(args[1]);
+          if (GameArchives.PFS.PFSPackage.IsPFS(file) != GameArchives.PackageTestResult.NO
+            || GameArchives.Ark.ArkPackage.IsArk(file) != GameArchives.PackageTestResult.NO
+            || GameArchives.STFS.STFSPackage.IsSTFS(file) != GameArchives.PackageTestResult.NO)
+          {
+            LoadPackage(args[1]);
+          }
+          else
+          {
+            OpenFile(file);
+          }
+        }
+        else if (Directory.Exists(args[1]))
+        {
+          LoadFolder(args[1]);
+        }
+      }
     }
 
     private void LoadPackage(string filename)
@@ -113,7 +136,7 @@ namespace ForgeToolGUI
     private void openToolStripMenuItem_Click(object sender, EventArgs e)
     {
       OpenFileDialog of = new OpenFileDialog();
-      of.Filter = "Supported Packages (*.hdr, *.dat, *.pkg)|*.hdr;*.dat;*.pkg";
+      of.Filter = "Supported Packages (*.hdr, *.dat, *.pkg, *_rb3con)|*.hdr;*.dat;*.pkg;*_rb3con";
       if(of.ShowDialog(this) == DialogResult.OK)
       {
         LoadPackage(of.FileName);
