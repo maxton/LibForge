@@ -362,6 +362,14 @@ typedef struct {
             EntityLayer layer(li, version);
             if(version > 0xC)
             {
+                // HACK: Allows reading codemonkey_rbn.rbsong
+                if(version >= 0x11)
+                {
+                    if(ReadInt() == 1)
+                    {
+                        int unk, unk2, unk3, unk4;
+                    }
+                }
                 int inlineVersion;
                 int inlineResourceCount;
                 struct {

@@ -116,6 +116,14 @@ namespace LibForge.RBSong
       if (layerIndex > rsrc.InlineResourceLayers.Length)
         throw new InvalidDataException("More inline resource layers than entity resource layers");
       int version = Int();
+      // HACK: Allows reading codemonkey_rbn.rbsong
+      if (version == 1)
+      {
+        Int();
+        Int();
+        Int();
+        version = Int();
+      }
       int count = Int();
       var layer = rsrc.InlineResourceLayers[layerIndex] = new Resource[count];
       for (int i = 0; i < count; i++)
