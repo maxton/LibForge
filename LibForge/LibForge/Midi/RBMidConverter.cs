@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using MidiCS;
 using System.Linq;
+using MidiCS.Events;
 
 namespace LibForge.Midi
 {
@@ -213,7 +214,7 @@ namespace LibForge.Midi
           MarkupSoloNotes2 = MarkupSoloNotes2.ToArray(),
           MarkupSoloNotes3 = MarkupSoloNotes3.ToArray(),
           MarkupLoop2 = SoloLoops2.ToArray(),
-          MidiTracks = mf.Tracks.ToArray(),
+          MidiTracks = ConvertVenueTrack(mf.Tracks).ToArray(),
           Tempos = Tempos.ToArray(),
           TimeSigs = TimeSigs.ToArray(),
           Beats = Beats.ToArray(),
@@ -1600,6 +1601,335 @@ namespace LibForge.Midi
 
           }
         }
+      }
+
+      // Converts the venue track from RBN2 to RBN1 so that RB4 can autogen animations
+      private static List<MidiTrack> ConvertVenueTrack(List<MidiTrack> tracks)
+      {
+        const int tpqn = 480;
+        const int note_length = tpqn / 4; //16th note
+        var to_remove = new List<IMidiMessage>();
+        var to_add = new List<IMidiMessage>();
+        long lastevent = (note_length * -1) - 1; //this ensures (lastevent + note_length) starts at -1
+        uint final_event = 0;
+
+        var venueTrack = tracks.Where(x => x.Name == "VENUE").FirstOrDefault();
+        if (venueTrack == null)
+        {
+          return tracks;
+        }
+        if(!venueTrack.Messages.Any(m => m is TextEvent t 
+            && (t.Text.Contains(".pp]") || t.Text.Contains("coop]") || t.Text.Contains("[directed"))))
+        {
+          // If this is already a RBN1 VENUE, skip it.
+          return tracks;
+        }
+        long last_first = 0;
+        long last_next = 0;
+        long last_proc_time = 0;
+        var last_proc_note = 0;
+
+        to_add.Add(new TextEvent(0, "[verse]"));
+        var absMessages = MidiHelper.ToAbsolute(venueTrack.Messages);
+        foreach (var message in absMessages)
+        {
+          final_event = message.DeltaTime;
+          if (message is MetaTextEvent mt && mt.Text.Contains("["))
+          {
+            var index = mt.Text.IndexOf("[", StringComparison.Ordinal);
+            var new_event = mt.Text.Substring(index, mt.Text.Length - index).Trim();
+
+            if (new_event.Contains("[directed"))
+            {
+              new_event = new_event
+                .Replace("[directed_vocals_cam_pt]", "[directed_vocals_cam]")
+                .Replace("[directed_vocals_cam_pr]", "[directed_vocals_cam]")
+                .Replace("[directed_guitar_cam_pt]", "[directed_guitar_cam]")
+                .Replace("[directed_guitar_cam_pr]", "[directed_guitar_cam]")
+                .Replace("[directed_crowd]", "[directed_crowd_g]")
+                .Replace("[directed_duo_drums]", "[directed_drums]")
+
+                // Replace all keys cuts with arbitrary choices
+                .Replace("[directed_duo_kv]", "[directed_duo_guitar]")
+                .Replace("[directed_duo_kb]", "[directed_duo_gb]")
+                .Replace("[directed_duo_kg]", "[directed_duo_gb]")
+                .Replace("[directed_keys]", "[directed_crowd_b]")
+                .Replace("[directed_keys_cam]", "[directed_crowd_b]")
+                .Replace("[directed_keys_np]", "[directed_crowd_b]")
+
+                // RBN1 format the directed cut
+                .Replace("[directed", "[do_directed_cut directed");
+              to_add.Add(new TextEvent(message.DeltaTime, new_event));
+            }
+            else if (new_event.Contains("[lighting") && message.DeltaTime == 0)
+            {
+              new_event = "[lighting ()]";
+              to_add.Add(new TextEvent(message.DeltaTime, new_event));
+            }
+            else if (new_event.Contains("[lighting (manual") || new_event.Contains("[lighting (dischord)]"))
+            {
+              if (message.DeltaTime <= last_next)
+              {
+                to_remove.Add(message);
+                continue;
+              }
+
+              //add First Frame note as found in most RBN1 MIDIs
+              var note = new NoteOnEvent(message.DeltaTime, 0, 50, 96);
+              to_add.Add(note);
+              to_add.Add(new NoteOffEvent(note.DeltaTime + note_length, note.Channel, note.Key, 0));
+              last_first = note.DeltaTime + note_length; //to prevent having both Next and First events in the same spot
+              continue;
+            }
+            else if (new_event.Contains("[lighting (verse)]"))
+            {
+              new_event = "[verse]";
+              to_add.Add(new TextEvent(message.DeltaTime, new_event));
+            }
+            else if (new_event.Contains("[lighting (chorus)]"))
+            {
+              new_event = "[chorus]";
+              to_add.Add(new TextEvent(message.DeltaTime, new_event));
+            }
+            else if (new_event.Contains("[lighting (intro)]"))
+            {
+              new_event = "[lighting ()]";
+              to_add.Add(new TextEvent(message.DeltaTime, new_event));
+            }
+            else if (new_event.Contains("[lighting (blackout_spot)]"))
+            {
+              new_event = "[lighting (silhouettes_spot)]";
+              to_add.Add(new TextEvent(message.DeltaTime, new_event));
+            }
+            else if (new_event.Contains("[next]"))
+            {
+              if (message.DeltaTime <= last_first)
+              {
+                to_remove.Add(message);
+                continue;
+              }
+
+              var note = new NoteOnEvent(message.DeltaTime, 0, 48, 96);
+              to_add.Add(note);
+              to_add.Add(new NoteOffEvent(note.DeltaTime + note_length, note.Channel, note.Key, 0));
+              last_next = note.DeltaTime + note_length; //to prevent having both Next and First events in the same spot
+            }
+            else if (new_event.Contains(".pp]"))
+            {
+              byte NoteNumber = 0;
+              switch (new_event)
+              {
+                case "[ProFilm_a.pp]":
+                case "[ProFilm_b.pp]":
+                  NoteNumber = 96;
+                  break;
+                case "[film_contrast.pp]":
+                case "[film_contrast_green.pp]":
+                case "[film_contrast_red.pp]":
+                case "[contrast_a.pp]":
+                  NoteNumber = 97;
+                  break;
+                case "[desat_posterize_trails.pp]":
+                case "[film_16mm.pp]":
+                  NoteNumber = 98;
+                  break;
+                case "[film_sepia_ink.pp]":
+                  NoteNumber = 99;
+                  break;
+                case "[film_silvertone.pp]":
+                  NoteNumber = 100;
+                  break;
+                case "[horror_movie_special.pp]":
+                case "[ProFilm_psychedelic_blue_red.pp]":
+                case "[photo_negative.pp]":
+                  NoteNumber = 101;
+                  break;
+                case "[photocopy.pp]":
+                  NoteNumber = 102;
+                  break;
+                case "[posterize.pp]":
+                case "[bloom.pp]":
+                  NoteNumber = 103;
+                  break;
+                case "[bright.pp]":
+                  NoteNumber = 104;
+                  break;
+                case "[ProFilm_mirror_a.pp]":
+                  NoteNumber = 105;
+                  break;
+                case "[desat_blue.pp]":
+                case "[film_contrast_blue.pp]":
+                case "[film_blue_filter.pp]":
+                  NoteNumber = 106;
+                  break;
+                case "[video_a.pp]":
+                  NoteNumber = 107;
+                  break;
+                case "[video_bw.pp]":
+                case "[film_b+w.pp]":
+                  NoteNumber = 108;
+                  break;
+                case "[shitty_tv.pp]":
+                case "[video_security.pp]":
+                  NoteNumber = 109;
+                  break;
+                case "[video_trails.pp]":
+                case "[flicker_trails.pp]":
+                case "[space_woosh.pp]":
+                case "[clean_trails.pp]":
+                  NoteNumber = 110;
+                  break;
+              }
+
+              //reduces instances of pp notes to bare minimum
+              if (NoteNumber > 0 && NoteNumber != last_proc_note && message.DeltaTime >= last_proc_time)
+              {
+                to_add.Add(new NoteOnEvent(message.DeltaTime, 0, NoteNumber, 96));
+                to_add.Add(new NoteOffEvent(message.DeltaTime + note_length, 0, NoteNumber, 0));
+              }
+
+              //we want at least 1 measure between pp effects
+              last_proc_time = message.DeltaTime + (tpqn * 4);
+              //we don't want to put multiple PP notes for the same effect
+              last_proc_note = NoteNumber;
+            }
+            else if (new_event.Contains("[coop"))
+            {
+              if (message.DeltaTime <= (lastevent + note_length)) //to avoid double notes)
+              {
+                to_remove.Add(message);
+                continue;
+              }
+
+              var cameraNoteOn = new NoteOnEvent[9];
+              var enabled = new bool[9];
+              lastevent = message.DeltaTime;
+
+              const int cameracut = 0; //60
+              const int bass = 1; //61
+              const int drummer = 2; //62
+              const int guitar = 3; //63
+              const int vocals = 4; //64
+              const int nobehind = 5; //70
+              const int onlyfar = 6; //71
+              const int onlyclose = 7; //72
+              const int noclose = 8; //73
+
+              cameraNoteOn[cameracut] = new NoteOnEvent(message.DeltaTime, 0, 60, 96);
+              cameraNoteOn[bass] = new NoteOnEvent(message.DeltaTime, 0, 61, 96);
+              cameraNoteOn[drummer] = new NoteOnEvent(message.DeltaTime, 0, 62, 96);
+              cameraNoteOn[guitar] = new NoteOnEvent(message.DeltaTime, 0, 63, 96);
+              cameraNoteOn[vocals] = new NoteOnEvent(message.DeltaTime, 0, 64, 96);
+              cameraNoteOn[nobehind] = new NoteOnEvent(message.DeltaTime, 0, 70, 96);
+              cameraNoteOn[onlyfar] = new NoteOnEvent(message.DeltaTime, 0, 71, 96);
+              cameraNoteOn[onlyclose] = new NoteOnEvent(message.DeltaTime, 0, 72, 96);
+              cameraNoteOn[noclose] = new NoteOnEvent(message.DeltaTime, 0, 73, 96);
+
+              enabled[cameracut] = true; //always enabled for [coop shots
+
+              //players
+              if (new_event.Contains("all_"))
+              {
+                enabled[drummer] = true;
+                enabled[bass] = true;
+                enabled[guitar] = true;
+                enabled[vocals] = true;
+              }
+              else if (new_event.Contains("front_"))
+              {
+                enabled[bass] = true;
+                enabled[guitar] = true;
+                enabled[vocals] = true;
+              }
+              else if (new_event.Contains("v_") || new_event.Contains("_v"))
+              //this allows for single or duo shots
+              {
+                enabled[vocals] = true;
+              }
+              else if (new_event.Contains("g_") || new_event.Contains("_g"))
+              {
+                enabled[guitar] = true;
+              }
+              else if ((new_event.Contains("b_") || new_event.Contains("_b")) &&
+                        !new_event.Contains("behind"))
+              {
+                enabled[bass] = true;
+              }
+              else if (new_event.Contains("d_") || new_event.Contains("_d"))
+              {
+                enabled[drummer] = true;
+              }
+              else if (new_event.Contains("k_") || new_event.Contains("_k"))
+              {
+                enabled[guitar] = true; //keys not supported
+              }
+
+              //camera placement
+              if (new_event.Contains("behind"))
+              {
+                enabled[noclose] = true;
+              }
+              else if (new_event.Contains("near") || new_event.Contains("closeup"))
+              {
+                enabled[nobehind] = true;
+                enabled[onlyclose] = true;
+              }
+              else if (new_event.Contains("far"))
+              {
+                enabled[nobehind] = true;
+                enabled[noclose] = true;
+                enabled[onlyfar] = true;
+              }
+
+              //add the notes that are enabled
+              for (var c = 0; c < 9; c++)
+              {
+                if (!enabled[c]) continue;
+                to_add.Add(cameraNoteOn[c]);
+                to_add.Add(new NoteOffEvent(cameraNoteOn[c].DeltaTime + note_length, cameraNoteOn[c].Channel, cameraNoteOn[c].Key, 0));
+              }
+            }
+            else
+            {
+              continue;
+            }
+            to_remove.Add(message);
+          }
+          else if (message is EndOfTrackEvent eot)
+          {
+            to_remove.Add(message);
+          }
+          else switch (message)
+            {
+              case NoteOnEvent e:
+                {
+                  if (e.Key == 41) //can't have keys spotlight
+                  {
+                    to_remove.Add(message);
+                  }
+                }
+                break;
+              case NoteOffEvent e:
+                {
+                  if (e.Key == 41) //can't have keys spotlight
+                  {
+                    to_remove.Add(message);
+                  }
+                }
+                break;
+            }
+        }
+
+        foreach (var remove in to_remove)
+        {
+          absMessages.Remove(remove);
+        }
+        absMessages.AddRange(to_add);
+        absMessages.Add(new EndOfTrackEvent(final_event + (note_length * 2)));
+        var tracks2 = new List<MidiTrack>(tracks);
+        var venueIndex = tracks2.IndexOf(venueTrack);
+        tracks2[venueIndex] = new MidiTrack(MidiHelper.ToRelative(absMessages.OrderBy(x => x.DeltaTime).ToList()), final_event + (note_length * 2), "VENUE");
+        return tracks2;
       }
     }
   }
