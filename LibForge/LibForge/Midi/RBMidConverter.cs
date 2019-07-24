@@ -1619,7 +1619,7 @@ namespace LibForge.Midi
           return tracks;
         }
         if(!venueTrack.Messages.Any(m => m is TextEvent t 
-            && (t.Text.Contains(".pp]") || t.Text.Contains("coop]") || t.Text.Contains("[directed"))))
+            && (t.Text.Contains(".pp]") || t.Text.Contains("[coop") || t.Text.Contains("[directed"))))
         {
           // If this is already a RBN1 VENUE, skip it.
           return tracks;
