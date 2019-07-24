@@ -290,5 +290,20 @@ namespace ForgeToolGUI
       var reprocessed = RBMidConverter.ToRBMid(RBMidConverter.ToMid(previewState.rbmid));
       fb.OpenTab(InspectorFactory.GetInspector(reprocessed), Name + " reprocessed");
     }
+
+    private void Button2_Click(object sender, EventArgs e)
+    {
+      var midi = RBMidConverter.ToMid(previewState.rbmid);
+      using (var fod = new SaveFileDialog() { FileName = previewState.rbmid.MidiTrackNames[0] + ".mid" })
+      {
+        if(fod.ShowDialog() == DialogResult.OK)
+        {
+          using(var of = System.IO.File.OpenWrite(fod.FileName))
+          {
+            MidiCS.MidiFileWriter.WriteSMF(midi, of);
+          }
+        }
+      }
+    }
   }
 }

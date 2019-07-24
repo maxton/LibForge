@@ -13,6 +13,12 @@ typedef enum <uchar> {
     PITCH_BD = 0xE
 } msg_type;
 
+typedef enum <uchar> {
+    Text = 0x1,
+    TrackName = 0x3,
+    Lyric = 0x5
+} str_type;
+
 typedef struct {
     char channel : 4;
     msg_type type : 4;
@@ -108,7 +114,7 @@ typedef struct {
     }
     else if(kind == 8) {
         // I think this is 1 -> text event, 3 -> track name, 5 -> lyric
-        char string_type;
+        str_type string_type;
         int16 string_offset;
     }
     else {
@@ -120,10 +126,10 @@ typedef struct {
 
 typedef struct {
     uint tick;
-    PSTR string;
+    PSTR str;
 } TickedInfo_String<read=TickedInfo_String_READ,optimize=false>;
 string TickedInfo_String_READ(TickedInfo_String& l){
-    return PSTR_READ(l.string);
+    return PSTR_READ(l.str);
 }
 
 typedef struct {
@@ -190,9 +196,9 @@ string GEM_read(GameGem& gem){
 
 typedef struct {
     int unknown_aa;
-    int num_events;
+    int num_gems;
     if(num_gems)
-        GEM gem[num_gems];
+        GameGem gem[num_gems];
 } GameGemList;
 
 typedef struct {
@@ -265,7 +271,7 @@ typedef struct {
     struct {
         int num_mixes;
         if(num_mixes)
-            LYRIC mix[num_mixes];
+            TickedInfo_String mix[num_mixes];
     } drum_mixes[num_difficulties]<optimize=false>;
 } DRUMMIX;
 
@@ -391,7 +397,7 @@ typedef struct {
     int notes[notes_in_chord];
 } VocalImprovSingleChord;
 
-struct {
+typedef struct {
     int num_markup_chords_1;
     VocalImprovSingleChord markup_chords[num_markup_chords_1]<optimize=false>;
 } VocalImprovChordInfo;
@@ -519,27 +525,27 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     int num_track_info;
     TrackInfo trackInfo[num_track_info] <optimize=false>;
     int num_fill_tracks;
-    Assert(num_fill_tracks == num_lyric_tracks);
-    FillInfo drum_fills[num_fill_tracks] <optimize=false>;
+    Assert(num_fill_tracks == num_track_info);
+    DrumFillInfo drum_fills[num_fill_tracks] <optimize=false>;
     int num_anim_tracks;
     FakeTrack anims[num_anim_tracks] <optimize=false>;
     int num_marker_tracks;
-    Assert(num_marker_tracks == num_lyric_tracks);
+    Assert(num_marker_tracks == num_track_info);
     DrumMap pro_markers[num_marker_tracks] <optimize=false>;
     int num_lane_markers;
-    Assert(num_lane_markers == num_lyric_tracks);
+    Assert(num_lane_markers == num_track_info);
     LANEMARKER lane_markers[num_lane_markers] <optimize=false>;
     int num_gtr_trills;
-    Assert(num_gtr_trills == num_lyric_tracks);
+    Assert(num_gtr_trills == num_track_info);
     GTRTRILLS gtr_trills[num_gtr_trills] <optimize=false>;
     int num_drum_mixes;
-    Assert(num_drum_mixes == num_lyric_tracks);
+    Assert(num_drum_mixes == num_track_info);
     DRUMMIX drum_mixes[num_drum_mixes] <optimize=false>;
     int num_gem_tracks;
-    Assert(num_gem_tracks == num_lyric_tracks);
+    Assert(num_gem_tracks == num_track_info);
     GameGemDB gems[num_gem_tracks] <optimize=false>;
     int num_sections;
-    Assert(num_sections == num_lyric_tracks);
+    Assert(num_sections == num_track_info);
     PhraseDB overdrive_solo_sections[num_sections] <optimize=false>;
     int num_vocal_tracks;
     VOCALTRACK vocal_tracks[num_vocal_tracks]<optimize=false>;
@@ -560,7 +566,7 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     } VocalTrackRange[num_vocaltrack_ranges];
     int what;
     int num_tracks_repeat;
-    Assert(num_tracks_repeat == num_lyric_tracks);
+    Assert(num_tracks_repeat == num_track_info);
     tick_t FinalTick;
     if(format == 0x2f){
         tick_t UnknownTick;
@@ -568,15 +574,15 @@ if(format == 0x10 || format == 0x2f){ // rbmid_ps4/pc
     char what;
     float preview_start_ms;
     float preview_end_ms;
-    Assert(preview_end_ms > preview_start_ms, "preview_end_ms > preview_start_ms");
+    //Assert(preview_end_ms > preview_start_ms, "preview_end_ms > preview_start_ms");
     int num_guitar_handmap_tracks;
-    Assert(num_guitar_handmap_tracks == num_lyric_tracks);
+    Assert(num_guitar_handmap_tracks == num_track_info);
     HANDMAP guitar_handmap_tracks[num_guitar_handmap_tracks]<optimize=false>;
     int num_left_hand_tracks;
-    Assert(num_left_hand_tracks == num_lyric_tracks);
+    Assert(num_left_hand_tracks == num_track_info);
     HANDPOS left_hand_tracks[num_left_hand_tracks]<optimize=false>;
     int num_strummap_tracks;
-    Assert(num_strummap_tracks == num_lyric_tracks);
+    Assert(num_strummap_tracks == num_track_info);
     STRUMMAP strum_maps[num_strummap_tracks]<optimize=false>;
 
     // Begin markup section
