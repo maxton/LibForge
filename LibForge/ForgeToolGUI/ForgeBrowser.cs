@@ -136,7 +136,7 @@ namespace ForgeToolGUI
     private void openToolStripMenuItem_Click(object sender, EventArgs e)
     {
       OpenFileDialog of = new OpenFileDialog();
-      of.Filter = "Supported Packages (*.hdr, *.dat, *.pkg, *_rb3con)|*.hdr;*.dat;*.pkg;*_rb3con";
+      of.Filter = "Supported Packages (*.hdr, *.dat, *.pkg, *_rb3con)|*.hdr;*.dat;*.pkg;*_rb3con|All files|*.*";
       if(of.ShowDialog(this) == DialogResult.OK)
       {
         LoadPackage(of.FileName);
