@@ -67,7 +67,7 @@ namespace LibForge.Lipsync
     {
       byte[] GetBytes(CharLipSync lip)
       {
-        byte[] data = new byte[(lip.Frames.Length < fo) ? 0 : lip.Frames[fo].Events.Count * 2];
+        byte[] data = new byte[(lip.Frames.Length <= fo) ? 0 : lip.Frames[fo].Events.Count * 2];
         if (data.Length <= 0) return data;
 
         var events = lip.Frames[fo].Events;

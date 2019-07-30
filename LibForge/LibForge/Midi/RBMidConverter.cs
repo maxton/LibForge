@@ -1160,6 +1160,8 @@ namespace LibForge.Midi
           if (lyricCleaned == "+")
           {
             var previous = notes.LastOrDefault();
+            if (previous == null)
+              throw new Exception("Vocal track " + track.Name + " started with a '+' lyric");
             notes.Add(new RBMid.VOCALTRACK.VOCAL_NOTE
             {
               PhraseIndex = previous.PhraseIndex,
