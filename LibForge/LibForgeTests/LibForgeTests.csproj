@@ -51,8 +51,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MidiTests.cs" />
+    <Compile Include="MidiConverterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RBMidiFileTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

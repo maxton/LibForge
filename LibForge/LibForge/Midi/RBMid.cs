@@ -6,7 +6,7 @@ using MidiCS;
 
 namespace LibForge.Midi
 {
-  public class RBMid
+  public class RBMid : MidiFileResource
   {
     public struct TICKTEXT
     {
@@ -265,24 +265,6 @@ namespace LibForge.Midi
       public uint EndTick;
       public int[] Pitches;
     }
-    public class TEMPO
-    {
-      public float StartMillis;
-      public uint StartTick;
-      public int Tempo;
-    }
-    public struct TIMESIG
-    {
-      public int Measure;
-      public uint Tick;
-      public short Numerator;
-      public short Denominator;
-    }
-    public struct BEAT
-    {
-      public uint Tick;
-      public bool Downbeat;
-    }
     public class RBVREVENTS
     {
       public struct BEATMATCH_SECTION
@@ -386,20 +368,6 @@ namespace LibForge.Midi
     public TWOTICKS[] MarkupLoop2;
 
     public RBVREVENTS VREvents;
-    public int MidiSongResourceMagic;
-    public uint LastMarkupEventTick;
-    public MidiTrack[] MidiTracks;
-    public uint FinalTick;
-    public uint Measures;
-    public uint[] Unknown;
-    public uint FinalTickMinusOne;
-    public float[] UnknownFloats;
-    public TEMPO[] Tempos;
-    public TIMESIG[] TimeSigs;
-    public BEAT[] Beats;
-    public int UnknownZero;
-    public string[] MidiTrackNames;
-
 
     private string Check<T>(IList<T> a, IList<T> b, string n, Func<T, T, string> f)
     {
@@ -654,7 +622,7 @@ namespace LibForge.Midi
       ?? Check(other.MarkupSoloNotes3, MarkupSoloNotes3, nameof(MarkupSoloNotes3), CheckSoloNotes)
       ?? Check(other.MarkupLoop2, MarkupLoop2, nameof(MarkupLoop2), CheckTwoTick)
       ?? Check(other.MidiSongResourceMagic, MidiSongResourceMagic, nameof(MidiSongResourceMagic))
-      ?? Check(other.LastMarkupEventTick, LastMarkupEventTick, nameof(LastMarkupEventTick))
+      ?? Check(other.LastTrackFinalTick, LastTrackFinalTick, nameof(LastTrackFinalTick))
       ?? Check(other.MidiTracks, MidiTracks, nameof(MidiTracks), (their, my)
            => Check(their.Name, my.Name, nameof(my.Name))
            ?? Check(their.TotalTicks, my.TotalTicks, nameof(my.TotalTicks))

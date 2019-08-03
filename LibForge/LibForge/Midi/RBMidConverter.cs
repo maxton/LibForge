@@ -16,6 +16,12 @@ namespace LibForge.Midi
     {
       return new MidiFile(MidiFormat.MultiTrack, new List<MidiTrack>(m.MidiTracks), 480);
     }
+    public static MidiFileResource ToMidiFileResource(MidiFile mf)
+    {
+      var mfr = new MidiFileResource();
+      MidiConverter.ReadMidiFileResourceFromMidiFile(mfr, mf, mf.Tracks, new List<uint>() { 0U });
+      return mfr;
+    }
 
     public class MidiConverter
     {
@@ -57,8 +63,91 @@ namespace LibForge.Midi
       private uint LastMarkupTick;
       private uint FinalTick;
       private int hopoThreshold;
+
       private List<uint> MeasureTicks = new List<uint>() { 0U };
-      private IList<TimeSigTempoEvent> TempoMap;
+
+      public static void ReadMidiFileResourceFromMidiFile(MidiFileResource mfr, MidiFile mf, List<MidiTrack> tracks, List<uint> MeasureTicks)
+      {
+        var Tempos = new List<MidiFileResource.TEMPO>();
+        var TimeSigs = new List<MidiFileResource.TIMESIG>();
+        var Beats = new List<MidiFileResource.BEAT>();
+        var TempoMap = mf.TempoTimeSigMap;
+        var lastTimeSig = mf.TempoTimeSigMap[0];
+        var measure = 0;
+        foreach (var tempo in TempoMap)
+        {
+          if (tempo.NewTempo)
+            Tempos.Add(new MidiFileResource.TEMPO
+            {
+              StartTick = (uint)tempo.Tick,
+              StartMillis = (float)(tempo.Time * 1000.0),
+              Tempo = (int)(60_000_000 / (float)tempo.BPM)
+            });
+          if (tempo.NewTimeSig)
+          {
+            if (tempo.Tick > 0)
+            {
+              var elapsed = tempo.Tick - lastTimeSig.Tick;
+              var ticksPerBeat = (480 * 4) / lastTimeSig.Denominator;
+              measure += (int)(elapsed / ticksPerBeat / lastTimeSig.Numerator);
+              var lastMeasureTick = MeasureTicks.LastOrDefault();
+              for (var i = MeasureTicks.Count; i < measure; i++)
+              {
+                lastMeasureTick += 480U * lastTimeSig.Numerator * 4 / lastTimeSig.Denominator;
+                MeasureTicks.Add(lastMeasureTick);
+              }
+            }
+            TimeSigs.Add(new MidiFileResource.TIMESIG
+            {
+              Numerator = tempo.Numerator,
+              Denominator = tempo.Denominator,
+              Tick = (uint)tempo.Tick,
+              Measure = measure
+            });
+            lastTimeSig = tempo;
+          }
+        };
+        var FinalTick = tracks.Select(t => t.TotalTicks).Max();
+        uint lastTimeSigTicksPerMeasure = 480U * lastTimeSig.Numerator * 4 / lastTimeSig.Denominator;
+        for (uint lastMeasureTick2 = MeasureTicks.LastOrDefault() + lastTimeSigTicksPerMeasure; lastMeasureTick2 < FinalTick; lastMeasureTick2 += lastTimeSigTicksPerMeasure)
+        {
+          MeasureTicks.Add(lastMeasureTick2);
+        }
+
+        foreach (var item in MidiHelper.ToAbsolute(tracks.Where(t => t.Name == "BEAT").First().Messages))
+        {
+          switch (item)
+          {
+            case NoteOnEvent e:
+              switch (e.Key)
+              {
+                case 12:
+                case 13:
+                  Beats.Add(new RBMid.BEAT
+                  {
+                    Tick = e.DeltaTime,
+                    Downbeat = e.Key == 12
+                  });
+                  break;
+              }
+              break;
+          }
+        }
+
+        mfr.MidiSongResourceMagic = 2;
+        mfr.LastTrackFinalTick = (uint)tracks.Select(t => t.TotalTicks).LastOrDefault();
+        mfr.MidiTracks = tracks.ToArray();
+        mfr.FinalTick = (uint)tracks.Select(t => t.TotalTicks).Max();
+        mfr.Measures = (uint)MeasureTicks.Count();
+        mfr.Unknown = new uint[6];
+        mfr.FinalTickMinusOne = mfr.FinalTick - 1;
+        mfr.UnknownFloats = new float[4] { -1, -1, -1, -1 };
+        mfr.Tempos = Tempos.ToArray();
+        mfr.TimeSigs = TimeSigs.ToArray();
+        mfr.Beats = Beats.ToArray();
+        mfr.UnknownZero = 0;
+        mfr.MidiTrackNames = tracks.Select(t => t.Name).ToArray();
+      }
 
       public MidiConverter(MidiFile mf, int hopoThreshold = 170, Action<string> warnAction = null)
       {
@@ -79,7 +168,6 @@ namespace LibForge.Midi
           {"HARM2", HandleVocalsTrk },
           {"HARM3", HandleVocalsTrk },
           {"EVENTS", HandleEventsTrk },
-          {"BEAT", HandleBeatTrk },
           {"MARKUP", HandleMarkupTrk },
           {"VENUE", HandleVenueTrk }
         };
@@ -87,6 +175,11 @@ namespace LibForge.Midi
 
       public RBMid ToRBMid()
       {
+        rb = new RBMid();
+        var processedMidiTracks = ConvertVenueTrack(mf.Tracks);
+        ReadMidiFileResourceFromMidiFile(rb, mf, processedMidiTracks, MeasureTicks);
+        rb.Format = 0x10;
+
         Lyrics = new List<RBMid.LYRICS>();
         DrumFills = new List<RBMid.DRUMFILLS>();
         Anims = new List<RBMid.ANIM>();
@@ -108,56 +201,7 @@ namespace LibForge.Midi
         MarkupSoloNotes2 = new List<RBMid.MARKUP_SOLO_NOTES>();
         MarkupSoloNotes3 = new List<RBMid.MARKUP_SOLO_NOTES>();
         SoloLoops2 = new List<RBMid.TWOTICKS>();
-        Tempos = new List<RBMid.TEMPO>();
-        TimeSigs = new List<RBMid.TIMESIG>();
-        Beats = new List<RBMid.BEAT>();
-        MidiTrackNames = new List<string>();
-        TempoMap = mf.TempoTimeSigMap;
-        var lastTimeSig = mf.TempoTimeSigMap[0];
-        var measure = 0;
-        foreach (var tempo in mf.TempoTimeSigMap)
-        {
-          if (tempo.NewTempo)
-            Tempos.Add(new RBMid.TEMPO
-            {
-              StartTick = (uint)tempo.Tick,
-              StartMillis = (float)(tempo.Time * 1000.0),
-              Tempo = (int)(60_000_000 / (float)tempo.BPM)
-            });
-          if(tempo.NewTimeSig)
-          {
-            if (tempo.Tick > 0)
-            {
-              var elapsed = tempo.Tick - lastTimeSig.Tick;
-              var ticksPerBeat = (480 * 4) / lastTimeSig.Denominator;
-              measure += (int)(elapsed / ticksPerBeat / lastTimeSig.Numerator);
-              var lastMeasureTick = MeasureTicks.LastOrDefault();
-              for (var i = MeasureTicks.Count; i < measure; i++)
-              {
-                lastMeasureTick += 480U * lastTimeSig.Numerator * 4 / lastTimeSig.Denominator;
-                MeasureTicks.Add(lastMeasureTick);
-              }
-            }
-            TimeSigs.Add(new RBMid.TIMESIG
-            {
-              Numerator = tempo.Numerator,
-              Denominator = tempo.Denominator,
-              Tick = (uint)tempo.Tick,
-              Measure = measure
-            });
-            lastTimeSig = tempo;
-          }
-        }
-        uint lastMeasureTick2 = MeasureTicks.LastOrDefault();
-        FinalTick = processedTracks.Select(t => t.LastTick).Max();
-        for (var i = MeasureTicks.Count; lastMeasureTick2 < FinalTick; i++)
-        {
-          lastMeasureTick2 += 480U * lastTimeSig.Numerator * 4 / lastTimeSig.Denominator;
-          if (lastMeasureTick2 >= FinalTick) break;
-          MeasureTicks.Add(lastMeasureTick2);
-        }
         var trackNames = new[] {
-          processedTracks[0].Name,
           "PART DRUMS",
           "PART BASS",
           "PART REAL_BASS",
@@ -184,78 +228,50 @@ namespace LibForge.Midi
         foreach(var trackname in trackNames)
         {
           var track = processedTracks.Where(x => x.Name == trackname).FirstOrDefault();
-          if(track != null)
+          if(track != null && trackHandlers.ContainsKey(track.Name))
           {
-            ProcessTrack(track);
+            trackHandlers[track.Name](track);
           }
         }
         VocalRanges.Add(theVocalRange);
-        rb = new RBMid
-        {
-          Format = 0x10,
-          Lyrics = Lyrics.ToArray(),
-          DrumFills = DrumFills.ToArray(),
-          Anims = Anims.ToArray(),
-          ProMarkers = ProMarkers.ToArray(),
-          LaneMarkers = LaneMarkers.ToArray(),
-          TrillMarkers = TrillMarkers.ToArray(),
-          DrumMixes = DrumMixes.ToArray(),
-          GemTracks = GemTracks.ToArray(),
-          OverdriveSoloSections = OverdriveSoloSections.ToArray(),
-          VocalTracks = VocalTracks.ToArray(),
-          Unknown4 = Unknown4.ToArray(),
-          VocalRange = VocalRanges.ToArray(),
-          HandMaps = HandMap.ToArray(),
-          GuitarLeftHandPos = HandPos.ToArray(),
-          StrumMaps = strumMaps.ToArray(),
-          MarkupSoloNotes1 = MarkupSoloNotes1.ToArray(),
-          MarkupLoop1 = SoloLoops1.ToArray(),
-          MarkupChords1 = MarkupChords1.ToArray(),
-          MarkupSoloNotes2 = MarkupSoloNotes2.ToArray(),
-          MarkupSoloNotes3 = MarkupSoloNotes3.ToArray(),
-          MarkupLoop2 = SoloLoops2.ToArray(),
-          MidiTracks = ConvertVenueTrack(mf.Tracks).ToArray(),
-          Tempos = Tempos.ToArray(),
-          TimeSigs = TimeSigs.ToArray(),
-          Beats = Beats.ToArray(),
-          FinalTick = FinalTick + 1,
-          Measures = (uint)MeasureTicks.Count(),
-          Unknown = new uint[6],
-          FinalTickMinusOne = FinalTick,
-          UnknownFloats = new float[4] { -1, -1, -1, -1 },
-          MidiTrackNames = mf.Tracks.Select(t => t.Name).ToArray(),
-          PreviewStartMillis = PreviewStart,
-          PreviewEndMillis = PreviewEnd,
-          MidiSongResourceMagic = 2,
-          LastMarkupEventTick = LastMarkupTick,
-          NumPlayableTracks = (uint)Lyrics.Count,
-          FinalEventTick = processedTracks.Where(t=>t.Name == "EVENTS").Select(t=>t.LastTick).First(),
-          UnknownHundred = 100f,
-          UnknownNegOne = -1,
-          UnknownOne = 1,
-          UnknownZeroByte = 0,
-          UnknownZero = 0,
-          HopoThreshold = hopoThreshold,
-        };
+        rb.Lyrics = Lyrics.ToArray();
+        rb.DrumFills = DrumFills.ToArray();
+        rb.Anims = Anims.ToArray();
+        rb.ProMarkers = ProMarkers.ToArray();
+        rb.LaneMarkers = LaneMarkers.ToArray();
+        rb.TrillMarkers = TrillMarkers.ToArray();
+        rb.DrumMixes = DrumMixes.ToArray();
+        rb.GemTracks = GemTracks.ToArray();
+        rb.OverdriveSoloSections = OverdriveSoloSections.ToArray();
+        rb.VocalTracks = VocalTracks.ToArray();
+        rb.Unknown4 = Unknown4.ToArray();
+        rb.VocalRange = VocalRanges.ToArray();
+        rb.HandMaps = HandMap.ToArray();
+        rb.GuitarLeftHandPos = HandPos.ToArray();
+        rb.StrumMaps = strumMaps.ToArray();
+        rb.MarkupSoloNotes1 = MarkupSoloNotes1.ToArray();
+        rb.MarkupLoop1 = SoloLoops1.ToArray();
+        rb.MarkupChords1 = MarkupChords1.ToArray();
+        rb.MarkupSoloNotes2 = MarkupSoloNotes2.ToArray();
+        rb.MarkupSoloNotes3 = MarkupSoloNotes3.ToArray();
+        rb.MarkupLoop2 = SoloLoops2.ToArray();
+        rb.PreviewStartMillis = PreviewStart;
+        rb.PreviewEndMillis = PreviewEnd;
+        rb.NumPlayableTracks = (uint)Lyrics.Count;
+        rb.FinalEventTick = processedTracks.Where(t => t.Name == "EVENTS").Select(t => t.LastTick).First();
+        rb.UnknownHundred = 100f;
+        rb.UnknownNegOne = -1;
+        rb.UnknownOne = 1;
+        rb.UnknownZeroByte = 0;
+        rb.UnknownZero = 0;
+        rb.HopoThreshold = hopoThreshold;
         return rb;
       }
       private Dictionary<string, Action<MidiTrackProcessed>> trackHandlers;
-      private MidiTrackProcessed currentTrack;
-
-      private void ProcessTrack(MidiTrackProcessed track)
-      {
-        currentTrack = track;
-        if (track.LastTick > FinalTick) FinalTick = track.LastTick;
-        MidiTrackNames.Add(track.Name);
-        if (MidiTrackNames.Count == 1)
-          return;
-        else if (trackHandlers.ContainsKey(track.Name))
-          trackHandlers[track.Name](track);
-      }
       
       private float GetMillis(uint tick)
       {
-        var tempo = TempoMap.Last(e => e.Tick <= tick);
+        var tempo = mf.TempoTimeSigMap.Last(e => e.Tick <= tick);
         return (float)(tempo.Time + ((tick - tempo.Tick) / 480.0) * (60 / tempo.BPM)) * 1000f;
       }
 
@@ -1057,6 +1073,7 @@ namespace LibForge.Midi
 
       const byte AltPhraseMarker = 106;
       const byte PhraseMarker = 105;
+      const byte AutoPercussion = 97;
       const byte Percussion = 96;
       const byte VocalsEnd = 84;
       const byte VocalsStart = 36;
@@ -1314,10 +1331,12 @@ namespace LibForge.Midi
         }
         bool AddPercussion(MidiNote e)
         {
-          if (e.Key != Percussion)
+          // TODO: Test autopercussion
+          if (e.Key != Percussion && e.Key != AutoPercussion)
             return false;
           gen_phrase.PercussionSection = true;
-          percussions.Add(e.StartTicks);
+          if(e.Key == Percussion)
+            percussions.Add(e.StartTicks);
           return true;
         }
 
@@ -1472,29 +1491,6 @@ namespace LibForge.Midi
                   var lastDrumFill = DrumFills[0].Fills[idx];
                   lastDrumFill.IsBRE = 1;
                   DrumFills[0].Fills[idx] = lastDrumFill;
-                  break;
-              }
-              break;
-          }
-        }
-      }
-
-      private void HandleBeatTrk(MidiTrackProcessed track)
-      {
-        foreach(var item in track.Items)
-        {
-          switch (item)
-          {
-            case MidiNote e:
-              switch (e.Key)
-              {
-                case 12:
-                case 13:
-                  Beats.Add(new RBMid.BEAT
-                  {
-                    Tick = e.StartTicks,
-                    Downbeat = e.Key == 12
-                  });
                   break;
               }
               break;

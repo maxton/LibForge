@@ -55,6 +55,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Midi\MidiFileResource.cs" />
+    <Compile Include="Midi\MidiFileResourceReader.cs" />
+    <Compile Include="Midi\MidiFileResourceWriter.cs" />
     <Compile Include="TupleExtensions.cs" />
     <Compile Include="LipSync\FrameGroup.cs" />
     <Compile Include="LipSync\KeyFrame.cs" />

@@ -8,7 +8,7 @@ using LibForge.Midi;
 namespace LibForgeTests
 {
   [TestClass]
-  public class MidiTests
+  public class MidiConverterTests
   {
     static System.IO.Stream GetFile(string name) => System.IO.File.OpenRead("TestData\\"+name);
     static RBMid GetMid(string name) => RBMidConverter.ToRBMid(MidiFileReader.FromStream(GetFile(name)));
