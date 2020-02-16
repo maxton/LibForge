@@ -19,11 +19,15 @@ namespace ForgeToolGUI
   public partial class ForgeBrowser : Form
   {
     public ForgeBrowserState state;
+    private void SetTitle(string title = null)
+    {
+      Text = $"{((title?.Length ?? 0) == 0 ? "" : (title + " - "))}ForgeToolGUI (LibForge v{LibForge.Meta.BuildString})";
+    }
     public ForgeBrowser()
     {
       state = new ForgeBrowserState();
       InitializeComponent();
-      Text = $"ForgeToolGUI (LibForge v{LibForge.Meta.BuildString})";
+      SetTitle();
       var args = Environment.GetCommandLineArgs();
       if (args.Length > 1)
       {
@@ -79,14 +83,17 @@ namespace ForgeToolGUI
       {
         if(state.pkg.RootDirectory.TryGetFile("pfs_image.dat", out var f))
         {
+          state.dispose = state.pkg.Dispose;
           state.pkg = GameArchives.PackageReader.ReadPackageFromFile(f);
         }
         if(state.pkg.RootDirectory.TryGetFile("main_ps4.hdr", out var f2))
         {
+          state.dispose = state.pkg.Dispose;
           state.pkg = GameArchives.PackageReader.ReadPackageFromFile(f2);
         }
       }
       state.root = state.pkg.RootDirectory;
+      SetTitle(filename);
       FinishLoad();
     }
 
@@ -94,6 +101,7 @@ namespace ForgeToolGUI
     {
       if (state.Loaded) Unload();
       state.root = GameArchives.Util.LocalDir(path);
+      SetTitle(path);
       FinishLoad();
     }
 
@@ -122,13 +130,12 @@ namespace ForgeToolGUI
     private void Unload()
     {
       if (!state.Loaded) return;
+      SetTitle();
       fileTreeView.Nodes.Clear();
       state.root = null;
-      if (state.pkg != null)
-      {
-        state.pkg.Dispose();
-        state.pkg = null;
-      }
+      (state.dispose ?? state.pkg.Dispose)?.Invoke();
+      state.dispose = null;
+      state.pkg = null;
       closePackageMenuItem.Enabled = false;
       state.Loaded = false;
     }
@@ -252,5 +259,6 @@ namespace ForgeToolGUI
     public bool Loaded = false;
     public GameArchives.AbstractPackage pkg;
     public GameArchives.IDirectory root;
+    public Action dispose;
   }
 }
