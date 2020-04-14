@@ -20,7 +20,7 @@ namespace LibForge.Mesh
     public override HxMesh Read()
     {
       // Note: the string doesn't have a null terminator
-      Check(String(9), "HXMESH\r\n");
+      Check(Encoding.UTF8.GetString(FixedArr(Byte, 8)), "HXMESH\r\n");
       // This appears to be used to verify endianness
       Check(Int(), 1);
       var version = Int();
