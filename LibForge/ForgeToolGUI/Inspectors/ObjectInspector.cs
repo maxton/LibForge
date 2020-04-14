@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using LibForge.Engine;
 using LibForge.RBSong;
 using LibForge.Midi;
 using System.Collections;

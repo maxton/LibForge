@@ -1,11 +1,15 @@
 ﻿using DtxCS;
-using DtxCS.DataTypes;
 using MidiCS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using LibForge.Engine;
 using LibForge.Extensions;
+
+using DataArray = DtxCS.DataTypes.DataArray;
+using DataAtom = DtxCS.DataTypes.DataAtom;
+using DataSymbol = DtxCS.DataTypes.DataSymbol;
 
 namespace LibForge.RBSong
 {
@@ -64,7 +68,7 @@ namespace LibForge.RBSong
         }
     };
 
-    public static RBSongResource MakeRBSong(DataArray array, MidiFile mf)
+    public static RBSongResource MakeRBSong(DtxCS.DataTypes.DataArray array, MidiFile mf)
     {
       var drumBank = array.Array("drum_bank")?.Any(1)
         .Replace("sfx", "fusion/patches")
@@ -167,6 +171,26 @@ namespace LibForge.RBSong
             (interpolation int)
             (driven_prop driven_prop))"));
 
+    /// <summary>
+    /// Creates a PropKeys struct from the given keyframes
+    /// </summary>
+    static StructValue MakeAnimProps(string drivenProp, List<Tuple<float, string>> frames)
+    {
+      var propkeys = DTX.FromDtaString(
+         "(keys ()) " +
+         "(interpolation 0) " +
+         $"(driven_prop (0 0 RBVenueAuthoring 0 1 {drivenProp}))");
+      var keyframes = propkeys.Array("keys").Array(1);
+      foreach (var (frame, key) in frames)
+      {
+        var keyframe = new DataArray();
+        keyframe.AddNode(new DataAtom(frame));
+        keyframe.AddNode(DataSymbol.Symbol(key));
+        keyframes.AddNode(keyframe);
+      }
+      return StructValue.FromData(propKeysType, propkeys);
+    }
+
     static GameObject[] ExtractVenuePropAnimsFromMidi(MidiFile mf)
     {
       var objs = new List<GameObject>();
@@ -210,7 +234,40 @@ namespace LibForge.RBSong
           }
         }
       });
-      var tracks = new Midi.MidiHelper().ProcessTracks(mf);
+      void AddAnimTrack(StructValue props)
+      {
+        objs.Add(new GameObject
+        {
+          Id = new GameObjectId { Index = index, Layer = index++ },
+          Rev = 2,
+          Name = "Keys type 11",
+          Components = new[]
+          {
+            editorCom,
+            new Component
+            {
+              Rev = 3,
+              Name1 = "PropKeysSymCom",
+              Name2 = "PropKeys",
+              Unknown2 = 0,
+              Props = props.Props
+            }
+          }
+        });
+      }
+      foreach(var kv in ExtractPlayerIntensities(mf))
+      {
+        AddAnimTrack(MakeAnimProps(kv.Key, kv.Value));
+      }
+      foreach(var kv in ExtractVenueAnims(mf))
+      {
+        AddAnimTrack(MakeAnimProps(kv.Key, kv.Value));
+      }
+      return objs.ToArray();
+    }
+
+    static Dictionary<string, List<Tuple<float, string>>> ExtractPlayerIntensities(MidiFile mf)
+    {
       var partMap = new Dictionary<string, string> {
         { "PART BASS", "bass_intensity"},
         { "PART GUITAR", "guitar_intensity" },
@@ -242,51 +299,17 @@ namespace LibForge.RBSong
         { "[ride_side_true]", "ride_side_true" },
         { "[ride_side_false]", "ride_side_false" },
       };
-      void AddAnimTrack(StructValue props)
-      {
-        objs.Add(new GameObject
-        {
-          Id = new GameObjectId { Index = index, Layer = index++ },
-          Rev = 2,
-          Name = "Keys type 11",
-          Components = new[]
-          {
-            editorCom,
-            new Component
-            {
-              Rev = 3,
-              Name1 = "PropKeysSymCom",
-              Name2 = "PropKeys",
-              Unknown2 = 0,
-              Props = props.Props
-            }
-          }
-        });
-      }
-      StructValue MakeAnimProps(string drivenProp, List<Tuple<float, string>> frames)
-      {
-        var propkeys = DTX.FromDtaString(
-           "(keys ()) " +
-           "(interpolation 0) " +
-           $"(driven_prop (0 0 RBVenueAuthoring 0 1 {drivenProp}))");
-        var keyframes = propkeys.Array("keys").Array(1);
-        foreach(var (frame, key) in frames)
-        {
-          var keyframe = new DataArray();
-          keyframe.AddNode(new DataAtom(frame));
-          keyframe.AddNode(DataSymbol.Symbol(key));
-          keyframes.AddNode(keyframe);
-        }
-        return StructValue.FromData(propKeysType, propkeys);
-      }
-      foreach(var track in tracks)
+      var ret = new Dictionary<string, List<Tuple<float, string>>>();
+
+      var tracks = new Midi.MidiHelper().ProcessTracks(mf);
+      foreach (var track in tracks)
       {
         if (!partMap.ContainsKey(track.Name))
           continue;
         var frames = new List<Tuple<float, string>>();
-        foreach(var n in track.Items)
+        foreach (var n in track.Items)
         {
-          if(n is Midi.MidiText t)
+          if (n is Midi.MidiText t)
           {
             if (intensityMap.ContainsKey(t.Text))
             {
@@ -294,27 +317,36 @@ namespace LibForge.RBSong
             }
           }
         }
-        AddAnimTrack(MakeAnimProps(partMap[track.Name], frames));
+        ret[partMap[track.Name]] = frames;
       }
-      AddAnimTrack(MakeAnimProps("shot_bg", new List<Tuple<float, string>> {Tuple.Create(0f, "coop_all_far") }));
-      AddAnimTrack(MakeAnimProps("shot_bk", new List<Tuple<float, string>> {Tuple.Create(0f, "coop_all_far") }));
-      AddAnimTrack(MakeAnimProps("shot_gk", new List<Tuple<float, string>> {Tuple.Create(0f, "coop_all_far") }));
-      AddAnimTrack(MakeAnimProps("crowd", new List<Tuple<float, string>> {Tuple.Create(0f, "crowd_realtime") }));
-      AddAnimTrack(MakeAnimProps("world_event", new List<Tuple<float, string>> {Tuple.Create(0f, "none") }));
-      //AddAnimTrack(MakeAnimProps("part2_sing", new List<Tuple<float, string>> {Tuple.Create(0f, "singalong_off") }));
-      //AddAnimTrack(MakeAnimProps("part3_sing", new List<Tuple<float, string>> {Tuple.Create(0f, "singalong_off") }));
-      //AddAnimTrack(MakeAnimProps("part4_sing", new List<Tuple<float, string>> {Tuple.Create(0f, "singalong_off") }));
-      AddAnimTrack(MakeAnimProps("lightpreset", new List<Tuple<float, string>> {Tuple.Create(0f, "silhouettes") }));
-      AddAnimTrack(MakeAnimProps("postproc", new List<Tuple<float, string>> {Tuple.Create(0f, "profilm_a") }));
-      AddAnimTrack(MakeAnimProps("lightpreset_keyframe", new List<Tuple<float, string>> {Tuple.Create(0f, "next") }));
-      AddAnimTrack(MakeAnimProps("spot_bass", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }));
-      AddAnimTrack(MakeAnimProps("spot_guitar", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }));
-      AddAnimTrack(MakeAnimProps("spot_drums", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }));
-      //AddAnimTrack(MakeAnimProps("spot_keyboard", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }));
-      AddAnimTrack(MakeAnimProps("spot_vocal", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }));
-      //AddAnimTrack(MakeAnimProps("shot_5", new List<Tuple<float, string>> {Tuple.Create(0f, "coop_all_far") }));
-      AddAnimTrack(MakeAnimProps("stagekit_fog", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }));
-      return objs.ToArray();
+      return ret;
+    }
+
+    static Dictionary<string, List<Tuple<float, string>>> ExtractVenueAnims(MidiFile mf)
+    {
+      var ret = new Dictionary<string, List<Tuple<float, string>>>
+      {
+        {"shot_bg", new List<Tuple<float, string>> { Tuple.Create(0f, "coop_all_far") } },
+        {"shot_bk", new List<Tuple<float, string>> { Tuple.Create(0f, "coop_all_far") }},
+        {"shot_gk", new List<Tuple<float, string>> { Tuple.Create(0f, "coop_all_far") }},
+        {"crowd", new List<Tuple<float, string>> { Tuple.Create(0f, "crowd_realtime") }},
+        {"world_event", new List<Tuple<float, string>> { Tuple.Create(0f, "none") }},
+        {"part2_sing", new List<Tuple<float, string>> {Tuple.Create(0f, "singalong_off") }},
+        {"part3_sing", new List<Tuple<float, string>> {Tuple.Create(0f, "singalong_off") }},
+        {"part4_sing", new List<Tuple<float, string>> {Tuple.Create(0f, "singalong_off") }},
+        {"lightpreset", new List<Tuple<float, string>> { Tuple.Create(0f, "silhouettes") }},
+        {"postproc", new List<Tuple<float, string>> { Tuple.Create(0f, "profilm_a") }},
+        {"lightpreset_keyframe", new List<Tuple<float, string>> { Tuple.Create(0f, "next") }},
+        {"spot_bass", new List<Tuple<float, string>> { Tuple.Create(0f, "off") }},
+        {"spot_guitar", new List<Tuple<float, string>> { Tuple.Create(0f, "off") }},
+        {"spot_drums", new List<Tuple<float, string>> { Tuple.Create(0f, "off") }},
+        {"spot_keyboard", new List<Tuple<float, string>> {Tuple.Create(0f, "off") }},
+        {"spot_vocal", new List<Tuple<float, string>> { Tuple.Create(0f, "off") }},
+        {"shot_5", new List<Tuple<float, string>> {Tuple.Create(0f, "coop_all_far") }},
+        {"stagekit_fog", new List<Tuple<float, string>> { Tuple.Create(0f, "off") }},
+      };
+
+      return ret;
     }
   }
 }

@@ -114,7 +114,9 @@ namespace ForgeToolGUI
       {
         using (var s = i.GetStream())
         {
-          return new RBSongReader(s).Read();
+          var rbsong = new RBSongResource();
+          rbsong.Load(s);
+          return rbsong;
         }
       }
       else if (i.Name.Contains(".gp4"))

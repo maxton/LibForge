@@ -220,10 +220,11 @@ namespace ForgeTool
               {
                 try
                 {
-                  var rbsong = new RBSongReader(fi).Read();
+                  var rbsong = new RBSongResource();
+                  rbsong.Load(fi);
                   using (var ms = new MemoryStream((int)fi.Length))
                   {
-                    new RBSongWriter(ms).WriteStream(rbsong);
+                    new RBSongResourceWriter(ms).WriteStream(rbsong);
                     ms.Position = 0;
                     if (ms.Length == fi.Length)
                     {
@@ -253,7 +254,11 @@ namespace ForgeTool
           }
           break;
         case "rbsong2rbsong":
-          WithIO((i, o) => new RBSongWriter(o).WriteStream(new RBSongReader(i).Read()));
+          WithIO((i, o) => {
+            var rbsong = new RBSongResource();
+            rbsong.Load(i);
+            new RBSongResourceWriter(o).WriteStream(rbsong);
+          });
           break;
         case "con2gp4":
           makepkg = false;

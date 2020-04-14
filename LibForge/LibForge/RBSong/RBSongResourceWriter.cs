@@ -1,4 +1,5 @@
-﻿using LibForge.Util;
+﻿using LibForge.Engine;
+using LibForge.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,9 +8,9 @@ using System.Text;
 
 namespace LibForge.RBSong
 {
-  public class RBSongWriter : WriterBase<RBSongResource>
+  public class RBSongResourceWriter : WriterBase<RBSongResource>
   {
-    public RBSongWriter(Stream s) : base(s) { }
+    public RBSongResourceWriter(Stream s) : base(s) { }
     public override void WriteStream(RBSongResource v)
     {
       WriteEntityResource(v);
@@ -77,7 +78,7 @@ namespace LibForge.RBSong
       Write(p.Name);
       WriteType(p.Type);
     }
-    public void WriteType(Type t)
+    public void WriteType(Engine.Type t)
     {
       Write((int)t.InternalType);
       if(t is ArrayType)

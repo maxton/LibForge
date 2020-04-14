@@ -200,7 +200,7 @@ SHORTNAMES
       using (var rbmid = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbmid_ps4")))
         RBMidWriter.WriteStream(song.RBMidi, rbmid);
       using (var rbsongFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.rbsong")))
-        new RBSongWriter(rbsongFile).WriteStream(song.RBSong);
+        new RBSongResourceWriter(rbsongFile).WriteStream(song.RBSong);
       using (var songdtaFile = File.OpenWrite(Path.Combine(songPath, $"{shortname}.songdta_ps4")))
         SongDataWriter.WriteStream(song.SongData, songdtaFile);
       if (song.SongData.AlbumArt)
@@ -254,7 +254,7 @@ SHORTNAMES
         s => RBMidWriter.WriteStream(song.RBMidi, s)));
       songDir.Files.Add(WriterToFile(
         $"{shortname}.rbsong",
-        s => new RBSongWriter(s).WriteStream(song.RBSong)));
+        s => new RBSongResourceWriter(s).WriteStream(song.RBSong)));
       songDir.Files.Add(WriterToFile(
         $"{shortname}.songdta_ps4",
         s => SongDataWriter.WriteStream(song.SongData, s)));

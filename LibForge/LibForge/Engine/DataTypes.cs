@@ -1,81 +1,13 @@
-﻿using System;
+﻿using DtxCS.DataTypes;
+using LibForge.Util;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using DtxCS.DataTypes;
 
-namespace LibForge.RBSong
+namespace LibForge.Engine
 {
-  public class Component
-  {
-    public string Name1;
-    public string Name2;
-    public int Rev;
-    public long Unknown2;
-    public Property[] Props;
-  }
-  public struct GameObjectId
-  {
-    public short Layer;
-    public int Index;
-  }
-  public class GameObject
-  {
-    public const int MaxVersion = 0x4;
-    public GameObjectId Id;
-    public int Rev;
-    public string Name;
-    public Component[] Components;
-  }
-  public class EntityLayer
-  {
-    public int Version;
-    public int fileSlotIndex;
-    public short TotalObjectLayers;
-    public GameObject[] Objects;
-  }
-  public class Entity
-  {
-    public const int MaxVersion = 0x1E;
-    public int Version;
-    public EntityLayer[] Layers;
-  }
-  public abstract class Resource
-  {
-    public string Type;
-    public string Path;
-    public static Resource Create(string type)
-    {
-      switch (type)
-      {
-        case "PropAnimResource":
-          return new PropAnimResource();
-        case "RBSongResource":
-          return new RBSongResource();
-        default:
-          throw new NotImplementedException("Unimplemented resource type: "+type);
-      }
-    }
-  }
-  public class EntityResource : Resource
-  {
-    public EntityResource() { Type = "EntityResource"; }
-    public const int MaxVersion = 0x11;
-    public int Version;
-    public string[] InlineLayerNames;
-    public Entity Entity;
-    public Resource[][] InlineResourceLayers;
-  }
-  public class RBSongResource : EntityResource
-  {
-    public RBSongResource() { Type = "RBSongResource"; }
-  }
-  public class PropAnimResource : EntityResource
-  {
-    public PropAnimResource() { Type = "PropAnimResource"; }
-  }
-
   // A TYPE is either:
   // A primitive data type
   // A struct containing fields, each with an associated TYPE
@@ -110,7 +42,8 @@ namespace LibForge.RBSong
           return PrimitiveType.ResourcePath;
         case "array":
           var eType = FromData(n.Array("item"));
-          return new ArrayType {
+          return new ArrayType
+          {
             ElementType = eType,
             InternalType = DataType.Array | eType.InternalType
           };
@@ -120,6 +53,54 @@ namespace LibForge.RBSong
           if (TypeDefinitions.ContainsKey(type))
             return TypeDefinitions[type];
           throw new Exception("Unknown type " + n.Any(1));
+      }
+    }
+
+    public static Type Read(Stream s)
+    {
+      var r = new BinReader(s);
+      var type = (DataType)r.Int();
+      if (type.HasFlag(DataType.Array))
+      {
+        return new ArrayType
+        {
+          InternalType = type,
+          ElementType = Type.Read(s)
+        };
+      }
+      else if (type.HasFlag(DataType.Struct))
+      {
+        return new StructType
+        {
+          InternalType = type,
+          Refcount = r.Long(),
+          Properties = r.Arr(() => Property.Read(s))
+        };
+      }
+      switch (type)
+      {
+        case DataType.Float:
+          return PrimitiveType.Float;
+        case DataType.Int32:
+          return PrimitiveType.Int;
+        case DataType.Uint8:
+          return PrimitiveType.Byte;
+        case DataType.Uint32:
+          return PrimitiveType.UInt;
+        case DataType.Uint64:
+          return PrimitiveType.Long;
+        case DataType.Bool:
+          return PrimitiveType.Bool;
+        case DataType.Symbol:
+          return PrimitiveType.Symbol;
+        case DataType.ResourcePath:
+          return PrimitiveType.ResourcePath;
+        case DataType.DrivenProp:
+          return PrimitiveType.DrivenProp;
+        case DataType.GameObjectId:
+          return PrimitiveType.GameObjectId;
+        default:
+          return new PrimitiveType(type);
       }
     }
   }
@@ -146,14 +127,14 @@ namespace LibForge.RBSong
     {
       var props = array.Array("props");
       var propList = new List<PropertyDef>();
-      foreach(var p in props.Children)
+      foreach (var p in props.Children)
       {
         var arr = p as DataArray;
         if (arr == null) continue;
         propList.Add(new PropertyDef { Name = arr.Any(0), Type = Type.FromData(arr) });
       }
       var ret = new StructType { InternalType = DataType.Struct, Properties = propList.ToArray() };
-      if(array.Any(0) == "define")
+      if (array.Any(0) == "define")
       {
         TypeDefinitions[array.Any(1)] = ret;
       }
@@ -204,6 +185,16 @@ namespace LibForge.RBSong
       Type = val.Type;
     }
     public Value Value;
+
+    public static Property Read(Stream s)
+    {
+      var r = new BinReader(s);
+      return new Property
+      {
+        Name = r.String(),
+        Type = Type.Read(s)
+      };
+    }
   }
   public abstract class Value
   {
@@ -235,9 +226,104 @@ namespace LibForge.RBSong
         case DataType.DrivenProp:
           return DrivenProp.FromData(arr);
         default:
-          if(t is ArrayType at)
+          if (t is ArrayType at)
             return ArrayValue.FromData(at, arr);
           throw new Exception("Unhandled case (TODO)");
+      }
+    }
+    public static Value Read(Stream s, Type t)
+    {
+      var r = new BinReader(s);
+      switch (t)
+      {
+        case ArrayType at:
+          return new ArrayValue(at, r.Arr(() => Read(s, at.ElementType)));
+        case StructType st:
+          var props = new List<Property>();
+          foreach (var p in st.Properties)
+          {
+            props.Add(new Property
+            {
+              Name = p.Name,
+              Type = p.Type,
+              Value = Read(s, p.Type)
+            });
+          }
+          return new StructValue(st, props.ToArray());
+        case PrimitiveType pt:
+          switch (pt.InternalType)
+          {
+            case DataType.Float:
+              return new FloatValue(r.Float());
+            case DataType.Int32:
+              return new IntValue(r.Int());
+            case DataType.Uint8:
+              return new ByteValue(r.Byte());
+            case DataType.Uint32:
+              return new UIntValue(r.UInt());
+            case DataType.Uint64:
+              return new LongValue(r.Long());
+            case DataType.Bool:
+              return new BoolValue(r.Byte() != 0);
+            case DataType.Symbol:
+              return new SymbolValue(r.String());
+            case DataType.ResourcePath:
+              var prefix = r.Byte();
+              return new ResourcePathValue(r.String(), prefix);
+            case DataType.DrivenProp:
+              int unk_driven_prop_1 = r.Int();
+              int unk_driven_prop_2 = r.Int();
+              if (unk_driven_prop_2 == 0)
+              {
+                return new DrivenProp
+                {
+                  Unknown1 = unk_driven_prop_1,
+                  Unknown2 = unk_driven_prop_2,
+                  ClassName = r.String(),
+                  Unknown3 = r.Int(),
+                  Unknown4 = r.Long(),
+                  PropertyName = r.String()
+                };
+              }
+              else
+              {
+                return new DrivenProp
+                {
+                  Unknown1 = unk_driven_prop_1,
+                  Unknown2 = unk_driven_prop_2,
+                  ClassName = null,
+                  Unknown3 = r.Int(),
+                  Unknown4 = r.Long(),
+                  PropertyName = null
+                };
+              }
+            case DataType.GameObjectId:
+              return new GameObjectIdValue
+              {
+                Unknown1 = r.Int(),
+                Unknown2 = r.Int(),
+                Unknown3 = r.Int(),
+                Unknown4 = r.Int(),
+                Unknown5 = r.Int(),
+                Unknown6 = r.Int(),
+              };
+            case DataType.Color:
+              return new ColorValue
+              {
+                R = r.Float(),
+                G = r.Float(),
+                B = r.Float(),
+                A = r.Float(),
+                Unk1 = r.Int(),
+                Unk2 = r.Int(),
+                Unk3 = r.Int(),
+                Unk4 = r.Int(),
+              };
+            default:
+              throw new InvalidDataException("Unknown type");
+          }
+        default:
+          throw new Exception("This switch is exhaustive but C# doesn't have sum types");
       }
     }
   }
@@ -375,7 +461,7 @@ namespace LibForge.RBSong
     public static ArrayValue FromData(ArrayType t, DataArray arr)
     {
       var data = new List<Value>();
-      foreach(var node in arr.Children)
+      foreach (var node in arr.Children)
       {
         data.Add(FromData(t.ElementType, node));
       }
