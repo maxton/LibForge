@@ -210,6 +210,13 @@ SHORTNAMES
       }
     }
 
+    // TODO: Would be faster to have each filetype just estimate its size and use the writer directly.
+    /// <summary>
+    /// Writes a writer to a byte array which backs an FSFile
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="writer"></param>
+    /// <returns></returns>
     private static FSFile WriterToFile(string name, Action<Stream> writer)
     {
       using (var ms = new MemoryStream())
