@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using LibForge.CSV;
 using LibForge.Lipsync;
 using LibForge.Mesh;
 using LibForge.Midi;
@@ -309,6 +310,17 @@ namespace ForgeTool
             }
           }
           break;
+        case "csv2txt":
+          {
+            var input = args[1];
+            var output = args[2];
+            using (var fi = File.OpenRead(input))
+            {
+              var csv = CsvData.LoadFile(fi);
+              File.WriteAllText(output, csv.ToString());
+            }
+          }
+          break;
         default:
           Usage();
           break;
@@ -343,6 +355,8 @@ namespace ForgeTool
       Console.WriteLine("       --desc \"Package Description\" : set the description of the package");
       Console.WriteLine("  milo2lipsync <input.milo_xbox> <output.lipsync>");
       Console.WriteLine("   - converts an uncompressed milo archive to forge lipsync file");
+      Console.WriteLine("  csv2txt <input.csv_pc> <output.csv>");
+      Console.WriteLine("   - decodes a csv file");
     }
   }
   class CompareException : Exception {

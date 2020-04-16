@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CSV\CsvData.cs" />
     <Compile Include="Engine\Component.cs" />
     <Compile Include="Engine\GameObject.cs" />
     <Compile Include="Engine\Entity.cs" />

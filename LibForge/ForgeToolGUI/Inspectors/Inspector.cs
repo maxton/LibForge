@@ -1,4 +1,5 @@
-﻿using LibForge.Lipsync;
+﻿using LibForge.CSV;
+using LibForge.Lipsync;
 using LibForge.Mesh;
 using LibForge.Midi;
 using LibForge.Milo;
@@ -138,6 +139,14 @@ namespace ForgeToolGUI
         using (var s = i.GetStream())
         {
           return MiloFile.ReadFromStream(s);
+        }
+      }
+      else if(i.Name.Contains(".csv"))
+      {
+        using (var s = i.GetStream())
+        {
+
+          return CsvData.LoadFile(s).ToString();
         }
       }
       else
