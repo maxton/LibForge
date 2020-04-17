@@ -1,6 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
+using DtxCS.DataTypes;
+using GameArchives;
+using LibForge.Ark;
 using LibForge.CSV;
 using LibForge.Lipsync;
 using LibForge.Mesh;
@@ -165,6 +170,10 @@ namespace ForgeTool
             {
               Console.WriteLine("(a = converted file, b = original)");
             }
+            if (warn > 0 || fail > 0)
+            {
+              Environment.Exit(1);
+            }
           }
           break;
         case "simpletest":
@@ -319,6 +328,73 @@ namespace ForgeTool
               var csv = CsvData.LoadFile(fi);
               File.WriteAllText(output, csv.ToString());
             }
+          }
+          break;
+        case "arkorder":
+          {
+            var input = args[1];
+            var output = args[2];
+            var sb = new StringBuilder();
+            var archive = new Archive(input);
+            using (var o = File.OpenWrite(output))
+            using (var sw = new StreamWriter(o))
+            {
+              archive.WriteArkorder(sw);
+            }
+          }
+          break;
+        case "arkbuild":
+          {
+            var filedir = args[1];
+            var arkorder = args[2];
+            var outdir = args[3];
+            var name = args[4];
+            if (!Directory.Exists(filedir))
+            {
+              Console.WriteLine($"Error: {filedir} does not exist.");
+              return;
+            }
+            if (!Directory.Exists(outdir))
+            {
+              Console.WriteLine($"Error: {outdir} does not exist.");
+              return;
+            }
+            if (!File.Exists(arkorder))
+            {
+              Console.WriteLine($"Error: {arkorder} not found.");
+              return;
+            }
+            var arks = new List<List<Tuple<string, IFile>>>();
+            DataArray arkOrder;
+            using (var order = File.OpenRead(arkorder))
+            using (var reader = new StreamReader(order))
+            {
+              arkOrder = DtxCS.DTX.FromDtaStream(order);
+            }
+            int arkIndex = 0;
+            arks.Add(new List<Tuple<string, IFile>>());
+            foreach(var x in arkOrder.Children)
+            {
+              if (x is DataSymbol s)
+              {
+                var fullPath = Path.Combine(filedir, s.Name.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(fullPath))
+                {
+                  Console.WriteLine($"Error: {fullPath} could not be found.");
+                  return;
+                }
+                IFile f = Util.LocalFile(fullPath);
+                arks[arkIndex].Add(Tuple.Create(s.Name, f));
+              }
+              else if (x is DataCommand c && c.Symbol(0).Name == "split_ark")
+              {
+                arkIndex++;
+                arks[arkIndex] = new List<Tuple<string, IFile>>();
+              }
+            }
+            var builder = new ArkBuilder(name, arks);
+            Console.Write($"Writing {name}.hdr and ark files to {outdir}...");
+            builder.Save(outdir);
           }
           break;
         default:

@@ -55,6 +55,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ark\Archive.cs" />
+    <Compile Include="Ark\ArkBuilder.cs" />
+    <Compile Include="Ark\FileEntry.cs" />
+    <Compile Include="Ark\Hash.cs" />
     <Compile Include="CSV\CsvData.cs" />
     <Compile Include="Engine\Component.cs" />
     <Compile Include="Engine\GameObject.cs" />
@@ -87,6 +91,9 @@
     <Compile Include="Milo\MiloFile.cs" />
     <Compile Include="Milo\IMiloEntry.cs" />
     <Compile Include="RBSong\PropAnimResource.cs" />
+    <Compile Include="Util\BinWriter.cs" />
+    <Compile Include="Util\EncryptedReadStream.cs" />
+    <Compile Include="Util\EncryptedWriteStream.cs" />
     <Compile Include="Util\PkgCreator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Midi\RBMidWriter.cs" />
