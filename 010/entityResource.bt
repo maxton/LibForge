@@ -294,89 +294,110 @@ typedef struct {
     int version;
     if (version > kEntityRev)
     {
-        Printf("Warning: Too new\n");
+        // LoadCached
+        struct {
+            int int2;
+            int numComponents;
+            struct {
+                PSTR name;
+                int memoryLayout;
+                int cached;
+            } component[numComponents]<optimize=false>;
+            int size;
+            byte entity[size];
+        } entity;
+        int inlineResources;
+        if (inlineResources > 0) {
+            int numResources;
+            struct {
+                PSTR symbol1;
+                PSTR symbol2;
+                EntityResource rsrc;
+            } resources[numResources]<optimize=false>;
+        }
     }
-
-    if(version <= 4)
-    {
-      PSTR symbol;
-    }
-    if(version >= 9)
-    {
-      int numLayers;
-    }
-    else
-    {
-        int rootId;
-        if(version > 6)
+    else {
+        if(version <= 4)
         {
-            int numLayers;
+          PSTR symbol;
+        }
+        if(version >= 9)
+        {
+          int numLayers;
         }
         else
         {
-            int16 array_size;
-            if(version <= 1)
+            int rootId;
+            if(version > 6)
             {
-              // Read GameObjectIdPropArray
-                Assert(false, "Version <= 1");
+                int numLayers;
             }
-            local int numLayers = 1;
+            else
+            {
+                int16 array_size;
+                if(version <= 1)
+                {
+                  // Read GameObjectIdPropArray
+                    Assert(false, "Version <= 1");
+                }
+                local int numLayers = 1;
+            }
         }
-    }
-
-    local int li = 0;
-    for (li = 0; li < numLayers; li++)
-    {
+    
+        local int li = 0;
+        for (li = 0; li < numLayers; li++)
+        {
+            if (version < 8)
+            {
+              if (version >= 7)
+              {
+                int16 layer_field_28;
+              }
+              if (numLayers != 1)
+              {
+                Assert(false, "numLayers == 1");
+              }
+              int propArrayBaseSize;
+              if (propArrayBaseSize > 0)
+              {
+                Assert(false, "Version < 8 loads objptrs here");
+              }
+            }
+            else if ( version <= 11 )
+            {
+              PSTR layer_names;
+            }
+        }
         if (version < 8)
         {
-          if (version >= 7)
-          {
-            int16 layer_field_28;
-          }
-          if (numLayers != 1)
-          {
-            Assert(false, "numLayers == 1");
-          }
-          int propArrayBaseSize;
-          if (propArrayBaseSize > 0)
-          {
-            Assert(false, "Version < 8 loads objptrs here");
-          }
-        }
-        else if ( version <= 11 )
-        {
-          PSTR layer_names;
-        }
-    }
-    if (version < 8)
-    {
-        if (version >= 2)
-        {
-          Assert(false, "Version >= 2 < 8");
-        }
-    }
-    else
-    {
-        for(li = 0; li < numLayers; li++)
-        {
-            EntityLayer layer(li, version);
-            if(version > 0xC)
+            if (version >= 2)
             {
-                // HACK: Allows reading codemonkey_rbn.rbsong
-                if(version >= 0x11)
+              Assert(false, "Version >= 2 < 8");
+            }
+        }
+        else
+        {
+            for(li = 0; li < numLayers; li++)
+            {
+                EntityLayer layer(li, version);
+                if(version > 0xC)
                 {
-                    if(ReadInt() == 1)
+                    // HACK: Allows reading codemonkey_rbn.rbsong
+                    if(version >= 0x11)
                     {
-                        int unk, unk2, unk3, unk4;
+                        if(ReadInt() == 1)
+                        {
+                            int unk, unk2, unk3, unk4;
+                        }
                     }
+                    int inlineVersion;
+                    int inlineResourceCount;
+                    struct {
+                        PSTR type;
+                        PSTR name;
+                        EntityResource resource;
+                    } inline[inlineResourceCount];
                 }
-                int inlineVersion;
-                int inlineResourceCount;
-                struct {
-                    PSTR type;
-                    PSTR name;
-                    EntityResource resource;
-                } inline[inlineResourceCount];
             }
         }
     }
@@ -389,11 +410,12 @@ typedef struct EntityResource {
         //Assert(false, "Incompatible version");
     }
     int resourceLayerCount;
-    PSTR resourceLayerNames[resourceLayerCount];
+    PSTR resourceLayerNames[resourceLayerCount]<optimize=false>;
     if(version >= 0xF)
     {
         int unk0;
-        if(version >= 0x10)
+        byte extra_data[unk0];
+        if(version >= 0xF)
         {
             int unk1;
         }
@@ -401,4 +423,48 @@ typedef struct EntityResource {
     Entity ent;
 } EntityResource;
 
-EntityResource file<open=true>;
+local string filename = GetFileName();
+typedef int strptr<read=STRPTR_read>;
+string STRPTR_read(int p) {
+    return names.names[p].name;
+}
+
+if (Strstr(filename, ".layout_") != -1 ||
+    Strstr(filename, ".entity_") != -1) {
+    int layoutRev;
+    EntityResource file<open=true>;
+} else if (Strstr(filename, ".rbsong") != -1) {
+    EntityResource file<open=true>;
+} else {
+    int revision1;
+    int count1;
+    int unk1;
+    int unk2;
+    int unk3;
+    int count1;
+    int sig;
+    int unk;
+    int count2;
+    struct {
+        PSTR name;
+        int sig;
+        int unk;
+    } unk[count2]<optimize=false>;
+    
+    int unk1;
+    int unk2;
+    int unk3;
+    struct {
+        int num_names;
+        struct {
+            string name;
+        } names[num_names]<optimize=false>;
+    } names<open=true>;
+    
+    while(ReadByte() == 0){
+     FSeek(FTell() + 1);
+    }
+    
+    int num_ints;
+    strptr ints[num_ints];
+}

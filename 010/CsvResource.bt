@@ -1,0 +1,37 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+typedef int value<read=ValueRead>;
+string ValueRead(value v) {
+    local string x;
+    local int i = v;
+    while(strings[i] != 0) {
+        x += strings[i];
+        i += 1;
+    }
+    return x;
+}
+
+typedef struct {
+    int numColumns;
+    value columns[numColumns]<optimize=false>;
+} row;
+
+int csvresource_revision;
+int two;
+char csvdata;
+int stringTableSize;
+char strings[stringTableSize];
+row headerRow;
+int numRows;
+row bodyRows[numRows];

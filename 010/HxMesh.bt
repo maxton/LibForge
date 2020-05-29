@@ -11,13 +11,27 @@
 //   History: 
 //------------------------------------------------
 LittleEndian();
+typedef enum <int> {
+    Invalid = -1,
+    Color = 0,
+    ColorTex = 2,
+    Unskinned = 3,
+    Skinned = 4,
+    PosOnly = 5,
+    Particle = 6,
+    UnskinnedCompressed = 7,
+    SkinnedCompressed = 8
+} VertexType;
+
 typedef struct {
     float x;
     float y;
     float z;
     
-    int unk;
-    int unk;
+    char unk;
+    float unk;
+    char unk;
+    hfloat unk;
     int unk;
     int unk;
     int unk;
@@ -47,13 +61,13 @@ typedef struct {
 char ID[8];
 int endian;
 int version;
-int vertexType;
+VertexType vertexType;
 
 int num_verts;
 int num_tris;
-if(version > 0xC)
+if(version >= 0xC)
     char bools[2];
-if(version > 0xD)
+if(version >= 0xD)
     char bools_2[2];
 if(version > 3)
     char keepMeshData;

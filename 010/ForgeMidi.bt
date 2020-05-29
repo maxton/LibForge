@@ -153,6 +153,11 @@ typedef struct {
 } TickedInfo_int;
 
 typedef struct {
+    tick_t tick;
+    float data;
+} TickedInfo_float;
+
+typedef struct {
     tick_t fill_start_tick;
     tick_t fill_end_tick;
     char is_BRE;
@@ -545,7 +550,7 @@ typedef struct {
     } SongMaps;
 } MidiFileResource;
 
-if(ReadInt() == 0x10 || ReadInt() == 0x2f){ // rbmid_ps4/pc
+if(ReadInt() > 0x2){ // rbmid_ps4/pc
     int format;
     int num_track_info;
     TrackInfo trackInfo[num_track_info] <optimize=false>;
@@ -574,9 +579,8 @@ if(ReadInt() == 0x10 || ReadInt() == 0x2f){ // rbmid_ps4/pc
     PhraseDB overdrive_solo_sections[num_sections] <optimize=false>;
     int num_vocal_tracks;
     VOCALTRACK vocal_tracks[num_vocal_tracks]<optimize=false>;
-    int UnknownOne;
-    int UnknownNegOne;
-    float UnknownHundred;
+    int num_unk_float_data;
+    TickedInfo_float unk_float_data[num_unk_float_data];
     int num_unk_structs;
     struct {
         tick_t unk_tick;
@@ -590,6 +594,8 @@ if(ReadInt() == 0x10 || ReadInt() == 0x2f){ // rbmid_ps4/pc
         float HighNote;
     } VocalTrackRange[num_vocaltrack_ranges];
     int what;
+    if (format < 0xC)
+        int what_2;
     int num_tracks_repeat;
     Assert(num_tracks_repeat == num_track_info);
     tick_t FinalTick;
@@ -611,10 +617,14 @@ if(ReadInt() == 0x10 || ReadInt() == 0x2f){ // rbmid_ps4/pc
     STRUMMAP strum_maps[num_strummap_tracks]<optimize=false>;
 
     // Begin markup section
-    ImprovSoloCueInfo cueInfo1;
-    VocalImprovChordInfo voxChordInfo;
-    RBLoopDefnVector loopDefns;
-    ImprovSoloCueInfo cueInfo2;
+    if (format >= 0x7)
+        ImprovSoloCueInfo cueInfo1;
+    if (format >= 0x8)
+        VocalImprovChordInfo voxChordInfo;
+    if (format >= 0xA)
+        RBLoopDefnVector loopDefns;
+    if (format >= 0xC)
+        ImprovSoloCueInfo cueInfo2;
 
     if(format == 0x2f) { // RBVR Specific section
         RBVREVENTS vr_events;

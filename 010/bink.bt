@@ -1,0 +1,51 @@
+// BINK
+LittleEndian();
+typedef struct {
+  char MAGIC[3];
+  char rev;
+  uint32 size;
+  uint32 nFrames;
+  uint32 largestFrame;
+  uint32 nFrames2;
+  uint32 vw;
+  uint32 vh;
+  uint32 fpsNum;
+  uint32 fpsDenom;
+  uint32 vFlags;
+  uint32 nAudioTracks;
+  struct {
+    uint16 unk;
+    uint16 numChannels;
+  } audioChannelInfo[nAudioTracks];
+  struct {
+    uint16 sampleRate;
+    char flagsLower;
+    char flagsUpper;
+  } audioInfo[nAudioTracks];
+  uint32 trackIds[nAudioTracks];
+} BIKHDR;
+
+BIKHDR header<open=true>;
+int frameOffsets[header.nFrames + 1];
+
+local int i = 0;
+local int pos, nPos;
+for(i = 0; i < header.nFrames; i++)
+{
+    pos = frameOffsets[i + 1] & (~0x1);
+    nPos = frameOffsets[i + 2] & (~0x1);
+    FSeek(pos);
+    struct {
+        struct {
+            int length;
+            if(length > 0)
+            {
+                int samples;
+                byte packet[length-4];
+            }
+        } audio[header.nAudioTracks]<optimize=false>;
+        struct {
+            byte vData[nPos - FTell()];
+        } video<optimize=false>;
+    } frame;
+}

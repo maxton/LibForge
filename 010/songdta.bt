@@ -31,17 +31,17 @@ enum <byte> {
     Male = 1,
     Female = 2
 } vocal_gender;
-char medium[16];
-char has_freestyle_vox;
+char anim_tempo[16];
+char has_markup;
 FSeek(FTell()+3);
 int vocal_parts; // not certain about this one
 struct {
     int unk_0 : 1;
-    int tambourine : 1;
+    int vocals : 1;
     int unk_2 : 1;
     int unk_3 : 1;
     int unk_4 : 1;
     int unk_5 : 1;
-} flags;
+} solos;
 char fake;
 char shortname[256];
