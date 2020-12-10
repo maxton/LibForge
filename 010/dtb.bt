@@ -1,0 +1,64 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+#include "common.bt"
+
+typedef enum
+{
+    DATAINT = 0x00,
+    DATAFLOAT = 0x01,
+    VARIABLE = 0x02,
+    SYMBOL = 0x05,
+    EMPTY = 0x06,
+    IFDEF = 0x07,
+    ELSE = 0x08,
+    ENDIF = 0x09,
+    ARRAY = 0x10,
+    COMMAND = 0x11,
+    STRING = 0x12,
+    MACRO = 0x13,
+    DEFINE = 0x20,
+    INCLUDE = 0x21,
+    MERGE = 0x22,
+    IFNDEF = 0x23
+} DataType;
+
+
+byte id;
+
+struct DataArray;
+typedef struct DataNode {
+};
+
+void ReadElement() {
+    local DataType type = ReadInt();
+    FSeek(FTell() + 4);
+    switch(type) {
+        case DATAINT: int value; break;
+        case DATAFLOAT: float value; break;
+        case SYMBOL: case STRING: PSTR value; break;
+        case EMPTY: break;
+        case ARRAY: DataArray value; break;
+    };
+}
+
+typedef struct DataArray {
+    int version;
+    short count;
+    short unk;
+    local int i = 0;
+    while(i++ < count) {
+        ReadElement();
+    }
+};
+
+DataArray root<open=true>;

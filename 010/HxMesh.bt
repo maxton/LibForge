@@ -24,6 +24,7 @@ typedef enum <int> {
 } VertexType;
 
 typedef struct {
+
     float x;
     float y;
     float z;
@@ -46,11 +47,15 @@ typedef struct {
     hfloat v1;
     hfloat u2;
     hfloat v2;
-    if(vertexType == 7){
-        short unk;
-        short unk;
-        int unk;
-        int unk;
+    if(vertexType == ColorTex) {
+        byte unkColorTex[80 - 52];
+    }
+    else if(vertexType == UnskinnedCompressed)
+    {
+            short unk;
+            short unk;
+            int unk;
+            int unk;
     }
 } Point;
 

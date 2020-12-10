@@ -1,0 +1,28 @@
+LittleEndian();
+
+typedef struct {
+    short len;
+    wchar_t str[len];
+} UStr<read=USTR_READ>;
+string USTR_READ(UStr& s){
+    return s.str;
+}
+
+
+int id;   // must be 0x2F18EC
+int unk1; // must be 3
+int unk2; // 1?
+int songId;
+UStr name;
+UStr artist;
+UStr credit1;
+UStr credit2;
+UStr credit3;
+UStr credit4;
+UStr credit5;
+int difficultyLevel;
+int origin;
+int previewStart;
+int previewLength;
+int songLength;
+char keys[144];

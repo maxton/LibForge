@@ -1,0 +1,31 @@
+LittleEndian();
+
+enum MiloType
+{
+    MILO_A = 0xCABEDEAF,
+    MILO_B = 0xCBBEDEAF,
+    MILO_C = 0xCCBEDEAF,
+    MILO_D = 0xCDBEDEAF
+};
+
+int structureType;
+int offset;
+int blockCount;
+int maxUncompressSize;
+
+local int i = 0;
+if(structureType == MILO_A)
+{
+    int blockSize[blockCount];
+}
+else
+{
+    struct
+    {
+        int size : 24;
+        int uncompressed : 8;
+    }blockSize[blockCount];
+    FSeek(offset);
+    for(i = 0; i < blockCount; i++)
+        struct { char data[blockSize[i].size]; } data;
+}

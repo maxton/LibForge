@@ -1,0 +1,375 @@
+typedef struct {
+    int index : 12;
+    int layer : 20;
+} GameObjectId<read=GameObjectId_read>;
+string GameObjectId_read(GameObjectId& t)
+{
+    local string result;
+    SPrintf(result, "index %d layer %d", t.index, t.layer >> 4);
+    return result;
+}
+typedef enum <int> {
+        kFloat  = 0x0,
+        kSignedChar = 0x1,
+        kShort =  0x2,
+        kInt    = 0x3,
+        kLong   = 0x4,
+        kByte   = 0x5,
+        kUShort = 0x6,
+        kUint32   = 0x7,
+        kUint64   = 0x8,
+        kBool   = 0x9,
+        kGameObjectId = 0xA,
+        kSymbol = 0xB,
+        kResourcePath = 0xC,
+        kColor = 0xD,
+        kWaveform = 0xE,
+        kStruct = 0xF,
+        kPropRef = 0x10
+} DataType;
+typedef struct {
+    DataType data_type : 8;
+    int is_array : 1;
+} prop_type<read=prop_type_read>;
+string prop_type_read(prop_type& t)
+{
+    local string result;
+    SPrintf(result, "%s%s", EnumToString(t.data_type), t.is_array ? "[]" : "");
+    return result;
+}
+
+typedef struct {
+        PSTR name;
+        prop_type type;
+        if(type.is_array){
+            int array_type;
+        }
+        if(type.data_type == kStruct){
+            int64 refcount;
+            int num_children;
+            struct PropDef children[num_children]<optimize=false,read=prop_read>;
+        }
+} PropDef<read=prop_read>;
+string prop_read(struct PropDef& p) {
+    local string name;
+    SPrintf(name, "%s:%s", p.name.name, prop_type_read(p.type));
+    return name;
+}
+typedef struct propVal (PropDef& p) {
+    local string name;
+    local DataType data_type = p.type.data_type;
+    local int is_array = p.type.is_array;
+    SPrintf(name, "%s:%s%s", p.name.name, EnumToString(data_type), is_array ? "[]" : "");
+    if(is_array){
+        int num_elements;
+        if(num_elements != 0){
+        switch(data_type){
+            case kFloat:
+                float floatVals[num_elements];
+                break;
+            case kInt:
+                int intVals[num_elements];
+                break;
+            case kUint32:
+                int flagVals[num_elements];
+                break;
+            case kUint64:
+                int64 enumVals[num_elements];
+                break;
+            case kBool:
+            case kByte:
+                byte boolVals[num_elements];
+                break;
+            case kSymbol:
+                PSTR symbolVals[num_elements] <optimize=false>;
+                break;
+            case kResourcePath:
+                struct {
+                    byte flag;
+                    PSTR stringVal;
+                } stringVals[num_elements] <optimize=false>;
+                break;
+            case kStruct:
+                struct (struct PropDef& p) {
+                    local int x = 0;
+                    for(x = 0; x < p.num_children; x++){
+                        struct propVal child(p.children[x]) <read=propVal_READ>;
+                    }
+                } structVals(p)[num_elements]<optimize=false>;
+                break;
+            case kPropRef:
+                struct {
+                    int64 unk_driven_prop_1;
+                    PSTR propType;
+                    int32 unk_driven_prop_2;
+                    int64 unk_driven_prop_3;
+                    PSTR propName;
+                } drivenProps[num_elements] <optimize=false>;
+                break;
+            case kGameObjectId:
+                struct {
+                    int unk1;
+                    int unk2;
+                    int unk3;
+                    int unk4;
+                    int unk5;
+                    int unk6;
+                } gameObjectId[num_elements];
+                break;
+            default:
+                int unkVal[num_elements];
+                break;
+        }
+        }
+    } else {
+        switch(data_type){
+            case kFloat:
+                float floatVal;
+                break;
+            case kInt:
+                int intVal;
+                break;
+            case kUint32:
+                uint uintVal;
+                break;
+            case kUint64:
+                uint64 ulongVal;
+                break;
+            case kBool:
+                byte boolVal;
+                break;
+            case kByte:
+                byte byteVal;
+                break;
+            case kSymbol:
+                PSTR symbolVal;
+                break;
+            case kResourcePath:
+                byte flag;
+                PSTR stringVal;
+                break;
+            case kStruct:
+                local int x = 0;
+                for(x = 0; x < p.num_children; x++){
+                    struct propVal child(p.children[x]) <read=propVal_READ>;
+                }
+                break;
+            case kPropRef:
+                int32 unk_driven_prop_1;
+                int32 unk_driven_prop_2;
+                if(unk_driven_prop_2 == 0){
+                    PSTR propType;
+                    int32 unk_driven_prop_2;
+                    int64 unk_driven_prop_3;
+                    PSTR propName;
+                } else {
+                    int32 unk1, unk2, unk3;
+                }
+                break;
+            case kColor:
+                float r, g, b, a;
+                int unk1, unk2, unk3, unk4;
+                break;
+            default:
+                int unkVal;
+                break;
+        }
+    }
+} PropVal<read=PropVal_READ>;
+string PropVal_READ(PropVal& v)
+{
+  return v.name;
+}
+string propVal_READ(struct propVal& v)
+{
+  return v.name;
+}
+
+typedef struct (int objRev, int entityRev)
+{
+    PSTR name1;
+    if(objRev >= 2) PSTR name2;
+    int rev;
+    Assert(rev > 1, "Unable to load old component");
+    int propReg_field_80;
+    int this_is_wrong;
+    if(entityRev >= 0xE)
+    {
+        int count;
+        local int i = 0;
+        for(i = 0; i < count; i++)
+        {
+            PropDef defn;
+        }
+        for(i = 0; i < count; i++)
+        {
+            PropVal val(defn[i]);
+        }
+    }
+} Component<read=COMPONENT_READ>;
+string COMPONENT_READ(Component& c)
+{
+    return PSTR_READ(c.name1);
+}
+typedef struct (int entityRev)
+{
+    GameObjectId id;
+    if (id.layer != 0xFFFFF && id.index != 0xFFF)
+    {
+        int obj_rev;
+        if (obj_rev < 0)
+        {
+            char name;
+        }
+        else
+        {
+            PSTR name;
+        }
+        
+        if(obj_rev >= 3 && name.strlen == 0)
+        {
+            int unk0, unk1;
+            if(obj_rev >= 4)
+            {
+                int unk2;
+            }
+        }
+        else
+        {
+            int num_children;
+            local int i = 0;
+            for(i = 0; i < num_children; i++)
+            {
+                Component c(obj_rev, entityRev);
+            }
+        }
+    }
+} GameObject<read=GameObject_read>;
+string GameObject_read(GameObject& go)
+{
+    if(go.id.layer == 0xFFFFF || go.id.index == 0xFFF)
+    {
+        return "(not present)";
+    }
+    if(go.obj_rev < 0)
+    {
+        return go.name;
+    }
+    return PSTR_READ(go.name);
+}
+
+typedef struct TKey_ValueTangent_Float {
+    int unk1;
+    Assert(unk1 != 0, "Unknown TKey header");
+    int count;
+    struct {
+        int unk;
+        int unk;
+        int unk;
+        int unk;
+        char unk;
+    } values[count];
+} TKey_ValueTangent_Float;
+
+typedef struct TKeyTrack_ValueTangent_Float {
+    int count;
+    struct {
+        int unk;
+        int unk;
+        TKey_ValueTangent_Float key;
+    } keys[count] <optimize=false>;
+} TKeyTrack_ValueTangent_Float;
+
+typedef struct TKeyTrack_Float {
+    int unk1;
+    int unk2;
+    struct {
+        int version;
+        if (version != 0) {
+            int count;
+            struct {
+                int unk;
+                int unk;
+            } values[count];
+        } else {
+            int size;
+            int unk;
+        }
+    } keys;
+} TKeyTrack_Float;
+
+typedef struct WaveformResourceFloat {
+    int unk;
+    int unk;
+    int unk;
+    TKeyTrack_ValueTangent_Float keytrack; // <ValueTangent<float>>
+    int unkCount;
+    struct {
+        int unkCount2;
+        int unk2[unkCount2];
+    } unkValues[unkCount];
+    byte unk;
+    int unk;
+    int unk;
+    float unkFloats[4];
+    int valueCount;
+    byte unknown[17];
+    float values[valueCount];
+    byte unk;
+    float min;
+    float max;
+} WaveformResourceFloat;
+
+typedef struct CharBoneStateSetFormat {
+    int unk;
+    if (unk == 0) {
+        int data1[7];
+        int data2[7];
+        int data3[3];
+        int offsets[data3[0]];
+        byte nameTable[data3[2]];    
+    }
+} CharBoneStateSetFormat;
+
+typedef struct CharBoneKeyframeSet {
+    int version;
+    CharBoneStateSetFormat fmt;
+    int numFrames;
+    byte unk3;
+    byte frameData[fmt.data2[6] * numFrames];
+    byte unk4;
+    if (unk4) {
+        byte data2[unk2 * 0x1c];
+    }
+} CharBoneKeyframeSet;
+
+typedef struct CharAnim {
+    int version;
+    if (version == 10) {
+        int int1;
+        TKeyTrack_Float floats;
+        int unt2;
+        int int3;
+        CharBoneKeyframeSet keyframes;
+    }
+} CharAnim;
+
+typedef struct ShaderGraph {
+    int rev;
+    int unk1;
+    int unk2;
+    int unk3;
+    struct {
+        PSTR symbol;
+        int unk;
+    } array1[unk3]<optimize=false>;
+    int unk;
+    struct {
+        int unk5;
+        struct {
+            int unk;
+            int64 unk2;
+            int unk3;
+        } unkstruct[unk5];
+    } structure[5]<optimize=false>;
+} ShaderGraph;
