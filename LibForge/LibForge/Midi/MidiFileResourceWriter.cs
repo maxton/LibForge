@@ -21,6 +21,10 @@ namespace LibForge.Midi
       Write(r.MidiSongResourceMagic);
       Write(r.LastTrackFinalTick);
       Write(r.MidiTracks, WriteMidiTrack);
+      if (r.FuserRevision != null)
+      {
+        Write(r.FuserRevision.Value);
+      }
       Write(r.FinalTick);
       Write(r.Measures);
       Array.ForEach(r.Unknown, Write);
@@ -30,6 +34,11 @@ namespace LibForge.Midi
       Write(r.TimeSigs, WriteTimesig);
       Write(r.Beats, WriteBeat);
       Write(r.UnknownZero);
+      if (r.FuserRevision != null)
+      {
+        Write(r.FuserRevision2.Value);
+        Write(r.FuserData, WriteFuserData);
+      }
       Write(r.MidiTrackNames, Write);
     }
     private bool first_track = true;
@@ -159,6 +168,12 @@ namespace LibForge.Midi
     {
       Write(obj.Tick);
       Write(obj.Downbeat ? 1 : 0);
+    }
+
+    private void WriteFuserData(MidiFileResource.FUSER_DATA obj)
+    {
+      Write(obj.data.Length - 8);
+      s.Write(obj.data, 0, obj.data.Length);
     }
   }
 }

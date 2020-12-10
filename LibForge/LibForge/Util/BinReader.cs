@@ -113,6 +113,8 @@ namespace LibForge.Util
     public byte Byte() => (byte)s.ReadByte();
     public string String() => s.ReadLengthPrefixedString(Encoding.UTF8);
     public string String(int length) => s.ReadFixedLengthNullTerminatedString(length);
+    public string FixedString(int length) => s.ReadFixedLengthString(length);
+    public string UE4String() => String(Int());
     public uint UInt24() => s.ReadUInt24LE();
     /// <summary>
     /// Reads a byte as a boolean, throwing if it's not 1 or 0

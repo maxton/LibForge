@@ -37,6 +37,8 @@ namespace ForgeToolGUI
           return new MeshInspector(m);
         case MiloFile mf:
           return new PropertyInspector(mf);
+        case LibForge.Fuser.FuserAsset a:
+          return new Inspectors.FuserInspector(a);
         case object o:
           return new ObjectInspector(obj);
       }
@@ -147,6 +149,13 @@ namespace ForgeToolGUI
         {
 
           return CsvData.LoadFile(s).ToString();
+        }
+      }
+      else if (i.Name.EndsWith(".uexp"))
+      {
+        using (var s = i.GetStream())
+        {
+          return LibForge.Fuser.FuserAsset.Read(s);
         }
       }
       else

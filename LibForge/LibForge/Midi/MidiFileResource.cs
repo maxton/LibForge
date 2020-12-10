@@ -25,10 +25,15 @@ namespace LibForge.Midi
       public uint Tick;
       public bool Downbeat;
     }
+    public struct FUSER_DATA
+    {
+      public byte[] data;
+    }
 
     public int MidiSongResourceMagic;
     public uint LastTrackFinalTick;
     public MidiCS.MidiTrack[] MidiTracks;
+    public int? FuserRevision;
     public uint FinalTick;
     public uint Measures;
     public uint[] Unknown;
@@ -38,6 +43,9 @@ namespace LibForge.Midi
     public TIMESIG[] TimeSigs;
     public BEAT[] Beats;
     public int UnknownZero;
+
+    public int? FuserRevision2;
+    public FUSER_DATA[] FuserData;
     public string[] MidiTrackNames;
   }
 }

@@ -426,6 +426,12 @@ namespace LibForge.Extensions
       return Encoding.UTF8.GetString(stringBytes, 0, endIdx);
     }
 
+    public static string ReadFixedLengthString(this Stream s, int length)
+    {
+      var stringBytes = s.ReadBytes(length);
+      return Encoding.UTF8.GetString(stringBytes, 0, stringBytes.Length);
+    }
+
     /// <summary>
     /// Read a length-prefixed string of the specified encoding type from the file.
     /// The length is a 32-bit little endian integer.

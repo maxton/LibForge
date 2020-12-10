@@ -66,6 +66,13 @@
     <Compile Include="Engine\DataTypes.cs" />
     <Compile Include="Engine\EntityResource.cs" />
     <Compile Include="Engine\Resource.cs" />
+    <Compile Include="Fuser\FuserAsset.cs" />
+    <Compile Include="Fuser\FusionPatchResource.cs" />
+    <Compile Include="Fuser\MidiFileResource.cs" />
+    <Compile Include="Fuser\MidiMusicResource.cs" />
+    <Compile Include="Fuser\MoggSampleResource.cs" />
+    <Compile Include="Fuser\ResourceFile.cs" />
+    <Compile Include="Fuser\UnknownResource.cs" />
     <Compile Include="Midi\MidiFileResource.cs" />
     <Compile Include="Midi\MidiFileResourceReader.cs" />
     <Compile Include="Midi\MidiFileResourceWriter.cs" />

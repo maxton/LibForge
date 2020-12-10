@@ -76,6 +76,12 @@
     <Compile Include="Inspectors\ConversionInspector.Designer.cs">
       <DependentUpon>ConversionInspector.cs</DependentUpon>
     </Compile>
+    <Compile Include="Inspectors\FuserInspector.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Inspectors\FuserInspector.Designer.cs">
+      <DependentUpon>FuserInspector.cs</DependentUpon>
+    </Compile>
     <Compile Include="Inspectors\MeshInspector.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -129,6 +135,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Inspectors\ConversionInspector.resx">
       <DependentUpon>ConversionInspector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Inspectors\FuserInspector.resx">
+      <DependentUpon>FuserInspector.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Inspectors\MeshInspector.resx">
       <DependentUpon>MeshInspector.cs</DependentUpon>

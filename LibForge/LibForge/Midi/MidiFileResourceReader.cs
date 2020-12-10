@@ -27,7 +27,15 @@ namespace LibForge.Midi
       r.MidiSongResourceMagic = Check(Int(), 2);
       r.LastTrackFinalTick = UInt();
       r.MidiTracks = Arr(ReadMidiTrack);
-      r.FinalTick = UInt();
+      var finalTickOrRev = UInt();
+      if (finalTickOrRev == 0x56455223) // '#REV'
+      {
+        r.FuserRevision = Int();
+        r.FinalTick = UInt();
+      } else
+      {
+        r.FinalTick = finalTickOrRev;
+      }
       r.Measures = UInt();
       r.Unknown = FixedArr(UInt, 6);
       r.FinalTickMinusOne = Check(UInt(), r.FinalTick - 1);
@@ -36,6 +44,11 @@ namespace LibForge.Midi
       r.TimeSigs = Arr(ReadTimesig);
       r.Beats = Arr(ReadBeat);
       r.UnknownZero = Check(Int(), 0);
+      if (r.FuserRevision == 2)
+      {
+        r.FuserRevision2 = Int();
+        r.FuserData = Arr(ReadFuserData);
+      }
       r.MidiTrackNames = CheckedArr(String, (uint)r.MidiTracks.Length);
     }
 
@@ -143,5 +156,13 @@ namespace LibForge.Midi
       Tick = UInt(),
       Downbeat = Int() != 0
     };
+    private MidiFileResource.FUSER_DATA ReadFuserData()
+    {
+      var unk_count = UInt();
+      return new MidiFileResource.FUSER_DATA()
+      {
+        data = FixedArr(Byte, unk_count + 8)
+      };
+    }
   }
 }
