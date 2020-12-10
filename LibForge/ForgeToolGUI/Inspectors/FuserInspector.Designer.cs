@@ -36,6 +36,7 @@ namespace ForgeToolGUI.Inspectors
       this.exportMidiButton = new System.Windows.Forms.Button();
       this.exportMoggButton = new System.Windows.Forms.Button();
       this.exportFusionButton = new System.Windows.Forms.Button();
+      this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
       this.SuspendLayout();
       // 
       // listBox1
@@ -97,10 +98,18 @@ namespace ForgeToolGUI.Inspectors
       this.exportFusionButton.UseVisualStyleBackColor = true;
       this.exportFusionButton.Click += new System.EventHandler(this.exportFusionButton_Click);
       // 
+      // propertyGrid1
+      // 
+      this.propertyGrid1.Location = new System.Drawing.Point(138, 155);
+      this.propertyGrid1.Name = "propertyGrid1";
+      this.propertyGrid1.Size = new System.Drawing.Size(350, 215);
+      this.propertyGrid1.TabIndex = 5;
+      // 
       // FuserInspector
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.Controls.Add(this.propertyGrid1);
       this.Controls.Add(this.exportFusionButton);
       this.Controls.Add(this.exportMoggButton);
       this.Controls.Add(this.exportMidiButton);
@@ -121,5 +130,6 @@ namespace ForgeToolGUI.Inspectors
     private System.Windows.Forms.Button exportMoggButton;
     private System.Windows.Forms.Button exportFusionButton;
     private System.Windows.Forms.Button exportMidiButton;
+    private System.Windows.Forms.PropertyGrid propertyGrid1;
   }
 }

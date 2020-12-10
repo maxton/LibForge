@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using LibForge.Fuser;
+using LibForge.Util;
 
 namespace ForgeToolGUI.Inspectors
 {
@@ -38,6 +39,12 @@ namespace ForgeToolGUI.Inspectors
       exportMidiButton.Enabled = listBox1.SelectedItem != null && (listBox1.SelectedItem as ListItem).file is MidiFileResource;
       exportMoggButton.Enabled = listBox1.SelectedItem != null && (listBox1.SelectedItem as ListItem).file is MoggSampleResource;
       exportFusionButton.Enabled = listBox1.SelectedItem != null && (listBox1.SelectedItem as ListItem).file is FusionPatchResource;
+      if (exportFusionButton.Enabled)
+      {
+        var r = (listBox1.SelectedItem as ListItem).file as FusionPatchResource;
+        var array = DtxCS.DTX.FromDtaString(r.data);
+        propertyGrid1.SelectedObject = array.Deserialize<FusionPatch>();
+      }
     }
     private void SaveFile<T>(Action<T,Stream> writer) where T : ResourceFile
     {

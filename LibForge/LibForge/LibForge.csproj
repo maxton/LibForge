@@ -67,6 +67,7 @@
     <Compile Include="Engine\EntityResource.cs" />
     <Compile Include="Engine\Resource.cs" />
     <Compile Include="Fuser\FuserAsset.cs" />
+    <Compile Include="Fuser\FusionPatch.cs" />
     <Compile Include="Fuser\FusionPatchResource.cs" />
     <Compile Include="Fuser\MidiFileResource.cs" />
     <Compile Include="Fuser\MidiMusicResource.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="Util\BinWriter.cs" />
     <Compile Include="Util\EncryptedReadStream.cs" />
     <Compile Include="Util\EncryptedWriteStream.cs" />
+    <Compile Include="Util\IDataSerializable.cs" />
     <Compile Include="Util\PkgCreator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Midi\RBMidWriter.cs" />
