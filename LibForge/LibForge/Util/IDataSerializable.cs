@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using DtxCS;
 using DtxCS.DataTypes;
@@ -13,13 +14,15 @@ namespace LibForge.Util
   public interface IDataSerializable
   {
   }
+  public class AnonymousListAttribute : Attribute
+  { }
   public static class IDataSerializableExtensions
   {
     
     public static DataArray Serialize(this IDataSerializable obj)
     {
       var array = new DataArray();
-      foreach(var field in obj.GetType().GetProperties(System.Reflection.BindingFlags.Public))
+      foreach(var field in obj.GetType().GetProperties())
       {
         var name = CamelToSnake(field.Name);
         if (field.PropertyType.IsGenericType)
@@ -34,11 +37,13 @@ namespace LibForge.Util
               throw new NotImplementedException("Cannot handle non-serializable types in lists yet");
             }
             var listArray = new DataArray();
-            var value = field.GetValue(obj, null) as List<IDataSerializable>;
+            var value = (IList)field.GetValue(obj, null);
             var typename = CamelToSnake(args[0].Name);
+            var namedValues = field.GetCustomAttributes(typeof(AnonymousListAttribute), true).Length == 0;
             foreach (var f in value)
             {
-              listArray.AddNode(NamedItem(typename, SerializeObject(f)));
+              var valueNode = SerializeObject(f);
+              listArray.AddNode(namedValues ? NamedItem(typename, valueNode) : valueNode);
             }
             array.AddNode(NamedItem(name, listArray));
           }
@@ -54,12 +59,35 @@ namespace LibForge.Util
               throw new NotImplementedException("Cannot handle non-serializable types in dictionaries yet");
             }
             var dictArray = new DataArray();
-            var value = field.GetValue(obj, null) as Dictionary<string, IDataSerializable>;
-            foreach (var f in value)
+            var value = (IDictionary)field.GetValue(obj, null);
+            foreach (var k in value.Keys)
             {
-              dictArray.AddNode(NamedItem(f.Key, SerializeObject(f.Value)));
+              dictArray.AddNode(NamedItem((string)k, SerializeObject(value[k])));
             }
             array.AddNode(NamedItem(name, dictArray));
+          }
+          else if (gtd == typeof(Tuple<,>))
+          {
+            var tupleArray = new DataArray();
+            tupleArray.AddNode(new DataAtom(name));
+            var tuple = field.GetValue(obj, null) as ITuple;
+            for(var i = 0; i < tuple.Length; i++)
+            {
+              tupleArray.AddNode(SerializeObject(tuple[i]));
+            }
+            array.AddNode(tupleArray);
+          }
+          else if (gtd == typeof(Nullable<>))
+          {
+            var value = field.GetValue(obj, null);
+            if (value != null)
+            {
+              array.AddNode(NamedItem(name, SerializeObject(value)));
+            }
+          }
+          else
+          {
+            throw new NotImplementedException("Generic type support for " + field.PropertyType.FullName + " not implemented");
           }
         }
         else
@@ -81,9 +109,15 @@ namespace LibForge.Util
           return new DataAtom(f);
         case string s:
           return new DataAtom(s);
+        case Enum e:
+          return new DataAtom(CamelToSnake(Enum.GetName(e.GetType(), value)));
         default:
           throw new NotImplementedException("Cannot serialize type " + value.GetType().Name);
       }
+    }
+    static bool IsNullable(this Type type)
+    {
+      return Nullable.GetUnderlyingType(type) != null;
     }
     public static T Deserialize<T>(this DataArray array) where T : IDataSerializable, new()
     {
@@ -93,7 +127,7 @@ namespace LibForge.Util
       {
         var name = CamelToSnake(field.Name);
         var value = array.Array(name);
-        if (value == null)
+        if (value == null && !IsNullable(field.PropertyType))
         {
           throw new InvalidDataException("Data array is missing field: " + name);
         }
@@ -143,6 +177,23 @@ namespace LibForge.Util
               }
             }
           }
+          else if (gtd == typeof(Tuple<,>))
+          {
+            MethodInfo method = typeof(Tuple).GetMethods().First(x => x.Name == nameof(Tuple.Create) && x.GetParameters().Length == 2);
+            MethodInfo generic = method.MakeGenericMethod(args[0], args[1]);
+            field.SetValue(obj, generic.Invoke(null, new[] { DeserializeNode(value.Node(1)), DeserializeNode(value.Node(2)) }), null);
+          }
+          else if (gtd == typeof(Nullable<>))
+          {
+            if (value != null)
+            {
+              field.SetValue(obj, DeserializeNode(value.Node(1)), null);
+            }
+          }
+          else
+          {
+            throw new NotImplementedException($"Generic type deserialization for {field.PropertyType.FullName} not yet implemented");
+          }
         }
         else
         {
@@ -157,24 +208,29 @@ namespace LibForge.Util
             var enumName = SnakeToCamel(value.String(1));
             field.SetValue(obj, Enum.Parse(field.PropertyType, enumName, true), null);
           }
-          else if (value.Node(1) is DataAtom d)
+          else
           {
-            switch (d.Type)
-            {
-              case DataType.INT:
-                field.SetValue(obj, d.Int, null);
-                break;
-              case DataType.FLOAT:
-                field.SetValue(obj, d.Float, null);
-                break;
-              case DataType.STRING:
-                field.SetValue(obj, d.String, null);
-                break;
-            }
+            field.SetValue(obj, DeserializeNode(value.Node(1)), null);
           }
         }
       }
       return obj;
+    }
+    private static object DeserializeNode(DataNode n)
+    {
+      if (n is DataAtom d)
+      {
+        switch (d.Type)
+        {
+          case DataType.INT:
+            return d.Int;
+          case DataType.FLOAT:
+            return d.Float;
+          case DataType.STRING:
+            return d.String;
+        }
+      }
+      return null;
     }
     private static DataArray NamedArray(string name, DataArray siblings)
     {

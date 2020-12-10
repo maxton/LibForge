@@ -38,7 +38,7 @@ namespace ForgeToolGUI.Inspectors
     {
       exportMidiButton.Enabled = listBox1.SelectedItem != null && (listBox1.SelectedItem as ListItem).file is MidiFileResource;
       exportMoggButton.Enabled = listBox1.SelectedItem != null && (listBox1.SelectedItem as ListItem).file is MoggSampleResource;
-      exportFusionButton.Enabled = listBox1.SelectedItem != null && (listBox1.SelectedItem as ListItem).file is FusionPatchResource;
+      button1.Enabled = exportFusionButton.Enabled = listBox1.SelectedItem != null && (listBox1.SelectedItem as ListItem).file is FusionPatchResource;
       if (exportFusionButton.Enabled)
       {
         var r = (listBox1.SelectedItem as ListItem).file as FusionPatchResource;
@@ -84,6 +84,20 @@ namespace ForgeToolGUI.Inspectors
         using (var tw = new StreamWriter(s))
         {
           tw.Write(fpr.data);
+        }
+      });
+    }
+
+    private void button1_Click(object sender, EventArgs e)
+    {
+      SaveFile<FusionPatchResource>((fpr, s) =>
+      {
+        var array = DtxCS.DTX.FromDtaString(fpr.data);
+        var patch = array.Deserialize<FusionPatch>();
+        var serialized = patch.Serialize().ToFileString();
+        using (var tw = new StreamWriter(s))
+        {
+          tw.Write(serialized);
         }
       });
     }
