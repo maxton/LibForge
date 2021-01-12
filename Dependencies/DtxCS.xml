@@ -269,6 +269,16 @@
             #ifndef directive
             </summary>
         </member>
+        <member name="F:DtxCS.DataTypes.DataType.AUTORUN">
+            <summary>
+            #autorun directive
+            </summary>
+        </member>
+        <member name="F:DtxCS.DataTypes.DataType.UNDEF">
+            <summary>
+            #undef directive
+            </summary>
+        </member>
         <member name="T:DtxCS.DataTypes.DataNode">
             <summary>
             Represents the basic element of DTA, which could be an Atom or an Array.
