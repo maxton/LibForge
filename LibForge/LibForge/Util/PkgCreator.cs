@@ -157,7 +157,7 @@ SHORTNAMES
       var volsArray = new DataArray();
       for (int i = 0; i < vols.Array(1).Count; i++)
       {
-        volsArray.AddNode(new DataAtom(vols.Array(1).Float(i) + volumeAdjustment));
+        volsArray.AddNode(new DataAtom(vols.Array(1).Number(i) + volumeAdjustment));
       }
       newVols.AddNode(volsArray);
       moggDta.AddNode(newVols);
@@ -206,6 +206,17 @@ SHORTNAMES
         Artwork = artwork,
         RBSong = RBSongConverter.MakeRBSong(songDta, mid)
       };
+    }
+
+    public static List<SongData.SongData> GetSongMetadatas(GameArchives.IDirectory dlcRoot)
+    {
+      var metas = new List<SongData.SongData>();
+      var dta = DTX.FromPlainTextBytes(dlcRoot.GetFile("songs.dta").GetBytes());
+      for (int i = 0; i < dta.Count; i++)
+      {
+        metas.Add(SongDataConverter.ToSongData(dta.Array(i)));
+      }
+      return metas;
     }
 
     /// <summary>
@@ -369,12 +380,48 @@ SHORTNAMES
     /// </summary>
     /// <param name="song">Song to use for generation</param>
     /// <returns>16 char id</returns>
-    public static string GenId(DLCSong song)
+    public static string GenId(List<SongData.SongData> datas)
     {
-      var shortname = new Regex("[^a-zA-Z0-9]").Replace(song.SongData.Shortname, "");
-      var pkgName = shortname.ToUpper().Substring(0, Math.Min(shortname.Length, 12)).PadRight(12, 'X');
-      string pkgNum = (song.SongData.SongId % 10000).ToString().PadLeft(4, '0');
-      return pkgName + pkgNum;
+      if (datas.Count == 1)
+      {
+        var data = datas[0];
+        var shortname = new Regex("[^a-zA-Z0-9]").Replace(data.Shortname, "");
+        var pkgName = shortname.ToUpper().Substring(0, Math.Min(shortname.Length, 12)).PadRight(12, 'X');
+        string pkgNum = (data.SongId % 10000).ToString().PadLeft(4, '0');
+        return pkgName + pkgNum;
+      }
+      else
+      {
+        var randPart = new byte[7];
+        new Random((int)datas.Sum(d => d.SongId) + datas.Count).NextBytes(randPart);
+        return "CU" + LibOrbisPkg.Util.Crypto.AsHexCompact(randPart);
+      }
+    }
+
+    public static string GenDesc(List<SongData.SongData> datas)
+    {
+      if (datas.Count == 1)
+      {
+        return $"Custom: \"{datas[0].Name} - {datas[0].Artist}\""; 
+      }
+      else
+      {
+        var sb = new StringBuilder("Custom Pack: ");
+        var first = true;
+        foreach(var song in datas)
+        {
+          if (first)
+          {
+            first = false;
+          }
+          else
+          {
+            sb.Append(", ");
+          }
+          sb.Append($"\"{song.Name} - {song.Artist}\"");
+        }
+        return sb.ToString();
+      }
     }
 
     /// <summary>
@@ -393,16 +440,9 @@ SHORTNAMES
         return;
       }
       var songs = ConvertDLCPackage(con.RootDirectory.GetDirectory("songs"));
-      if(songs.Count > 1)
-      {
-        if ((id?.Length ?? 0) < 16)
-        {
-          throw new Exception("You must provide a 16 char ID if you are building a custom package with multiple songs");
-        }
-      }
-      var identifier = id ?? GenId(songs[0]);
+      var identifier = id ?? GenId(songs.Select(s => s.SongData).ToList());
       var pkgId = eu ? $"EP8802-CUSA02901_00-{identifier}" : $"UP8802-CUSA02084_00-{identifier}";
-      var pkgDesc = $"Custom: \"{songs[0].SongData.Name} - {songs[0].SongData.Artist}\"";
+      var pkgDesc = GenDesc(songs.Select(s => s.SongData).ToList());
       DLCSongsToGP4(songs, pkgId, desc ?? pkgDesc, buildDir, eu);
     }
 
@@ -424,15 +464,10 @@ SHORTNAMES
         songs.AddRange(ConvertDLCPackage(conFile.RootDirectory.GetDirectory("songs")));
       }
 
-      if (songs.Count > 1)
-      {
-        if ((id?.Length ?? 0) < 16)
-        {
-          throw new Exception("You must provide a 16 char ID if you are building a custom package with multiple songs");
-        }
-      }
-      var pkgId = eu ? $"EP8802-CUSA02901_00-{id}" : $"UP8802-CUSA02084_00-{id}";
-      DLCSongsToGP4(songs, pkgId, desc ?? "", buildDir, eu);
+      var identifier = id ?? GenId(songs.Select(s => s.SongData).ToList());
+      var pkgId = eu ? $"EP8802-CUSA02901_00-{identifier}" : $"UP8802-CUSA02084_00-{identifier}";
+      var pkgDesc = desc ?? GenDesc(songs.Select(s => s.SongData).ToList());
+      DLCSongsToGP4(songs, pkgId, pkgDesc, buildDir, eu);
     }
 
     public static void BuildPkg(List<DLCSong> songs, string contentId, string desc, bool eu, string output, Action<string> logger)

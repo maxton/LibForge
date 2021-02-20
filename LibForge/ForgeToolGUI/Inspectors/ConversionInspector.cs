@@ -14,7 +14,6 @@ namespace ForgeToolGUI.Inspectors
 {
   public partial class ConversionInspector : Inspector
   {
-    private STFSPackage con;
     public ConversionInspector()
     {
       InitializeComponent();
@@ -48,17 +47,24 @@ namespace ForgeToolGUI.Inspectors
 
     private bool LoadCon(string filename)
     {
-      con = STFSPackage.OpenFile(GameArchives.Util.LocalFile(filename));
-      if (con.Type != STFSType.CON)
+      using (var con = STFSPackage.OpenFile(GameArchives.Util.LocalFile(filename)))
       {
-        MessageBox.Show("Error: given file was not a CON file");
-        return false;
+        if (con.Type != STFSType.CON)
+        {
+          MessageBox.Show("Error: given file was not a CON file");
+          return false;
+        }
+        var datas = PkgCreator.GetSongMetadatas(con.RootDirectory.GetDirectory("songs"));
+        if (datas.Count == 0)
+        {
+          MessageBox.Show("Error: no songs in that CON");
+          return false;
+        }
+        idBox.Text = PkgCreator.GenId(datas);
+        descriptionBox.Text = PkgCreator.GenDesc(datas);
+        groupBox2.Enabled = true;
+        return true;
       }
-      var songs = PkgCreator.ConvertDLCPackage(con.RootDirectory.GetDirectory("songs"));
-      idBox.Text = PkgCreator.GenId(songs[0]);
-      descriptionBox.Text = $"Custom: \"{songs[0].SongData.Name} - {songs[0].SongData.Artist}\"";
-      groupBox2.Enabled = true;
-      return true;
     }
 
     private void idBox_TextChanged(object sender, EventArgs e)
@@ -86,12 +92,15 @@ namespace ForgeToolGUI.Inspectors
         {
           Action<string> log = x => logBox.AppendText(x + Environment.NewLine);
           log("Converting DLC files...");
-          var songs = PkgCreator.ConvertDLCPackage(
-            con.RootDirectory.GetDirectory("songs"),
-            volumeAdjustCheckBox.Checked,
-            s => log("Warning: " + s));
-          log("Building PKG...");
-          PkgCreator.BuildPkg(songs, contentIdTextBox.Text, descriptionBox.Text, euCheckBox.Checked, sfd.FileName, log);
+          using (var con = STFSPackage.OpenFile(GameArchives.Util.LocalFile(selectedFileLabel.Text)))
+          {
+            var songs = PkgCreator.ConvertDLCPackage(
+               con.RootDirectory.GetDirectory("songs"),
+               volumeAdjustCheckBox.Checked,
+               s => log("Warning: " + s));
+            log("Building PKG...");
+            PkgCreator.BuildPkg(songs, contentIdTextBox.Text, descriptionBox.Text, euCheckBox.Checked, sfd.FileName, log);
+          }
         }
       }
     }

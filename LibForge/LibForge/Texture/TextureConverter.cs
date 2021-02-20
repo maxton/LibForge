@@ -239,6 +239,12 @@ namespace LibForge.Texture
       var width = s.ReadInt16LE();
       var height = s.ReadInt16LE();
       s.Position = 32;
+      if (width == 1024)
+      {
+        s.Position += (1024 * 1024) / (version == 0x010818 ? 1 : 2);
+        width = 512;
+        height = 512;
+      }
       if(width == 512)
       {
         s.Position += (512 * 512) / (version == 0x010818 ? 1 : 2);
