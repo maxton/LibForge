@@ -116,7 +116,14 @@ namespace LibForge.Midi
         switch (msg)
         {
           case NoteOnEvent e:
-            msgs.Add(new NoteOnEvent(abstime, e.Channel, e.Key, e.Velocity));
+            if (e.Velocity == 0)
+            {
+              msgs.Add(new NoteOffEvent(abstime, e.Channel, e.Key, e.Velocity));
+            }
+            else
+            {
+              msgs.Add(new NoteOnEvent(abstime, e.Channel, e.Key, e.Velocity));
+            }
             break;
           case NoteOffEvent e:
             msgs.Add(new NoteOffEvent(abstime, e.Channel, e.Key, e.Velocity));

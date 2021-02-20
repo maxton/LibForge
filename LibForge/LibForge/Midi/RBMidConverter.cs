@@ -508,7 +508,7 @@ namespace LibForge.Midi
               else if (AddGem(e)) { }  // everything is handled in AddGem
               else if (e.Key >= DrumAnimStart && e.Key <= DrumAnimEnd)
               {
-                // TODO: Anims?
+                // Animations are handled by the game engine: it parses the MIDI track.
               }
               else if (e.Key == Roll1 || e.Key == Roll2)
               {
