@@ -400,13 +400,14 @@ SHORTNAMES
 
     public static string GenDesc(List<SongData.SongData> datas)
     {
+      string str;
       if (datas.Count == 1)
       {
-        return $"Custom: \"{datas[0].Name} - {datas[0].Artist}\""; 
+        str = $"Custom: \"{datas[0].Name} - {datas[0].Artist}\""; 
       }
       else
       {
-        var sb = new StringBuilder("Custom Pack: ");
+        var sb = new StringBuilder($"Custom Pack with {datas.Count} songs: ");
         var first = true;
         foreach(var song in datas)
         {
@@ -420,8 +421,9 @@ SHORTNAMES
           }
           sb.Append($"\"{song.Name} - {song.Artist}\"");
         }
-        return sb.ToString();
+        str = sb.ToString();
       }
+      return str.Substring(0, Math.Min(str.Length, 127));
     }
 
     /// <summary>
