@@ -30,8 +30,6 @@
     {
       this.pickFileButton = new System.Windows.Forms.Button();
       this.groupBox1 = new System.Windows.Forms.GroupBox();
-      this.selectedFileLabel = new System.Windows.Forms.Label();
-      this.label1 = new System.Windows.Forms.Label();
       this.groupBox2 = new System.Windows.Forms.GroupBox();
       this.volumeAdjustCheckBox = new System.Windows.Forms.CheckBox();
       this.euCheckBox = new System.Windows.Forms.CheckBox();
@@ -45,6 +43,7 @@
       this.buildButton = new System.Windows.Forms.Button();
       this.contentIdTextBox = new System.Windows.Forms.Label();
       this.label4 = new System.Windows.Forms.Label();
+      this.listBox1 = new System.Windows.Forms.ListBox();
       this.groupBox1.SuspendLayout();
       this.groupBox2.SuspendLayout();
       this.groupBox3.SuspendLayout();
@@ -56,7 +55,7 @@
       this.pickFileButton.Name = "pickFileButton";
       this.pickFileButton.Size = new System.Drawing.Size(75, 23);
       this.pickFileButton.TabIndex = 0;
-      this.pickFileButton.Text = "Pick a File";
+      this.pickFileButton.Text = "Pick File(s)";
       this.pickFileButton.UseVisualStyleBackColor = true;
       this.pickFileButton.Click += new System.EventHandler(this.pickFileButton_Click);
       // 
@@ -64,32 +63,14 @@
       // 
       this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.groupBox1.Controls.Add(this.selectedFileLabel);
-      this.groupBox1.Controls.Add(this.label1);
+      this.groupBox1.Controls.Add(this.listBox1);
       this.groupBox1.Controls.Add(this.pickFileButton);
       this.groupBox1.Location = new System.Drawing.Point(4, 3);
       this.groupBox1.Name = "groupBox1";
-      this.groupBox1.Size = new System.Drawing.Size(473, 69);
+      this.groupBox1.Size = new System.Drawing.Size(473, 134);
       this.groupBox1.TabIndex = 1;
       this.groupBox1.TabStop = false;
-      this.groupBox1.Text = "Step 1: Pick a CON";
-      // 
-      // selectedFileLabel
-      // 
-      this.selectedFileLabel.AutoSize = true;
-      this.selectedFileLabel.Location = new System.Drawing.Point(83, 45);
-      this.selectedFileLabel.Name = "selectedFileLabel";
-      this.selectedFileLabel.Size = new System.Drawing.Size(0, 13);
-      this.selectedFileLabel.TabIndex = 2;
-      // 
-      // label1
-      // 
-      this.label1.AutoSize = true;
-      this.label1.Location = new System.Drawing.Point(6, 45);
-      this.label1.Name = "label1";
-      this.label1.Size = new System.Drawing.Size(71, 13);
-      this.label1.TabIndex = 1;
-      this.label1.Text = "Selected File:";
+      this.groupBox1.Text = "Step 1: Pick CON(s)";
       // 
       // groupBox2
       // 
@@ -102,7 +83,7 @@
       this.groupBox2.Controls.Add(this.descriptionBox);
       this.groupBox2.Controls.Add(this.idBox);
       this.groupBox2.Enabled = false;
-      this.groupBox2.Location = new System.Drawing.Point(4, 79);
+      this.groupBox2.Location = new System.Drawing.Point(4, 143);
       this.groupBox2.Name = "groupBox2";
       this.groupBox2.Size = new System.Drawing.Size(473, 148);
       this.groupBox2.TabIndex = 2;
@@ -180,9 +161,9 @@
       this.groupBox3.Controls.Add(this.contentIdTextBox);
       this.groupBox3.Controls.Add(this.label4);
       this.groupBox3.Enabled = false;
-      this.groupBox3.Location = new System.Drawing.Point(4, 233);
+      this.groupBox3.Location = new System.Drawing.Point(4, 297);
       this.groupBox3.Name = "groupBox3";
-      this.groupBox3.Size = new System.Drawing.Size(473, 170);
+      this.groupBox3.Size = new System.Drawing.Size(473, 106);
       this.groupBox3.TabIndex = 3;
       this.groupBox3.TabStop = false;
       this.groupBox3.Text = "Step 3: Build PKG";
@@ -190,7 +171,7 @@
       // label5
       // 
       this.label5.AutoSize = true;
-      this.label5.Location = new System.Drawing.Point(6, 46);
+      this.label5.Location = new System.Drawing.Point(6, 33);
       this.label5.Name = "label5";
       this.label5.Size = new System.Drawing.Size(28, 13);
       this.label5.TabIndex = 4;
@@ -201,12 +182,12 @@
       this.logBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.logBox.Location = new System.Drawing.Point(6, 62);
+      this.logBox.Location = new System.Drawing.Point(6, 49);
       this.logBox.Multiline = true;
       this.logBox.Name = "logBox";
       this.logBox.ReadOnly = true;
       this.logBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-      this.logBox.Size = new System.Drawing.Size(461, 102);
+      this.logBox.Size = new System.Drawing.Size(461, 51);
       this.logBox.TabIndex = 3;
       // 
       // buildButton
@@ -237,6 +218,16 @@
       this.label4.TabIndex = 0;
       this.label4.Text = "PKG Content ID:";
       // 
+      // listBox1
+      // 
+      this.listBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.listBox1.FormattingEnabled = true;
+      this.listBox1.Location = new System.Drawing.Point(6, 48);
+      this.listBox1.Name = "listBox1";
+      this.listBox1.Size = new System.Drawing.Size(461, 82);
+      this.listBox1.TabIndex = 3;
+      // 
       // ConversionInspector
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -247,7 +238,6 @@
       this.Name = "ConversionInspector";
       this.Size = new System.Drawing.Size(480, 406);
       this.groupBox1.ResumeLayout(false);
-      this.groupBox1.PerformLayout();
       this.groupBox2.ResumeLayout(false);
       this.groupBox2.PerformLayout();
       this.groupBox3.ResumeLayout(false);
@@ -260,8 +250,6 @@
 
     private System.Windows.Forms.Button pickFileButton;
     private System.Windows.Forms.GroupBox groupBox1;
-    private System.Windows.Forms.Label selectedFileLabel;
-    private System.Windows.Forms.Label label1;
     private System.Windows.Forms.GroupBox groupBox2;
     private System.Windows.Forms.GroupBox groupBox3;
     private System.Windows.Forms.TextBox idBox;
@@ -275,5 +263,6 @@
     private System.Windows.Forms.Button buildButton;
     private System.Windows.Forms.Label label5;
     private System.Windows.Forms.CheckBox volumeAdjustCheckBox;
+    private System.Windows.Forms.ListBox listBox1;
   }
 }

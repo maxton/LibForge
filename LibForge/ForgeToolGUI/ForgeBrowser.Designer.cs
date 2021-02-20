@@ -187,8 +187,8 @@
       // convertCONToPKGToolStripMenuItem
       // 
       this.convertCONToPKGToolStripMenuItem.Name = "convertCONToPKGToolStripMenuItem";
-      this.convertCONToPKGToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
-      this.convertCONToPKGToolStripMenuItem.Text = "Convert CON to PKG";
+      this.convertCONToPKGToolStripMenuItem.Size = new System.Drawing.Size(207, 22);
+      this.convertCONToPKGToolStripMenuItem.Text = "Convert CON files to PKG";
       this.convertCONToPKGToolStripMenuItem.Click += new System.EventHandler(this.convertCONToPKGToolStripMenuItem_Click);
       // 
       // tabControl1

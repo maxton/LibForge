@@ -19,17 +19,24 @@ namespace ForgeToolGUI.Inspectors
       InitializeComponent();
     }
 
+    List<string> conFilenames = new List<string>();
+
     private void pickFileButton_Click(object sender, EventArgs e)
     {
-      using (var ofd = new OpenFileDialog())
+      conFilenames.Clear();
+      listBox1.Items.Clear();
+      groupBox2.Enabled = false;
+      groupBox3.Enabled = false;
+      using (var ofd = new OpenFileDialog() { Multiselect = true })
       {
         if(ofd.ShowDialog() == DialogResult.OK)
         {
           try
           {
-            if (LoadCon(ofd.FileName))
+            if (LoadCons(ofd.FileNames))
             {
-              selectedFileLabel.Text = ofd.FileName;
+              groupBox2.Enabled = true;
+              listBox1.Items.AddRange(conFilenames.ToArray());
             }
           }
           catch(Exception ex)
@@ -45,26 +52,35 @@ namespace ForgeToolGUI.Inspectors
       }
     }
 
-    private bool LoadCon(string filename)
+    private bool LoadCons(string[] filenames)
     {
-      using (var con = STFSPackage.OpenFile(GameArchives.Util.LocalFile(filename)))
+      var dtas = new List<LibForge.SongData.SongData>();
+      foreach (var filename in filenames)
       {
-        if (con.Type != STFSType.CON)
+
+        using (var con = STFSPackage.OpenFile(GameArchives.Util.LocalFile(filename)))
         {
-          MessageBox.Show("Error: given file was not a CON file");
-          return false;
+          if (con.Type != STFSType.CON)
+          {
+            MessageBox.Show("Error: given file was not a CON file");
+            return false;
+          }
+          var datas = PkgCreator.GetSongMetadatas(con.RootDirectory.GetDirectory("songs"));
+          if (datas.Count > 0)
+          {
+            dtas.AddRange(datas);
+            conFilenames.Add(filename);
+          }
         }
-        var datas = PkgCreator.GetSongMetadatas(con.RootDirectory.GetDirectory("songs"));
-        if (datas.Count == 0)
-        {
-          MessageBox.Show("Error: no songs in that CON");
-          return false;
-        }
-        idBox.Text = PkgCreator.GenId(datas);
-        descriptionBox.Text = PkgCreator.GenDesc(datas);
-        groupBox2.Enabled = true;
-        return true;
       }
+      if (dtas.Count == 0)
+      {
+        MessageBox.Show("Error: no songs selected");
+        return false;
+      }
+      idBox.Text = PkgCreator.GenId(dtas);
+      descriptionBox.Text = PkgCreator.GenDesc(dtas);
+      return true;
     }
 
     private void idBox_TextChanged(object sender, EventArgs e)
@@ -92,14 +108,20 @@ namespace ForgeToolGUI.Inspectors
         {
           Action<string> log = x => logBox.AppendText(x + Environment.NewLine);
           log("Converting DLC files...");
-          using (var con = STFSPackage.OpenFile(GameArchives.Util.LocalFile(selectedFileLabel.Text)))
+          var cons = conFilenames.Select(f => STFSPackage.OpenFile(GameArchives.Util.LocalFile(f)));
+          var songs = new List<LibForge.DLCSong>();
+          foreach (var con in cons)
           {
-            var songs = PkgCreator.ConvertDLCPackage(
+            songs.AddRange(PkgCreator.ConvertDLCPackage(
                con.RootDirectory.GetDirectory("songs"),
                volumeAdjustCheckBox.Checked,
-               s => log("Warning: " + s));
-            log("Building PKG...");
-            PkgCreator.BuildPkg(songs, contentIdTextBox.Text, descriptionBox.Text, euCheckBox.Checked, sfd.FileName, log);
+               s => log($"Warning ({con.FileName}): " + s)));
+          }
+          log("Building PKG...");
+          PkgCreator.BuildPkg(songs, contentIdTextBox.Text, descriptionBox.Text, euCheckBox.Checked, sfd.FileName, log);
+          foreach(var con in cons)
+          {
+            con.Dispose();
           }
         }
       }
