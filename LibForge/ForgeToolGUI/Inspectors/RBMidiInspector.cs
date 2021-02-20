@@ -44,6 +44,7 @@ namespace ForgeToolGUI
         difficultySelector.Items.Add($"Vocal track {track}");
         SelectorActions.Add(MakeVocalTrackAction(track));
       }
+      button3_Click(this, null);
     }
 
     private List<Action> SelectorActions = new List<Action>();
@@ -246,7 +247,7 @@ namespace ForgeToolGUI
       {
         label = "Tacets:"
       });
-      foreach(var x in track.Tacets)
+      foreach(var x in track.FreestyleRegions)
       {
         previewState.gems.Add(new Gem
         {

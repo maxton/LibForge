@@ -1085,7 +1085,7 @@ namespace LibForge.Midi
         var notes = new List<RBMid.VOCALTRACK.VOCAL_NOTE>();
         var gen_phrases = new List<RBMid.VOCALTRACK.PHRASE_MARKER>();
         var authored_phrases = new List<RBMid.VOCALTRACK.PHRASE_MARKER>();
-        var tacets = new List<RBMid.VOCALTRACK.VOCAL_TACET>();
+        var freestyle = new List<RBMid.VOCALTRACK.OD_REGION>();
         int phrase_index = 0;
         bool pitched = false;
         var trackVocalRange = new RBMid.VocalTrackRange
@@ -1202,7 +1202,7 @@ namespace LibForge.Midi
           if (tacet > 600f)
           {
             float transition = (tacet > 800f ? 100f : 50f);
-            tacets.Add(new RBMid.VOCALTRACK.VOCAL_TACET
+            freestyle.Add(new RBMid.VOCALTRACK.OD_REGION
             {
               StartMillis = lastNoteEnd + transition,
               EndMillis = (float)e.StartTime * 1000 - transition
@@ -1361,7 +1361,7 @@ namespace LibForge.Midi
         var lastTempo = mf.TempoTimeSigMap.Last();
         var lastMeasure = MeasureTicks.Last() + (480U * lastTempo.Numerator * 4 / lastTempo.Denominator);
         var lastTime = lastTempo.Time + ((lastMeasure - lastTempo.Tick) / 480.0) * (60 / lastTempo.BPM);
-        tacets.Add(new RBMid.VOCALTRACK.VOCAL_TACET
+        freestyle.Add(new RBMid.VOCALTRACK.OD_REGION
         {
           StartMillis = lastNote.StartMillis + lastNote.LengthMillis + 100f,
           EndMillis = (float)lastTime * 1000,
@@ -1445,7 +1445,7 @@ namespace LibForge.Midi
             AuthoredPhraseMarkers = new RBMid.VOCALTRACK.PHRASE_MARKER[0],
             Notes = notes.ToArray(),
             Percussion = percussions.ToArray(),
-            Tacets = VocalTracks.Last().Tacets
+            FreestyleRegions = VocalTracks.Last().FreestyleRegions
           });
         }
         else
@@ -1456,7 +1456,7 @@ namespace LibForge.Midi
             AuthoredPhraseMarkers = authored_phrases.ToArray(),
             Notes = notes.ToArray(),
             Percussion = percussions.ToArray(),
-            Tacets = tacets.ToArray()
+            FreestyleRegions = freestyle.ToArray()
           });
         }
         HandMap.Add(new RBMid.MAP[0]);

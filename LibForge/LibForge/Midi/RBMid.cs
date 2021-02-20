@@ -216,7 +216,7 @@ namespace LibForge.Midi
         /// </summary>
         public bool ShowLyric;
       }
-      public struct VOCAL_TACET
+      public struct OD_REGION
       {
         public float StartMillis;
         public float EndMillis;
@@ -225,7 +225,7 @@ namespace LibForge.Midi
       public PHRASE_MARKER[] AuthoredPhraseMarkers;
       public VOCAL_NOTE[] Notes;
       public uint[] Percussion;
-      public VOCAL_TACET[] Tacets;
+      public OD_REGION[] FreestyleRegions;
     }
     public struct UNKSTRUCT1
     {

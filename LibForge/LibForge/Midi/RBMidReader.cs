@@ -196,7 +196,7 @@ namespace LibForge.Midi
           ShowLyric = Bool(),
         }; return note; }),
       Percussion = Arr(UInt),
-      Tacets = Arr(() => new RBMid.VOCALTRACK.VOCAL_TACET
+      FreestyleRegions = Arr(() => new RBMid.VOCALTRACK.OD_REGION
       {
         StartMillis = Float(),
         EndMillis = Float()

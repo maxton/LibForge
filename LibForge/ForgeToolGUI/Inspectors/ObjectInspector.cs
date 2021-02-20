@@ -122,6 +122,11 @@ namespace ForgeToolGUI
     /// </summary>
     void AddArrayNodes(Array arr, string name, TreeNodeCollection nodes)
     {
+      if (arr == null)
+      {
+        nodes.Add(new TreeNode($"{name} (null)"));
+        return;
+      }
       var node = new TreeNode($"{name} ({arr.Length})");
       node.Tag = new Action(() => {
         node.Nodes.Clear();

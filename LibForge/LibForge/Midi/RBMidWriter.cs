@@ -188,7 +188,7 @@ namespace LibForge.Midi
         Write(x.ShowLyric);
       });
       Write(obj.Percussion, Write);
-      Write(obj.Tacets, x =>
+      Write(obj.FreestyleRegions, x =>
       {
         Write(x.StartMillis);
         Write(x.EndMillis);
