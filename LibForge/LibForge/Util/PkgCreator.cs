@@ -46,7 +46,7 @@ SHORTNAMES
       param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("CATEGORY", "ac", 4));
       param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("CONTENT_ID", pkgId, 48));
       param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("FORMAT", "obs", 4));
-      param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("TITLE", description, 128));
+      param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("TITLE", description.Substring(0, Math.Min(description.Length, 127)), 128));
       param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("TITLE_ID", eu ? "CUSA02901" : "CUSA02084", 12));
       param.Values.Add(new LibOrbisPkg.SFO.Utf8Value("VERSION", "01.00", 8));
       var descBytes = Encoding.UTF8.GetBytes(description);
