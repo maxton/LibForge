@@ -182,7 +182,7 @@ namespace LibForge.Midi
         Write(x.Unpitched);
         Write(x.UnpitchedGenerous);
         Write(x.RangeDivider);
-        Write(x.TugOfWarBitmask);
+        Write(x.PhraseFlags);
         Write(x.Portamento);
         Write(x.LyricShift);
         Write(x.ShowLyric);
@@ -207,7 +207,7 @@ namespace LibForge.Midi
       s.Position += 9;
       Write(obj.LowNote);
       Write(obj.HighNote);
-      Write(obj.TugOfWarBitmask);
+      Write(obj.PhraseFlags);
       Write(obj.PercussionSection);
       s.Position += 8;
     }

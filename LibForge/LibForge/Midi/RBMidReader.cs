@@ -190,7 +190,7 @@ namespace LibForge.Midi
           Unpitched = Bool(),
           UnpitchedGenerous = Bool(),
           RangeDivider = Bool(),
-          TugOfWarBitmask = Byte(),
+          PhraseFlags = Byte(),
           Portamento = Bool(),
           LyricShift = Bool(),
           ShowLyric = Bool(),
@@ -216,7 +216,7 @@ namespace LibForge.Midi
         // 9 bytes here are zero in every single rbmid I have found. So we are skipping them.
         LowNote = Float(),
         HighNote = Float(),
-        TugOfWarBitmask = Byte(),
+        PhraseFlags = Byte(),
         PercussionSection = Bool().Then(() => { Check(Int(), 0); Check(Int(), 0); }),
         // 8 bytes here are zero in every single rbmid I have found. So we are skipping them.
       };

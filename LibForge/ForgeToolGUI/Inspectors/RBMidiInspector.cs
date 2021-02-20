@@ -180,10 +180,15 @@ namespace ForgeToolGUI
           lengthMillis = gem.LengthMillis,
           offsetFromTop = MaxVocalNote - gem.MidiNote,
           offsetFromTop2 = MaxVocalNote - gem.MidiNote2,
-          color = gem.LastNoteInPhrase ? 1 : 0,
+          color = gem.LastNoteInPhrase ? 1 : (gem.Unpitched ? 2 : 0),
           label = gem.Lyric
         });
       }
+      previewState.gems.Add(new Gem
+      {
+        offsetFromTop = 4,
+        label = "Authored Phrases:"
+      });
       foreach (var x in track.AuthoredPhraseMarkers)
       {
         var startMillis = GetMillis(x.StartTicks);
@@ -195,6 +200,15 @@ namespace ForgeToolGUI
           offsetFromTop = 4,
           offsetFromTop2 = 4,
           color = x.PercussionSection ? 1 : 0,
+          label = (startMillis / 1000).ToString("0.000"),
+        });
+        previewState.gems.Add(new Gem
+        {
+          startMillis = startMillis,
+          lengthMillis = lengthMllis,
+          offsetFromTop = 5,
+          offsetFromTop2 = 5,
+          color = x.PhraseFlags,
           label = (startMillis / 1000).ToString("0.000"),
         });
       }
@@ -224,10 +238,14 @@ namespace ForgeToolGUI
           lengthMillis = x.LengthMillis,
           offsetFromTop = 3,
           offsetFromTop2 = 3,
-          color = x.TugOfWarBitmask,
+          color = x.PhraseFlags,
           label = (x.StartMillis / 1000).ToString("0.000")
         });
       }
+      previewState.gems.Add(new Gem
+      {
+        label = "Tacets:"
+      });
       foreach(var x in track.Tacets)
       {
         previewState.gems.Add(new Gem

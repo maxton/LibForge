@@ -143,6 +143,9 @@ namespace LibForge.Midi
     {
       public class PHRASE_MARKER
       {
+        public const byte FLAG_NORMAL = 1;
+        public const byte FLAG_TUG_OF_WAR = 2;
+
         public float StartMillis;
         public float LengthMillis;
         public uint StartTicks;
@@ -154,9 +157,9 @@ namespace LibForge.Midi
         public float LowNote;
         public float HighNote;
         /// <summary>
-        /// Bitmask for regular phrase (105), alternate phrase (106)
+        /// Bitmask for regular phrase (105), alternate phrase (106), other?
         /// </summary>
-        public byte TugOfWarBitmask; // seen: 0, 1, 2, and 3
+        public byte PhraseFlags; // seen: 0, 1, 2, and 3
         /// <summary>
         /// Set to true on fake phrase markers during percussion
         /// </summary>
@@ -199,7 +202,7 @@ namespace LibForge.Midi
         /// <summary>
         /// Set the first bit if a regular phrase (105), second if alternate phrase (106), both if both
         /// </summary>
-        public byte TugOfWarBitmask;
+        public byte PhraseFlags;
         /// <summary>
         /// Set to true if this note is a slide between two notes
         /// </summary>
@@ -544,7 +547,7 @@ namespace LibForge.Midi
                  ?? Check(their2.HasUnpitchedVox, my2.HasUnpitchedVox, nameof(my2.HasUnpitchedVox))
                  //?? Check(their2.LowNote, my2.LowNote, nameof(my2.LowNote))
                  //?? Check(their2.HighNote, my2.HighNote, nameof(my2.HighNote))
-                 ?? Check(their2.TugOfWarBitmask, my2.TugOfWarBitmask, nameof(my2.TugOfWarBitmask))
+                 ?? Check(their2.PhraseFlags, my2.PhraseFlags, nameof(my2.PhraseFlags))
                  ?? Check(their2.PercussionSection, my2.PercussionSection, nameof(my2.PercussionSection)))
            ?? Check(their.Notes, my.Notes, nameof(my.Notes), (their2, my2)
                 =>
@@ -562,7 +565,7 @@ namespace LibForge.Midi
                 ?? Check(their2.Unpitched, my2.Unpitched, nameof(my2.Unpitched))
                 ?? Check(their2.UnpitchedGenerous, my2.UnpitchedGenerous, nameof(my2.UnpitchedGenerous))
                 ?? Check(their2.RangeDivider, my2.RangeDivider, nameof(my2.RangeDivider))
-                ?? Check(their2.TugOfWarBitmask, my2.TugOfWarBitmask, nameof(my2.TugOfWarBitmask))
+                ?? Check(their2.PhraseFlags, my2.PhraseFlags, nameof(my2.PhraseFlags))
                 ?? Check(their2.Portamento, my2.Portamento, nameof(my2.Portamento))
                 ?? Check(their2.LyricShift, my2.LyricShift, nameof(my2.LyricShift))
                 ?? Check(their2.ShowLyric, my2.ShowLyric, nameof(my2.ShowLyric))
@@ -578,7 +581,7 @@ namespace LibForge.Midi
                  ?? Check(their2.HasUnpitchedVox, my2.HasUnpitchedVox, nameof(my2.HasUnpitchedVox))
                  ?? Check(their2.LowNote, my2.LowNote, nameof(my2.LowNote))
                  ?? Check(their2.HighNote, my2.HighNote, nameof(my2.HighNote))
-                 ?? Check(their2.TugOfWarBitmask, my2.TugOfWarBitmask, nameof(my2.TugOfWarBitmask))
+                 ?? Check(their2.PhraseFlags, my2.PhraseFlags, nameof(my2.PhraseFlags))
                  ?? Check(their2.PercussionSection, my2.PercussionSection, nameof(my2.PercussionSection))))
       ?? Check(other.UnknownOne, UnknownOne, nameof(UnknownOne))
       ?? Check(other.UnknownNegOne, UnknownNegOne, nameof(UnknownNegOne))
