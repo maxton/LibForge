@@ -108,7 +108,7 @@ namespace ForgeToolGUI.Inspectors
         {
           Action<string> log = x => logBox.AppendText(x + Environment.NewLine);
           log("Converting DLC files...");
-          var cons = conFilenames.Select(f => STFSPackage.OpenFile(GameArchives.Util.LocalFile(f)));
+          var cons = conFilenames.Select(f => STFSPackage.OpenFile(GameArchives.Util.LocalFile(f))).ToList();
           var songs = new List<LibForge.DLCSong>();
           foreach (var con in cons)
           {
