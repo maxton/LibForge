@@ -80,8 +80,48 @@ SHORTNAMES
       var trackSubArray = trackArray.AddNode(new DataArray());
       foreach (var child in array.Array("song").Array("tracks").Array(1).Children)
       {
-        if(child is DataArray a && a.Children[1] is DataArray b && b.Count > 0)
-          trackSubArray.AddNode(child);
+        if (child is DataArray a && a.Children[1] is DataArray b && b.Count > 0)
+        {
+          if (a.Symbol(0).Name == "drum")
+          {
+            switch (b.Count)
+            {
+              //Mix0 (2 channel) Whole kit in a stereo stream
+              case 2:
+                trackSubArray.AddNode(DTX.FromDtaString("drum (0 1)"));
+                break;
+              //Mix1 (4 channel) Mono kick, Mono Snare, Stereo Kit
+              case 4:
+                trackSubArray.AddNode(DTX.FromDtaString("drum (0)"));
+                trackSubArray.AddNode(DTX.FromDtaString("drum (1)"));
+                trackSubArray.AddNode(DTX.FromDtaString("drum (2 3)"));
+                break;
+              //Mix2 (5 channel) Mono kick, Stereo Snare, Stereo Kit
+              case 5:
+                trackSubArray.AddNode(DTX.FromDtaString("drum (0)"));
+                trackSubArray.AddNode(DTX.FromDtaString("drum (1 2)"));
+                trackSubArray.AddNode(DTX.FromDtaString("drum (3 4)"));
+                break;
+              //Mix3 (6 channel) Stereo kick, Stereo Snare, Stereo Kit
+              case 6:
+                trackSubArray.AddNode(DTX.FromDtaString("drum (0 1)"));
+                trackSubArray.AddNode(DTX.FromDtaString("drum (2 3)"));
+                trackSubArray.AddNode(DTX.FromDtaString("drum (4 5)"));
+                break;
+              //Mix4 (3 channel) Mono kick, Stereo Snare+Kit
+              case 3:
+                trackSubArray.AddNode(DTX.FromDtaString("drum (0)"));
+                trackSubArray.AddNode(DTX.FromDtaString("drum (1 2)"));
+                break;
+              default:
+                throw new Exception("You have too many or too few drum tracks. What are you doing?");
+            }
+          }
+          else
+          {
+            trackSubArray.AddNode(child);
+          }
+        }
       }
       var totalTracks = array.Array("song").Array("pans").Array(1).Children.Count;
       // Get the last track number. This is based on the assumption that the tracks are in order
