@@ -72,7 +72,7 @@ SHORTNAMES
       return Encoding.UTF8.GetBytes(project);
     }
 
-    public static DataArray MakeMoggDta(DataArray array)
+    public static DataArray MakeMoggDta(DataArray array, float volumeAdjustment)
     {
       var moggDta = new DataArray();
       var trackArray = new DataArray();
@@ -149,11 +149,23 @@ SHORTNAMES
       }
       moggDta.AddNode(trackArray);
       moggDta.AddNode(array.Array("song").Array("pans"));
-      moggDta.AddNode(array.Array("song").Array("vols"));
+
+      // Process (vols (...))
+      var vols = array.Array("song").Array("vols");
+      var newVols = new DataArray();
+      newVols.AddNode(DataSymbol.Symbol("vols"));
+      var volsArray = new DataArray();
+      for (int i = 0; i < vols.Array(1).Count; i++)
+      {
+        volsArray.AddNode(new DataAtom(vols.Array(1).Float(i) + volumeAdjustment));
+      }
+      newVols.AddNode(volsArray);
+      moggDta.AddNode(newVols);
+
       return moggDta;
     }
 
-    public static DLCSong ConvertDLCSong(DataArray songDta, GameArchives.IDirectory songRoot, Action<string> warner)
+    public static DLCSong ConvertDLCSong(DataArray songDta, GameArchives.IDirectory songRoot, Action<string> warner, bool padVols = true)
     {
       var path = songDta.Array("song").Array("name").String(1);
       var hopoThreshold = songDta.Array("song").Array("hopo_threshold")?.Int(1) ?? 170;
@@ -188,7 +200,7 @@ SHORTNAMES
         SongData = songData,
         Lipsync = LipsyncConverter.FromMilo(milo),
         Mogg = songRoot.GetFile(shortname + ".mogg"),
-        MoggDta = MakeMoggDta(songDta),
+        MoggDta = MakeMoggDta(songDta, padVols ? -3.0f : 0.0f),
         MoggSong = DTX.FromDtaString($"(mogg_path \"{songData.Shortname}.mogg\")\r\n(midi_path \"{songData.Shortname}.rbmid\")\r\n"),
         RBMidi = RBMidConverter.ToRBMid(mid, hopoThreshold, warner),
         Artwork = artwork,
@@ -201,7 +213,8 @@ SHORTNAMES
     /// </summary>
     /// <param name="dlcRoot"></param>
     /// <returns></returns>
-    public static List<DLCSong> ConvertDLCPackage(GameArchives.IDirectory dlcRoot, Action<string> warner = null)
+    public static List<DLCSong> ConvertDLCPackage(
+      GameArchives.IDirectory dlcRoot, bool padVols = true, Action<string> warner = null)
     {
       var dlcSongs = new List<DLCSong>();
       var dta = DTX.FromPlainTextBytes(dlcRoot.GetFile("songs.dta").GetBytes());
@@ -209,7 +222,11 @@ SHORTNAMES
       for(int i = 0; i < dta.Count; i++)
       {
         arr = dta.Array(i);
-        dlcSongs.Add(ConvertDLCSong(arr, dlcRoot.GetDirectory(arr.Array("song").Array("name").String(1).Split('/').Last()), warner));
+        dlcSongs.Add(ConvertDLCSong(
+          arr,
+          dlcRoot.GetDirectory(arr.Array("song").Array("name").String(1).Split('/').Last()),
+          warner,
+          padVols));
       }
       return dlcSongs;
     }

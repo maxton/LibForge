@@ -33,6 +33,7 @@
       this.selectedFileLabel = new System.Windows.Forms.Label();
       this.label1 = new System.Windows.Forms.Label();
       this.groupBox2 = new System.Windows.Forms.GroupBox();
+      this.volumeAdjustCheckBox = new System.Windows.Forms.CheckBox();
       this.euCheckBox = new System.Windows.Forms.CheckBox();
       this.label3 = new System.Windows.Forms.Label();
       this.label2 = new System.Windows.Forms.Label();
@@ -51,9 +52,10 @@
       // 
       // pickFileButton
       // 
-      this.pickFileButton.Location = new System.Drawing.Point(6, 19);
+      this.pickFileButton.Location = new System.Drawing.Point(9, 29);
+      this.pickFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.pickFileButton.Name = "pickFileButton";
-      this.pickFileButton.Size = new System.Drawing.Size(75, 23);
+      this.pickFileButton.Size = new System.Drawing.Size(112, 35);
       this.pickFileButton.TabIndex = 0;
       this.pickFileButton.Text = "Pick a File";
       this.pickFileButton.UseVisualStyleBackColor = true;
@@ -66,9 +68,11 @@
       this.groupBox1.Controls.Add(this.selectedFileLabel);
       this.groupBox1.Controls.Add(this.label1);
       this.groupBox1.Controls.Add(this.pickFileButton);
-      this.groupBox1.Location = new System.Drawing.Point(4, 3);
+      this.groupBox1.Location = new System.Drawing.Point(6, 5);
+      this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.groupBox1.Name = "groupBox1";
-      this.groupBox1.Size = new System.Drawing.Size(473, 69);
+      this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      this.groupBox1.Size = new System.Drawing.Size(710, 106);
       this.groupBox1.TabIndex = 1;
       this.groupBox1.TabStop = false;
       this.groupBox1.Text = "Step 1: Pick a CON";
@@ -76,17 +80,19 @@
       // selectedFileLabel
       // 
       this.selectedFileLabel.AutoSize = true;
-      this.selectedFileLabel.Location = new System.Drawing.Point(83, 45);
+      this.selectedFileLabel.Location = new System.Drawing.Point(124, 69);
+      this.selectedFileLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.selectedFileLabel.Name = "selectedFileLabel";
-      this.selectedFileLabel.Size = new System.Drawing.Size(0, 13);
+      this.selectedFileLabel.Size = new System.Drawing.Size(0, 20);
       this.selectedFileLabel.TabIndex = 2;
       // 
       // label1
       // 
       this.label1.AutoSize = true;
-      this.label1.Location = new System.Drawing.Point(6, 45);
+      this.label1.Location = new System.Drawing.Point(9, 69);
+      this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label1.Name = "label1";
-      this.label1.Size = new System.Drawing.Size(71, 13);
+      this.label1.Size = new System.Drawing.Size(105, 20);
       this.label1.TabIndex = 1;
       this.label1.Text = "Selected File:";
       // 
@@ -94,25 +100,42 @@
       // 
       this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+      this.groupBox2.Controls.Add(this.volumeAdjustCheckBox);
       this.groupBox2.Controls.Add(this.euCheckBox);
       this.groupBox2.Controls.Add(this.label3);
       this.groupBox2.Controls.Add(this.label2);
       this.groupBox2.Controls.Add(this.descriptionBox);
       this.groupBox2.Controls.Add(this.idBox);
       this.groupBox2.Enabled = false;
-      this.groupBox2.Location = new System.Drawing.Point(4, 79);
+      this.groupBox2.Location = new System.Drawing.Point(6, 122);
+      this.groupBox2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.groupBox2.Name = "groupBox2";
-      this.groupBox2.Size = new System.Drawing.Size(473, 108);
+      this.groupBox2.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      this.groupBox2.Size = new System.Drawing.Size(710, 166);
       this.groupBox2.TabIndex = 2;
       this.groupBox2.TabStop = false;
       this.groupBox2.Text = "Step 2: Choose Options";
       // 
+      // volumeAdjustCheckBox
+      // 
+      this.volumeAdjustCheckBox.AutoSize = true;
+      this.volumeAdjustCheckBox.Checked = true;
+      this.volumeAdjustCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+      this.volumeAdjustCheckBox.Location = new System.Drawing.Point(290, 134);
+      this.volumeAdjustCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      this.volumeAdjustCheckBox.Name = "volumeAdjustCheckBox";
+      this.volumeAdjustCheckBox.Size = new System.Drawing.Size(218, 24);
+      this.volumeAdjustCheckBox.TabIndex = 6;
+      this.volumeAdjustCheckBox.Text = "Adjust audio mix for RB4?";
+      this.volumeAdjustCheckBox.UseVisualStyleBackColor = true;
+      // 
       // euCheckBox
       // 
       this.euCheckBox.AutoSize = true;
-      this.euCheckBox.Location = new System.Drawing.Point(86, 87);
+      this.euCheckBox.Location = new System.Drawing.Point(129, 134);
+      this.euCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.euCheckBox.Name = "euCheckBox";
-      this.euCheckBox.Size = new System.Drawing.Size(101, 17);
+      this.euCheckBox.Size = new System.Drawing.Size(150, 24);
       this.euCheckBox.TabIndex = 5;
       this.euCheckBox.Text = "Build for SCEE?";
       this.euCheckBox.UseVisualStyleBackColor = true;
@@ -121,18 +144,20 @@
       // label3
       // 
       this.label3.AutoSize = true;
-      this.label3.Location = new System.Drawing.Point(21, 48);
+      this.label3.Location = new System.Drawing.Point(32, 74);
+      this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label3.Name = "label3";
-      this.label3.Size = new System.Drawing.Size(63, 13);
+      this.label3.Size = new System.Drawing.Size(93, 20);
       this.label3.TabIndex = 4;
       this.label3.Text = "Description:";
       // 
       // label2
       // 
       this.label2.AutoSize = true;
-      this.label2.Location = new System.Drawing.Point(9, 22);
+      this.label2.Location = new System.Drawing.Point(14, 34);
+      this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label2.Name = "label2";
-      this.label2.Size = new System.Drawing.Size(71, 13);
+      this.label2.Size = new System.Drawing.Size(105, 20);
       this.label2.TabIndex = 3;
       this.label2.Text = "ID (16 chars):";
       // 
@@ -140,17 +165,19 @@
       // 
       this.descriptionBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.descriptionBox.Location = new System.Drawing.Point(86, 45);
+      this.descriptionBox.Location = new System.Drawing.Point(129, 69);
+      this.descriptionBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.descriptionBox.Multiline = true;
       this.descriptionBox.Name = "descriptionBox";
-      this.descriptionBox.Size = new System.Drawing.Size(381, 36);
+      this.descriptionBox.Size = new System.Drawing.Size(570, 53);
       this.descriptionBox.TabIndex = 2;
       // 
       // idBox
       // 
-      this.idBox.Location = new System.Drawing.Point(86, 19);
+      this.idBox.Location = new System.Drawing.Point(129, 29);
+      this.idBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.idBox.Name = "idBox";
-      this.idBox.Size = new System.Drawing.Size(162, 20);
+      this.idBox.Size = new System.Drawing.Size(241, 26);
       this.idBox.TabIndex = 0;
       this.idBox.TextChanged += new System.EventHandler(this.idBox_TextChanged);
       // 
@@ -165,9 +192,11 @@
       this.groupBox3.Controls.Add(this.contentIdTextBox);
       this.groupBox3.Controls.Add(this.label4);
       this.groupBox3.Enabled = false;
-      this.groupBox3.Location = new System.Drawing.Point(4, 193);
+      this.groupBox3.Location = new System.Drawing.Point(6, 297);
+      this.groupBox3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.groupBox3.Name = "groupBox3";
-      this.groupBox3.Size = new System.Drawing.Size(473, 210);
+      this.groupBox3.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+      this.groupBox3.Size = new System.Drawing.Size(710, 323);
       this.groupBox3.TabIndex = 3;
       this.groupBox3.TabStop = false;
       this.groupBox3.Text = "Step 3: Build PKG";
@@ -175,9 +204,10 @@
       // label5
       // 
       this.label5.AutoSize = true;
-      this.label5.Location = new System.Drawing.Point(6, 46);
+      this.label5.Location = new System.Drawing.Point(9, 71);
+      this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label5.Name = "label5";
-      this.label5.Size = new System.Drawing.Size(28, 13);
+      this.label5.Size = new System.Drawing.Size(40, 20);
       this.label5.TabIndex = 4;
       this.label5.Text = "Log:";
       // 
@@ -186,20 +216,22 @@
       this.logBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.logBox.Location = new System.Drawing.Point(6, 62);
+      this.logBox.Location = new System.Drawing.Point(9, 95);
+      this.logBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.logBox.Multiline = true;
       this.logBox.Name = "logBox";
       this.logBox.ReadOnly = true;
       this.logBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-      this.logBox.Size = new System.Drawing.Size(461, 142);
+      this.logBox.Size = new System.Drawing.Size(690, 216);
       this.logBox.TabIndex = 3;
       // 
       // buildButton
       // 
       this.buildButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.buildButton.Location = new System.Drawing.Point(392, 11);
+      this.buildButton.Location = new System.Drawing.Point(588, 17);
+      this.buildButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.buildButton.Name = "buildButton";
-      this.buildButton.Size = new System.Drawing.Size(75, 23);
+      this.buildButton.Size = new System.Drawing.Size(112, 35);
       this.buildButton.TabIndex = 2;
       this.buildButton.Text = "Build";
       this.buildButton.UseVisualStyleBackColor = true;
@@ -208,29 +240,32 @@
       // contentIdTextBox
       // 
       this.contentIdTextBox.AutoSize = true;
-      this.contentIdTextBox.Location = new System.Drawing.Point(98, 16);
+      this.contentIdTextBox.Location = new System.Drawing.Point(147, 25);
+      this.contentIdTextBox.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.contentIdTextBox.Name = "contentIdTextBox";
-      this.contentIdTextBox.Size = new System.Drawing.Size(0, 13);
+      this.contentIdTextBox.Size = new System.Drawing.Size(0, 20);
       this.contentIdTextBox.TabIndex = 1;
       // 
       // label4
       // 
       this.label4.AutoSize = true;
-      this.label4.Location = new System.Drawing.Point(6, 16);
+      this.label4.Location = new System.Drawing.Point(9, 25);
+      this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
       this.label4.Name = "label4";
-      this.label4.Size = new System.Drawing.Size(86, 13);
+      this.label4.Size = new System.Drawing.Size(128, 20);
       this.label4.TabIndex = 0;
       this.label4.Text = "PKG Content ID:";
       // 
       // ConversionInspector
       // 
-      this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+      this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.Controls.Add(this.groupBox3);
       this.Controls.Add(this.groupBox2);
       this.Controls.Add(this.groupBox1);
+      this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
       this.Name = "ConversionInspector";
-      this.Size = new System.Drawing.Size(480, 406);
+      this.Size = new System.Drawing.Size(720, 625);
       this.groupBox1.ResumeLayout(false);
       this.groupBox1.PerformLayout();
       this.groupBox2.ResumeLayout(false);
@@ -259,5 +294,6 @@
     private System.Windows.Forms.TextBox logBox;
     private System.Windows.Forms.Button buildButton;
     private System.Windows.Forms.Label label5;
+    private System.Windows.Forms.CheckBox volumeAdjustCheckBox;
   }
 }
