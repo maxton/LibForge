@@ -136,7 +136,13 @@ namespace LibForge.Midi
 
         mfr.MidiSongResourceMagic = 2;
         mfr.LastTrackFinalTick = (uint)tracks.Select(t => t.TotalTicks).LastOrDefault();
-        mfr.MidiTracks = tracks.ToArray();
+        mfr.MidiTracks = new MidiTrack[tracks.Count];
+        for (int i = 0; i < mfr.MidiTracks.Length; i++)
+        {
+          mfr.MidiTracks[i] = new MidiTrack(tracks[i].Messages.Select(x =>
+            x is NoteOnEvent e && e.Velocity == 0 ? new NoteOffEvent(e.DeltaTime, e.Channel, e.Key, e.Velocity) : x
+          ).ToList(), tracks[i].TotalTicks, tracks[i].Name);
+        }
         mfr.FinalTick = (uint)tracks.Select(t => t.TotalTicks).Max();
         mfr.Measures = (uint)MeasureTicks.Count();
         mfr.Unknown = new uint[6];
