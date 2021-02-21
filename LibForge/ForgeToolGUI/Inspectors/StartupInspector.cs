@@ -21,5 +21,20 @@ namespace ForgeToolGUI.Inspectors
     {
       fb.OpenConverter();
     }
+
+    private void openFileButton_Click(object sender, EventArgs e)
+    {
+      fb.openFile_Click(sender, e);
+    }
+
+    private void openPackageButton_Click(object sender, EventArgs e)
+    {
+      fb.openPackage_Click(sender, e);
+    }
+
+    private void openFolderButton_Click(object sender, EventArgs e)
+    {
+      fb.openFolder_Click(sender, e);
+    }
   }
 }

@@ -122,7 +122,7 @@
       this.openFileMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
       this.openFileMenuItem.Size = new System.Drawing.Size(234, 22);
       this.openFileMenuItem.Text = "&Open File...";
-      this.openFileMenuItem.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
+      this.openFileMenuItem.Click += new System.EventHandler(this.openFile_Click);
       // 
       // openPackageMenuItem
       // 
@@ -131,7 +131,7 @@
             | System.Windows.Forms.Keys.O)));
       this.openPackageMenuItem.Size = new System.Drawing.Size(234, 22);
       this.openPackageMenuItem.Text = "Open &Package...";
-      this.openPackageMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+      this.openPackageMenuItem.Click += new System.EventHandler(this.openPackage_Click);
       // 
       // openFolderMenuItem
       // 
@@ -139,7 +139,7 @@
       this.openFolderMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F)));
       this.openFolderMenuItem.Size = new System.Drawing.Size(234, 22);
       this.openFolderMenuItem.Text = "Open &Folder...";
-      this.openFolderMenuItem.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
+      this.openFolderMenuItem.Click += new System.EventHandler(this.openFolder_Click);
       // 
       // toolStripSeparator1
       // 

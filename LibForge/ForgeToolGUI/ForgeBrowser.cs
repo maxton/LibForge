@@ -148,7 +148,7 @@ namespace ForgeToolGUI
       state.Loaded = false;
     }
 
-    private void openToolStripMenuItem_Click(object sender, EventArgs e)
+    public void openPackage_Click(object sender, EventArgs e)
     {
       OpenFileDialog of = new OpenFileDialog();
       of.Filter = "Supported Packages (*.hdr, *.dat, *.pkg, *_rb3con)|*.hdr;*.dat;*.pkg;*_rb3con|All files|*.*";
@@ -209,7 +209,7 @@ namespace ForgeToolGUI
     }
 
 
-    private void toolStripMenuItem1_Click(object sender, EventArgs e)
+    public void openFolder_Click(object sender, EventArgs e)
     {
       // Sorry.
       var of = new FolderBrowserDialog();
@@ -242,7 +242,7 @@ namespace ForgeToolGUI
       }
     }
 
-    private void toolStripMenuItem2_Click(object sender, EventArgs e)
+    public void openFile_Click(object sender, EventArgs e)
     {
       OpenFileDialog of = new OpenFileDialog();
       if (of.ShowDialog(this) == DialogResult.OK)
