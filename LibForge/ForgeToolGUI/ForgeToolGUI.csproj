@@ -122,6 +122,12 @@
     <Compile Include="Inspectors\TextureInspector.Designer.cs">
       <DependentUpon>TextureInspector.cs</DependentUpon>
     </Compile>
+    <Compile Include="Inspectors\StartupInspector.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Inspectors\StartupInspector.Designer.cs">
+      <DependentUpon>StartupInspector.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Inspectors\SongDataInspector.cs">
@@ -153,6 +159,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Inspectors\ObjectInspector.resx">
       <DependentUpon>ObjectInspector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Inspectors\StartupInspector.resx">
+      <DependentUpon>StartupInspector.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Inspectors\StringInspector.resx">
       <DependentUpon>StringInspector.cs</DependentUpon>

@@ -32,6 +32,9 @@ namespace ForgeToolGUI
       if (args.Length > 1)
       {
         LoadAnything(args[1]);
+      } else
+      {
+        OpenTab(new Inspectors.StartupInspector(), "Welcome");
       }
     }
 
@@ -253,10 +256,13 @@ namespace ForgeToolGUI
       if (tabControl1.SelectedTab != null)
         tabControl1.TabPages.Remove(tabControl1.SelectedTab);
     }
-
-    private void convertCONToPKGToolStripMenuItem_Click(object sender, EventArgs e)
+    public void OpenConverter()
     {
       OpenTab(new Inspectors.ConversionInspector(), "CON to PKG Conversion");
+    }
+    private void convertCONToPKGToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+      OpenConverter();
     }
 
     private void fileTreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
